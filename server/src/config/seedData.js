@@ -4,9 +4,22 @@ const CollectionAgent = require('../models/CollectionAgent');
 const Event = require('../models/Event');
 const Blog = require('../models/Blog');
 const Gallery = require('../models/Gallery');
+const User = require('../models/User');
 
 const seedInitialData = async () => {
   try {
+    // 0. Seed Default Admin if empty
+    const userCount = await User.countDocuments();
+    if (userCount === 0) {
+      await User.create({
+        name: 'Sri Chintamoni Kunja Admin',
+        email: 'admin@chintamonikunja.org',
+        password: 'Chintamoni@2026',
+        role: 'admin',
+      });
+      console.log('🌱 Seeded default administrator (admin@chintamonikunja.org)');
+    }
+
     // 1. Seed Members if empty
     const memberCount = await Member.countDocuments();
     if (memberCount === 0) {

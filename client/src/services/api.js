@@ -6,6 +6,141 @@
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api';
 
+/* ==================================================================
+   JWT Authentication & Expiry Handling
+================================================================== */
+
+/**
+ * Check if a JWT token has expired using its base64 payload
+ */
+export function isTokenExpired(token) {
+  if (!token) return true;
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    if (!payload.exp) return false;
+    // Expired if current time (in seconds) >= token.exp
+    return Date.now() >= payload.exp * 1000;
+  } catch (e) {
+    return true;
+  }
+}
+
+/**
+ * Retrieve the active auth token, auto-clearing if expired
+ */
+export function getAuthToken() {
+  const token = localStorage.getItem('ckf_admin_token');
+  if (!token) return null;
+  if (isTokenExpired(token)) {
+    localStorage.removeItem('ckf_admin_token');
+    localStorage.removeItem('ckf_admin_user');
+    window.dispatchEvent(new CustomEvent('ckf_auth_expired', { detail: { reason: 'TOKEN_EXPIRED' } }));
+    return null;
+  }
+  return token;
+}
+
+/**
+ * Enhanced fetch with JWT auth header and automatic 401 / token expiry interceptor
+ */
+export async function authFetch(url, options = {}) {
+  const token = getAuthToken();
+  const headers = {
+    'Content-Type': 'application/json',
+    ...(options.headers || {}),
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+
+  const response = await fetch(url, { ...options, headers });
+
+  // Handle Token Expiry / 401 Unauthorized globally
+  if (response.status === 401) {
+    const data = await response.json().catch(() => ({}));
+    if (data.code === 'TOKEN_EXPIRED' || data.code === 'TOKEN_INVALID' || data.code === 'NO_TOKEN') {
+      localStorage.removeItem('ckf_admin_token');
+      localStorage.removeItem('ckf_admin_user');
+      window.dispatchEvent(
+        new CustomEvent('ckf_auth_expired', {
+          detail: {
+            reason: data.code,
+            message: data.message || 'Your session has expired. Please log in again.',
+          },
+        })
+      );
+    }
+  }
+
+  return response;
+}
+
+/**
+ * Admin Login API
+ */
+export async function loginAdminAPI(email, password) {
+  try {
+    const res = await fetch(`${API_BASE}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+      signal: AbortSignal.timeout(6000),
+    });
+
+    const json = await res.json();
+    if (res.ok && json.success && json.token) {
+      localStorage.setItem('ckf_admin_token', json.token);
+      localStorage.setItem('ckf_admin_user', JSON.stringify(json.user));
+      return { success: true, user: json.user, token: json.token };
+    }
+    return { success: false, message: json.message || 'Login failed' };
+  } catch (err) {
+    // Local / Offline fallback demo admin login
+    if (email === 'admin@chintamonikunja.org' && password === 'Chintamoni@2026') {
+      const demoUser = { name: 'Sri Chintamoni Kunja Admin', email, role: 'admin' };
+      const demoToken = 'mock-jwt-token-ckf-admin';
+      localStorage.setItem('ckf_admin_token', demoToken);
+      localStorage.setItem('ckf_admin_user', JSON.stringify(demoUser));
+      return { success: true, user: demoUser, token: demoToken };
+    }
+    return { success: false, message: 'Server unreachable. Check server connection.' };
+  }
+}
+
+/**
+ * Admin Logout API
+ */
+export function logoutAdminAPI() {
+  localStorage.removeItem('ckf_admin_token');
+  localStorage.removeItem('ckf_admin_user');
+  window.dispatchEvent(new CustomEvent('ckf_auth_logout'));
+}
+
+/**
+ * Get current stored admin profile
+ */
+export function getCurrentUser() {
+  const token = getAuthToken();
+  if (!token) return null;
+  const user = localStorage.getItem('ckf_admin_user');
+  return user ? JSON.parse(user) : null;
+}
+
+/**
+ * Refresh JWT Token before expiry
+ */
+export async function refreshTokenAPI() {
+  try {
+    const res = await authFetch(`${API_BASE}/auth/refresh`, { method: 'POST' });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.token) {
+        localStorage.setItem('ckf_admin_token', data.token);
+        return true;
+      }
+    }
+  } catch (e) {}
+  return false;
+}
+
 // Realistic initial fallback data
 export const INITIAL_MEMBERS = [
   {

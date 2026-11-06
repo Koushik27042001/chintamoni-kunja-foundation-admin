@@ -37,9 +37,18 @@ import {
   Server,
   Wifi,
   WifiOff,
+  LogOut,
+  Lock,
+  Key,
+  Shield,
 } from "lucide-react";
 import {
   checkServerStatus,
+  loginAdminAPI,
+  logoutAdminAPI,
+  getCurrentUser,
+  getAuthToken,
+  isTokenExpired,
   getMembersAPI,
   createMemberAPI,
   bulkCreateMembersAPI,
@@ -156,6 +165,52 @@ export default function AdminPanel() {
   const [serverState, setServerState] = useState({ online: false, database: 'checking' });
   const [loading, setLoading] = useState(false);
   const [alertMsg, setAlertMsg] = useState("");
+
+  // Authentication & Session Expiry States
+  const [currentUser, setCurrentUser] = useState(() => getCurrentUser());
+  const [isAuthenticated, setIsAuthenticated] = useState(() => !!getAuthToken());
+  const [sessionExpiryWarning, setSessionExpiryWarning] = useState("");
+  const [loginEmail, setLoginEmail] = useState("admin@chintamonikunja.org");
+  const [loginPassword, setLoginPassword] = useState("Chintamoni@2026");
+  const [loginError, setLoginError] = useState("");
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+
+  // Listen for session expiry custom events
+  useEffect(() => {
+    const handleAuthExpired = (e) => {
+      setIsAuthenticated(false);
+      setCurrentUser(null);
+      setSessionExpiryWarning(
+        e.detail?.message || "Your admin session has expired. Please log in again to continue."
+      );
+    };
+
+    window.addEventListener("ckf_auth_expired", handleAuthExpired);
+    return () => window.removeEventListener("ckf_auth_expired", handleAuthExpired);
+  }, []);
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setIsLoggingIn(true);
+    setLoginError("");
+    const result = await loginAdminAPI(loginEmail, loginPassword);
+    setIsLoggingIn(false);
+    if (result.success) {
+      setCurrentUser(result.user);
+      setIsAuthenticated(true);
+      setSessionExpiryWarning("");
+      showAlert(`Welcome back, ${result.user.name || "Administrator"}!`);
+    } else {
+      setLoginError(result.message || "Invalid credentials.");
+    }
+  };
+
+  const handleLogout = () => {
+    logoutAdminAPI();
+    setCurrentUser(null);
+    setIsAuthenticated(false);
+    showAlert("Logged out successfully.");
+  };
 
   // Core Data States
   const [members, setMembers] = useState(INITIAL_MEMBERS);
@@ -701,7 +756,7 @@ export default function AdminPanel() {
             {serverState.online ? (
               <span className="flex items-center gap-1.5 rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-800 border border-emerald-300">
                 <Wifi size={12} className="text-emerald-600" />
-                <span>Server API: Connected ({serverState.database})</span>
+                <span>API: Connected ({serverState.database})</span>
               </span>
             ) : (
               <span className="flex items-center gap-1.5 rounded-full bg-amber-100 px-3 py-1 text-xs font-bold text-amber-800 border border-amber-300">
@@ -709,9 +764,22 @@ export default function AdminPanel() {
                 <span>Offline Resilient Mode</span>
               </span>
             )}
-            <span className="hidden sm:inline-flex rounded-full bg-[#FFF9ED] px-3 py-1 text-xs font-bold text-[#78372B] border border-[#C59A52]/40">
-              ● Nabadwip Dham HQ
-            </span>
+            {isAuthenticated && (
+              <div className="flex items-center gap-2">
+                <span className="hidden sm:flex items-center gap-1.5 rounded-full bg-[#FFF9ED] px-3 py-1 text-xs font-bold text-[#78372B] border border-[#C59A52]/40">
+                  <Shield size={12} className="text-[#971515]" />
+                  <span>{currentUser?.name || "Admin"}</span>
+                </span>
+                <button
+                  onClick={handleLogout}
+                  className="flex items-center gap-1 rounded-lg border border-rose-300 bg-rose-50 px-2.5 py-1 text-xs font-bold text-rose-800 hover:bg-rose-100 transition"
+                  title="Sign out"
+                >
+                  <LogOut size={13} />
+                  <span>Logout</span>
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </header>
@@ -725,6 +793,95 @@ export default function AdminPanel() {
       )}
 
       {/* Main Container */}
+      {!isAuthenticated ? (
+        <div className="mx-auto max-w-md py-14 px-4">
+          <div className="rounded-2xl border-2 border-[#C59A52]/40 bg-white p-8 shadow-xl">
+            <div className="text-center">
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[#FFF9ED] border border-[#C59A52]/40 text-[#971515] shadow-inner">
+                <Lock size={26} />
+              </div>
+              <h2 className="mt-4 font-serif text-2xl font-bold text-[#78372B]" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+                Admin Authentication
+              </h2>
+              <p className="mt-1 text-xs text-[#39251D]/70">
+                Sri Sri Chintamoni Kunja Foundation • Central Seva Portal
+              </p>
+            </div>
+
+            {/* Session Expiry Notice */}
+            {sessionExpiryWarning && (
+              <div className="mt-5 rounded-xl border border-amber-300 bg-amber-50 p-3.5 text-xs text-amber-900 flex items-start gap-2.5">
+                <AlertCircle size={16} className="text-amber-700 shrink-0 mt-0.5" />
+                <div>
+                  <span className="font-bold">Session Notice: </span>
+                  <span>{sessionExpiryWarning}</span>
+                </div>
+              </div>
+            )}
+
+            {/* Login Form */}
+            <form onSubmit={handleLogin} className="mt-6 space-y-4">
+              {loginError && (
+                <div className="rounded-xl border border-rose-300 bg-rose-50 p-3 text-xs font-semibold text-rose-800">
+                  {loginError}
+                </div>
+              )}
+
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-[#78372B]">
+                  Admin Email Address
+                </label>
+                <input
+                  type="email"
+                  required
+                  value={loginEmail}
+                  onChange={(e) => setLoginEmail(e.target.value)}
+                  placeholder="admin@chintamonikunja.org"
+                  className="mt-1 w-full rounded-xl border border-[#C59A52]/40 bg-white p-2.5 text-xs font-semibold focus:border-[#971515] focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-[#78372B]">
+                  Password
+                </label>
+                <input
+                  type="password"
+                  required
+                  value={loginPassword}
+                  onChange={(e) => setLoginPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="mt-1 w-full rounded-xl border border-[#C59A52]/40 bg-white p-2.5 text-xs font-semibold focus:border-[#971515] focus:outline-none"
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={isLoggingIn}
+                className="w-full rounded-xl bg-[#971515] py-3 text-xs font-bold uppercase tracking-wider text-white shadow-lg shadow-[#971515]/25 hover:bg-[#78372B] transition disabled:opacity-50"
+              >
+                {isLoggingIn ? "Verifying Credentials..." : "Access Seva Admin Portal"}
+              </button>
+            </form>
+
+            <div className="mt-6 border-t border-[#C59A52]/20 pt-4 text-center">
+              <button
+                type="button"
+                onClick={() => {
+                  setLoginEmail("admin@chintamonikunja.org");
+                  setLoginPassword("Chintamoni@2026");
+                }}
+                className="text-xs font-semibold text-[#78372B] hover:text-[#971515] underline"
+              >
+                Auto-fill default credentials (admin@chintamonikunja.org)
+              </button>
+              <div className="mt-2 text-[10px] text-[#39251D]/60">
+                JWT Session Lifespan: 7 Days • Auto-refreshed on active collection work
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : (
       <div className="mx-auto max-w-7xl px-4 py-8">
         {/* Navigation Tabs */}
         <div className="no-print mb-8 flex flex-wrap gap-2 border-b border-[#C59A52]/30 pb-4">
@@ -2410,6 +2567,7 @@ export default function AdminPanel() {
           </div>
         )}
       </div>
+      )}
     </div>
   );
 }
