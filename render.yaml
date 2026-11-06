@@ -1,0 +1,41 @@
+# Render Blueprint Specification for Sri Sri Chintamoni Kunja Foundation Backend
+services:
+  - type: web
+    name: chintamoni-kunja-api
+    runtime: node
+    plan: free
+    region: oregon
+    rootDir: server
+    buildCommand: npm install
+    startCommand: node src/index.js
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: MONGODB_URI
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: CLOUDINARY_URL
+        sync: false
+      - key: CLOUDINARY_CLOUD_NAME
+        value: droimflwc
+      - key: CLOUDINARY_API_KEY
+        value: 454143747945728
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+      - key: ADMIN_NAME
+        value: Sri Chintamoni Kunja Admin
+      - key: ADMIN_EMAIL
+        value: admin@chintamonikunja.org
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: ADMIN_LOGIN_URL
+        value: /admin
+      - key: CLIENT_URL
+        sync: false
