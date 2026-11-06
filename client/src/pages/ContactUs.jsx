@@ -76,7 +76,11 @@ export default function ContactUs() {
     setStatus({ type: "", message: "" });
 
     try {
-      const res = await fetch("/api/contact", {
+      const apiUrl = import.meta.env.VITE_API_URL
+        ? `${import.meta.env.VITE_API_URL}/api/contact`
+        : "/api/contact";
+
+      const res = await fetch(apiUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),

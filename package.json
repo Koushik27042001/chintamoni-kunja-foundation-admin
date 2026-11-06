@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Chintamoni Kunja - Full Stack MERN Application",
   "scripts": {
+    "build": "cd client && npm install && npm run build",
     "client": "cd client && npm run dev",
     "server": "cd server && npm run dev",
     "dev": "concurrently \"npm run server\" \"npm run client\""
