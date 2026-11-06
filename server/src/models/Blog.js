@@ -6,6 +6,7 @@ const blogSchema = new mongoose.Schema(
       type: String,
       required: [true, 'Please add blog title'],
       trim: true,
+      index: true,
     },
     bengali: {
       type: String,
@@ -14,12 +15,14 @@ const blogSchema = new mongoose.Schema(
     },
     category: {
       type: String,
-      enum: ['Katha & Philosophy', 'History & Lineage', 'Festivals & Utsavs', 'Seva & Humanitarian'],
       default: 'Katha & Philosophy',
+      trim: true,
+      index: true,
     },
     excerpt: {
       type: String,
       required: [true, 'Please add short excerpt'],
+      trim: true,
     },
     content: {
       type: String,
@@ -28,6 +31,7 @@ const blogSchema = new mongoose.Schema(
     author: {
       type: String,
       default: 'Sri Sri Chintamoni Kunja Foundation',
+      trim: true,
     },
     readTime: {
       type: String,
@@ -37,10 +41,20 @@ const blogSchema = new mongoose.Schema(
       type: String,
       default: '/assets/Opulent Gaura-Nitai and Madan Mohan Altar.png',
     },
+    public_id: {
+      type: String,
+      default: '',
+    },
+    storageProvider: {
+      type: String,
+      enum: ['cloudinary', 'local_asset', 'database'],
+      default: 'local_asset',
+    },
     status: {
       type: String,
       enum: ['published', 'draft'],
       default: 'published',
+      index: true,
     },
   },
   {

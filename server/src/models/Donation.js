@@ -95,6 +95,10 @@ const donationSchema = new mongoose.Schema(
       type: Date,
       default: Date.now,
     },
+    receiptCopyUrl: {
+      type: String,
+      default: '',
+    },
     notes: {
       type: String,
       default: '',

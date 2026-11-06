@@ -91,12 +91,32 @@ const updateBlog = async (req, res) => {
   }
 };
 
-// @desc    Delete blog
+// @desc    Delete blog (cleans up from Cloudinary and MongoDB)
 // @route   DELETE /api/blogs/:id
 const deleteBlog = async (req, res) => {
   try {
-    const blog = await Blog.findByIdAndDelete(req.params.id);
-    if (!blog) return res.status(404).json({ success: false, message: 'Article not found' });
+    const { id } = req.params;
+    const mongoose = require('mongoose');
+    let blog = null;
+
+    if (mongoose.Types.ObjectId.isValid(id)) {
+      blog = await Blog.findById(id);
+    }
+    if (!blog) {
+      blog = await Blog.findOne({ title: id });
+    }
+
+    if (blog) {
+      if (blog.public_id && blog.storageProvider === 'cloudinary') {
+        try {
+          await cloudinary.uploader.destroy(blog.public_id);
+        } catch (cloudErr) {
+          console.warn('Cloudinary blog delete warning:', cloudErr.message);
+        }
+      }
+      await Blog.deleteOne({ _id: blog._id });
+    }
+
     res.status(200).json({ success: true, message: 'Article deleted' });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });

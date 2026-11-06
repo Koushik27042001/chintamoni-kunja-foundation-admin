@@ -3976,10 +3976,13 @@ export default function AdminPanel() {
                           onChange={(e) => setNewBlog({ ...newBlog, category: e.target.value })}
                           className="mt-1 w-full rounded-xl border border-[#C59A52]/30 bg-[#0E0A09] p-2.5 text-xs text-[#FFF9ED] focus:outline-none"
                         >
-                          <option className="bg-[#16100E]">Katha & Philosophy</option>
                           <option className="bg-[#16100E]">Heritage & History</option>
+                          <option className="bg-[#16100E]">Vaishnav Philosophy</option>
+                          <option className="bg-[#16100E]">Social Reform</option>
+                          <option className="bg-[#16100E]">Humanitarian Seva</option>
+                          <option className="bg-[#16100E]">Art of Living</option>
+                          <option className="bg-[#16100E]">Katha & Philosophy</option>
                           <option className="bg-[#16100E]">Festivals & Utsavs</option>
-                          <option className="bg-[#16100E]">Seva & Humanitarian</option>
                         </select>
                       </div>
                     </div>

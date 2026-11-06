@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion, useScroll, useTransform, useReducedMotion, AnimatePresence } from "framer-motion";
-import { getBlogsAPI } from "../services/api";
+import { getBlogsAPI, INITIAL_BLOGS } from "../services/api";
 import {
   BookOpen,
   Calendar,
@@ -85,142 +85,70 @@ function Lotus({ className = "" }) {
   );
 }
 
-const ARTICLES = [
-  {
-    id: "ramsundar-vidyalankar-reformer",
-    title: "Sri Ramsundar Vidyalankar: Academic Pioneer & Social Reformer of 19th-Century Bengal",
-    bengali: "শ্রী রামসুন্দর বিদ্যালঙ্কার ও সমাজ সংস্কার",
-    category: "Heritage & History",
-    date: "14 April 2026",
-    readTime: "7 min read",
-    author: "Seva Research Desk",
-    image: A.temple,
-    summary:
-      "A contemporary of Raja Ram Mohan Roy, Sri Ramsundar Vidyalankar established Sri Sri Chintamoni Kunja in 1809. Discover how he used Gaudiya Vaishnav philosophy to advocate for mass literacy and oppose medieval caste discrimination.",
-    content: `
-      Sri Ramsundar Vidyalankar, affectionately and reverently known as Sri Chintamoni Goswami by the Vaishnav assembly, stands as one of the most luminous yet humble personalities of the Bengal Renaissance. While Raja Ram Mohan Roy worked through institutional and socio-legal frameworks in Calcutta, Vidyalankar focused on grassroots transformation in the holy town of Nabadwip Dham.
-
-      In 1809, he established Sri Sri Chintamoni Kunja as an academic and spiritual center. Believing firmly that Lord Sri Krishna Chaitanya Dev was the greatest social reformer of his era, Vidyalankar preached that true devotion cannot coexist with untouchability, racism, or caste prejudice. 
-
-      He opened the doors of scriptural learning to students from all social backgrounds, initiating educational drives that continue today through our Foundation's Academic Help initiative, which has supported over 2,000 students.
-    `,
-  },
-  {
-    id: "secret-of-radha-sakti",
-    title: "The Mystery of Sri Radha Sakti & Gadadhar Pandit: The Pinnacle of Radha-Dasyam",
-    bengali: "শ্রী রাধা শক্তি ও গদাধর পণ্ডিত প্রভুর তত্ত্ব",
-    category: "Vaishnav Philosophy",
-    date: "28 March 2026",
-    readTime: "9 min read",
-    author: "Acharya Pariwar Desk",
-    image: A.radhaKrishna,
-    summary:
-      "In the Madhva Gaudiya Sampradaya, Sri Gadadhar Pandit Prabhu is revered as the internal hladini potency (Sri Radha Sakti) of the Supreme Lord. An insightful dive into the mood of unconditional devotional servitude.",
-    content: `
-      Among the Pancha Tattva, Lord Sri Gadadhar Pandit Prabhu holds an esoteric, intimate position. Classical Gaudiya texts describe him as the avatar of Srimati Radharani's transcendental devotional mood and internal pleasure potency (hladini-shakti).
-
-      In sacred Nabadwip Dham, Mahaprabhu and Gadadhar Pandit demonstrated the inseparable harmony of divine love. The Sri Radha Sakti Gadadhar Pandit Pariwar maintains this unbroken mood of 'Radha-dasyam'—the humble desire to serve the divine pleasure of Srimati Radharani and Sri Krishna through sincere Harinam Sankirtan and self-effacing compassion for all living beings.
-    `,
-  },
-  {
-    id: "shikshastakam-social-equality",
-    title: "Beyond Caste & Feudal Mindset: How Lord Chaitanya’s Shikshastakam Redefined Humanity",
-    bengali: "শিক্ষ অষ্টকম ও সার্বজনীন সাম্য",
-    category: "Social Reform",
-    date: "12 March 2026",
-    readTime: "6 min read",
-    author: "Spiritual Council",
-    image: A.kirtan,
-    summary:
-      "Tṛṇād api sunīcena taror api sahiṣṇunā—unpacking how Lord Chaitanya's eight verses dismantled centuries of feudal orthodoxy and restored spiritual equality to every soul regardless of birth.",
-    content: `
-      Lord Sri Krishna Chaitanya Mahaprabhu left behind eight verses of sublime spiritual instruction known as the Shikshastakam. These verses are not mere poetic devotion; they form the manifesto of a spiritual revolution.
-
-      The third verse instructs one to become humbler than a blade of grass, more tolerant than a tree, and ready to offer all respect to others without expecting prestige. In an era marked by rigid caste hierarchies, Mahaprabhu embraced Haridas Thakur, appointed Ramananda Raya as an exalted teacher, and declared that anyone who knows the science of Krishna is a bona fide spiritual guide.
-
-      At Sri Sri Chintamoni Kunja, we guard this egalitarian mandate fiercely, rejecting medieval feudal prejudice and maintaining unconditional service for every pilgrim.
-    `,
-  },
-  {
-    id: "zero-starvation-movement",
-    title: "Zero Starvation as Divine Seva: The Sacred Science of Anna Daan in Nabadwip Dham",
-    bengali: "ক্ষুধামুক্ত সমাজের ব্রত ও প্রসাদ সেবা",
-    category: "Humanitarian Seva",
-    date: "20 February 2026",
-    readTime: "5 min read",
-    author: "Foundation Seva Desk",
-    image: A.procession,
-    summary:
-      "Why sanctified food distribution (prasadam) is considered the highest form of compassion in Vedic culture, and how our Zero Starvation Movement feeds pilgrims daily without distinction.",
-    content: `
-      In Vaishnav tradition, food is not merely caloric fuel; it is prasad—the sanctified mercy of the Divine. By offering nutritious, vegetarian foodstuffs prepared with devotion to Lord Madan Mohan and distributing them freely, we nourish both body and spirit.
-
-      During pandemics, floods, and natural calamities, Sri Sri Chintamoni Kunja has distributed over one lakh meals across Nadia district. Today, our Zero Starvation Movement continues daily, ensuring that no visitor, student, or pilgrim leaves Nabadwip Dham with an empty stomach.
-    `,
-  },
-  {
-    id: "art-of-sattvic-living",
-    title: "The Art of Sattvic Living: Ancient Dinacharya for Modern Peace of Mind",
-    bengali: "সাত্ত্বিক জীবনধারা ও মানসিক প্রশান্তি",
-    category: "Art of Living",
-    date: "05 February 2026",
-    readTime: "8 min read",
-    author: "Dr. K. Chakraborty",
-    image: A.golden,
-    summary:
-      "Harmonizing daily routines, dietary discipline, mindful breathing, and personal mantra meditation to cultivate emotional equanimity in a fast-paced world.",
-    content: `
-      Modern life is inundated with cognitive overload, sensory distraction, and chronic stress. The Vaishnav science of 'Dinacharya' (daily sacred rhythm) provides a timeless sanctuary for mental balance.
-
-      Beginning with early morning reflection (Brahma Muhurta), cultivating mindful breathing during mantra japa, partaking of wholesome sattvic nutrition, and dedicating at least one action every day to selfless service (seva) creates psychological resilience and inner stillness.
-    `,
-  },
+const CATEGORIES = [
+  "All Articles",
+  "Heritage & History",
+  "Vaishnav Philosophy",
+  "Social Reform",
+  "Humanitarian Seva",
+  "Art of Living",
+  "Katha & Philosophy",
 ];
 
-const CATEGORIES = ["All Articles", "Heritage & History", "Vaishnav Philosophy", "Social Reform", "Humanitarian Seva", "Art of Living"];
+const formatBlog = (b) => ({
+  id: b._id || b.id || b.title,
+  title: b.title,
+  bengali: b.bengali || "",
+  category: b.category || "Vaishnav Philosophy",
+  date: new Date(b.createdAt || Date.now()).toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  }),
+  readTime: b.readTime || "5 min read",
+  author: b.author || "Sri Sri Chintamoni Kunja Foundation",
+  image: b.image || A.altar,
+  summary: b.excerpt || (b.content ? b.content.slice(0, 160) + "..." : ""),
+  content: b.content || "",
+});
 
 export default function Blog() {
   const [activeCategory, setActiveCategory] = useState("All Articles");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedArticle, setSelectedArticle] = useState(null);
-  const [articleList, setArticleList] = useState(ARTICLES);
+  const [articleList, setArticleList] = useState(() => INITIAL_BLOGS.map(formatBlog));
 
-    useEffect(() => {
-      async function loadDynamicBlogs() {
-        try {
-          const dynamicBlogs = await getBlogsAPI();
-          if (dynamicBlogs && dynamicBlogs.length > 0) {
-            const existingIds = new Set(ARTICLES.map((a) => a.id || a.title));
-            const newOnes = dynamicBlogs
-              .filter((b) => !existingIds.has(b._id) && !existingIds.has(b.title))
-              .map((b) => ({
-                id: b._id,
-                title: b.title,
-                bengali: b.bengali,
-                category: b.category,
-                date: new Date(b.createdAt || Date.now()).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }),
-                readTime: b.readTime || "5 min read",
-                author: b.author || "Sri Sri Chintamoni Kunja",
-                image: b.image || A.altar,
-                summary: b.excerpt || (b.content ? b.content.slice(0, 160) + "..." : ""),
-                content: b.content,
-              }));
-            if (newOnes.length > 0) {
-              setArticleList([...newOnes, ...ARTICLES]);
-            }
-          }
-        } catch (e) { }
+  const loadDynamicBlogs = async () => {
+    try {
+      const dynamicBlogs = await getBlogsAPI();
+      if (dynamicBlogs && Array.isArray(dynamicBlogs) && dynamicBlogs.length > 0) {
+        setArticleList(dynamicBlogs.map(formatBlog));
       }
-      loadDynamicBlogs();
-    }, []);
+    } catch (e) {
+      console.warn("Failed to load blogs from server:", e);
+    }
+  };
 
-    const filtered = articleList.filter((art) => {
-      const matchesCat = activeCategory === "All Articles" || art.category === activeCategory;
-      const matchesSearch =
-        art.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+  useEffect(() => {
+    loadDynamicBlogs();
+
+    const handleBlogUpdate = () => loadDynamicBlogs();
+    window.addEventListener("ckf_blog_updated", handleBlogUpdate);
+    window.addEventListener("storage", handleBlogUpdate);
+
+    return () => {
+      window.removeEventListener("ckf_blog_updated", handleBlogUpdate);
+      window.removeEventListener("storage", handleBlogUpdate);
+    };
+  }, []);
+
+  const filtered = articleList.filter((art) => {
+    const matchesCat = activeCategory === "All Articles" || art.category === activeCategory;
+    const matchesSearch =
+      art.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (art.summary && art.summary.toLowerCase().includes(searchQuery.toLowerCase()));
-      return matchesCat && matchesSearch;
-    });
+    return matchesCat && matchesSearch;
+  });
 
     return (
       <div className="bg-[#FFF9ED] font-[Inter] text-[#39251D] antialiased">

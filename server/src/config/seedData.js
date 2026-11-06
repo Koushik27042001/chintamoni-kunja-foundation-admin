@@ -217,35 +217,100 @@ const seedInitialData = async () => {
       console.log('🌱 Seeded initial events');
     }
 
-    // 5. Seed Blogs if empty
-    const blogCount = await Blog.countDocuments();
-    if (blogCount === 0) {
-      await Blog.create([
-        {
-          title: 'Sri Ramsundar Vidyalankar: Academic Pioneer & Social Reformer of 19th-Century Bengal',
-          bengali: 'শ্রী রামসুন্দর বিদ্যালঙ্কার ও সমাজ সংস্কার',
-          category: 'Heritage & History',
-          excerpt: 'A contemporary of Raja Ram Mohan Roy, Sri Ramsundar Vidyalankar established Sri Sri Chintamoni Kunja in 1809. Discover how he used Gaudiya Vaishnav philosophy to advocate for mass literacy and oppose caste discrimination.',
-          content: 'Sri Ramsundar Vidyalankar, affectionately and reverently known as Sri Chintamoni Goswami by the Vaishnav assembly, stands as one of the most luminous yet humble personalities of the Bengal Renaissance...',
-          author: 'Seva Research Desk',
-          readTime: '7 min read',
-          image: '/assets/Nabadwip Dham Temple in Sunshine.png',
-          status: 'published',
-        },
-        {
-          title: 'The Daily Practice of Mahamantra Japa: Science and Spirit of Sacred Sound',
-          bengali: 'মহামন্ত্র জপ সাধনা ও দিব্য ধ্বনিবিজ্ঞান',
-          category: 'Katha & Philosophy',
-          excerpt: 'How meditating upon the sixteen holy names cleanses the mirror of the mind (ceto-darpana-marjanam) and restores spiritual poise amid modern stress.',
-          content: 'In the Kali Santarana Upanishad, the sage Narada inquires from Lord Brahma how living entities can transcend the anxieties and turbulence of the age of conflict...',
-          author: 'Sri Sri Chintamoni Kunja Ashram',
-          readTime: '5 min read',
-          image: '/assets/Golden Kirtan by the Sacred Ghats.png',
-          status: 'published',
-        },
-      ]);
-      console.log('🌱 Seeded initial blogs');
+    // 5. Seed / Sync Blogs with Full Spiritual & Historical Content
+    const fullBlogs = [
+      {
+        title: 'Sri Ramsundar Vidyalankar: Academic Pioneer & Social Reformer of 19th-Century Bengal',
+        bengali: 'শ্রী রামসুন্দর বিদ্যালঙ্কার ও সমাজ সংস্কার',
+        category: 'Heritage & History',
+        excerpt: 'A contemporary of Raja Ram Mohan Roy, Sri Ramsundar Vidyalankar established Sri Sri Chintamoni Kunja in 1809. Discover how he used Gaudiya Vaishnav philosophy to advocate for mass literacy and oppose medieval caste discrimination.',
+        content: `Sri Ramsundar Vidyalankar, affectionately and reverently known as Sri Chintamoni Goswami by the Vaishnav assembly, stands as one of the most luminous yet humble personalities of the Bengal Renaissance. While Raja Ram Mohan Roy worked through institutional and socio-legal frameworks in Calcutta, Vidyalankar focused on grassroots transformation in the holy town of Nabadwip Dham.
+
+In 1809, he established Sri Sri Chintamoni Kunja as an academic and spiritual center. Believing firmly that Lord Sri Krishna Chaitanya Dev was the greatest social reformer of his era, Vidyalankar preached that true devotion cannot coexist with untouchability, racism, or caste prejudice.
+
+He opened the doors of scriptural learning to students from all social backgrounds, initiating educational drives that continue today through our Foundation's Academic Help initiative, which has supported over 2,000 students.`,
+        author: 'Seva Research Desk',
+        readTime: '7 min read',
+        image: '/assets/Nabadwip Dham Temple in Sunshine.png',
+        status: 'published',
+      },
+      {
+        title: 'The Mystery of Sri Radha Sakti & Gadadhar Pandit: The Pinnacle of Radha-Dasyam',
+        bengali: 'শ্রী রাধা শক্তি ও গদাধর পণ্ডিত প্রভুর তত্ত্ব',
+        category: 'Vaishnav Philosophy',
+        excerpt: 'In the Madhva Gaudiya Sampradaya, Sri Gadadhar Pandit Prabhu is revered as the internal hladini potency (Sri Radha Sakti) of the Supreme Lord. An insightful dive into the mood of unconditional devotional servitude.',
+        content: `Among the Pancha Tattva, Lord Sri Gadadhar Pandit Prabhu holds an esoteric, intimate position. Classical Gaudiya texts describe him as the avatar of Srimati Radharani's transcendental devotional mood and internal pleasure potency (hladini-shakti).
+
+In sacred Nabadwip Dham, Mahaprabhu and Gadadhar Pandit demonstrated the inseparable harmony of divine love. The Sri Radha Sakti Gadadhar Pandit Pariwar maintains this unbroken mood of 'Radha-dasyam'—the humble desire to serve the divine pleasure of Srimati Radharani and Sri Krishna through sincere Harinam Sankirtan and self-effacing compassion for all living beings.`,
+        author: 'Acharya Pariwar Desk',
+        readTime: '9 min read',
+        image: '/assets/Radha and Krishna by the Riverside.png',
+        status: 'published',
+      },
+      {
+        title: 'Beyond Caste & Feudal Mindset: How Lord Chaitanya’s Shikshastakam Redefined Humanity',
+        bengali: 'শিক্ষ অষ্টকম ও সার্বজনীন সাম্য',
+        category: 'Social Reform',
+        excerpt: 'Tṛṇād api sunīcena taror api sahiṣṇunā—unpacking how Lord Chaitanya\'s eight verses dismantled centuries of feudal orthodoxy and restored spiritual equality to every soul regardless of birth.',
+        content: `Lord Sri Krishna Chaitanya Mahaprabhu left behind eight verses of sublime spiritual instruction known as the Shikshastakam. These verses are not mere poetic devotion; they form the manifesto of a spiritual revolution.
+
+The third verse instructs one to become humbler than a blade of grass, more tolerant than a tree, and ready to offer all respect to others without expecting prestige. In an era marked by rigid caste hierarchies, Mahaprabhu embraced Haridas Thakur, appointed Ramananda Raya as an exalted teacher, and declared that anyone who knows the science of Krishna is a bona fide spiritual guide.
+
+At Sri Sri Chintamoni Kunja, we guard this egalitarian mandate fiercely, rejecting medieval feudal prejudice and maintaining unconditional service for every pilgrim.`,
+        author: 'Spiritual Council',
+        readTime: '6 min read',
+        image: '/assets/Golden Kirtan by the Sacred Ghats.png',
+        status: 'published',
+      },
+      {
+        title: 'Zero Starvation as Divine Seva: The Sacred Science of Anna Daan in Nabadwip Dham',
+        bengali: 'ক্ষুধামুক্ত সমাজের ব্রত ও প্রসাদ সেবা',
+        category: 'Humanitarian Seva',
+        excerpt: 'Why sanctified food distribution (prasadam) is considered the highest form of compassion in Vedic culture, and how our Zero Starvation Movement feeds pilgrims daily without distinction.',
+        content: `In Vaishnav tradition, food is not merely caloric fuel; it is prasad—the sanctified mercy of the Divine. By offering nutritious, vegetarian foodstuffs prepared with devotion to Lord Madan Mohan and distributing them freely, we nourish both body and spirit.
+
+During pandemics, floods, and natural calamities, Sri Sri Chintamoni Kunja has distributed over one lakh meals across Nadia district. Today, our Zero Starvation Movement continues daily, ensuring that no visitor, student, or pilgrim leaves Nabadwip Dham with an empty stomach.`,
+        author: 'Foundation Seva Desk',
+        readTime: '5 min read',
+        image: '/assets/Devotional Procession Before Lord Jagannath.png',
+        status: 'published',
+      },
+      {
+        title: 'The Art of Sattvic Living: Ancient Dinacharya for Modern Peace of Mind',
+        bengali: 'সাত্ত্বিক জীবনধারা ও মানসিক প্রশান্তি',
+        category: 'Art of Living',
+        excerpt: 'Harmonizing daily routines, dietary discipline, mindful breathing, and personal mantra meditation to cultivate emotional equanimity in a fast-paced world.',
+        content: `Modern life is inundated with cognitive overload, sensory distraction, and chronic stress. The Vaishnav science of 'Dinacharya' (daily sacred rhythm) provides a timeless sanctuary for mental balance.
+
+Beginning with early morning reflection (Brahma Muhurta), cultivating mindful breathing during mantra japa, partaking of wholesome sattvic nutrition, and dedicating at least one action every day to selfless service (seva) creates psychological resilience and inner stillness.`,
+        author: 'Dr. K. Chakraborty',
+        readTime: '8 min read',
+        image: '/assets/Krishna’s Golden Riverside Devotion.png',
+        status: 'published',
+      },
+      {
+        title: 'The Daily Practice of Mahamantra Japa: Science and Spirit of Sacred Sound',
+        bengali: 'মহামন্ত্র জপ সাধনা ও দিব্য ধ্বনিবিজ্ঞান',
+        category: 'Katha & Philosophy',
+        excerpt: 'How meditating upon the sixteen holy names cleanses the mirror of the mind (ceto-darpana-marjanam) and restores spiritual poise amid modern stress.',
+        content: `In the Kali Santarana Upanishad, the sage Narada inquires from Lord Brahma how living entities can transcend the anxieties and turbulence of the age of conflict. Lord Brahma instructs him to constantly chant the sixteen holy names: Hare Krishna, Hare Krishna, Krishna Krishna, Hare Hare / Hare Rama, Hare Rama, Rama Rama, Hare Hare.
+
+Sound is the subtle blueprint of consciousness. When divine vibration permeates neuro-cognitive pathways, it dislodges deeply embedded impressions of anxiety, ego, and despair. At Chintamoni Kunja, daily communal and private Japa creates an atmosphere of spiritual serenity, bringing inner peace to thousands of practitioners.`,
+        author: 'Sri Sri Chintamoni Kunja Ashram',
+        readTime: '5 min read',
+        image: '/assets/Golden Kirtan by the Sacred Ghats.png',
+        status: 'published',
+      },
+    ];
+
+    for (const b of fullBlogs) {
+      await Blog.findOneAndUpdate(
+        { title: b.title },
+        { $set: b },
+        { upsert: true, new: true }
+      );
     }
+    console.log(`🌱 Seeded & verified ${fullBlogs.length} complete articles in MongoDB`);
 
     // 6. Seed Gallery if empty
     const galleryCount = await Gallery.countDocuments();
