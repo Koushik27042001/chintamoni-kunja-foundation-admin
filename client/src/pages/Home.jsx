@@ -167,7 +167,33 @@ function Hero() {
 
 /* ---------- 02 history since 1809 ---------- */
 function History() {
-  const steps = [["1809", "Sri Chintamoni Kunja is established by Sri Ramsundar Vidyalankar"], ["An age of reform", "A contemporary of Raja Ram Mohan Roy, the renowned social reformer of Bengal"], ["The Pariwar", "The Sri Radha Sakti Gadadhar Pandit Pariwar, of the Madhva Gaudiya Vaishnav Sampradaya"], ["Today", "The Foundation carries devotion, learning and seva forward"]];
+  const steps = [
+    {
+      badge: "ESTABLISHED",
+      num: "01",
+      title: "1809",
+      desc: "Sri Chintamoni Kunja is established by Sri Ramsundar Vidyalankar",
+    },
+    {
+      badge: "SOCIAL REFORM",
+      num: "02",
+      title: "An age of reform",
+      desc: "A contemporary of Raja Ram Mohan Roy, the renowned social reformer of Bengal",
+    },
+    {
+      badge: "GAUDIYA LINEAGE",
+      num: "03",
+      title: "The Pariwar",
+      desc: "The Sri Radha Sakti Gadadhar Pandit Pariwar, of the Madhva Gaudiya Vaishnav Sampradaya",
+    },
+    {
+      badge: "LIVING SEVA",
+      num: "04",
+      title: "Today",
+      desc: "The Foundation carries devotion, learning and seva forward",
+    },
+  ];
+
   return (
     <section id="history" className="relative overflow-hidden bg-[#EDE0C9]/60 py-24" style={{ backgroundImage: "radial-gradient(rgba(120,55,43,.05) 1px,transparent 1px)", backgroundSize: "22px 22px" }}>
       <Om pos="-left-10 top-0" />
@@ -180,18 +206,85 @@ function History() {
             <Lotus className="!justify-start my-6" />
             <p className="font-[Inter] leading-relaxed text-[#39251D]/90">Sri Sri Chintamoni Kunja was established in 1809 by Sri Ramsundar Vidyalankar (Sri Chintamoni Goswami), an eminent academic personality and a contemporary of Raja Ram Mohan Roy, the renowned social reformer of Bengal.</p>
             <p className="mt-4 font-[Inter] leading-relaxed text-[#39251D]/90">We are a unique Sri Radha Sakti Gadadhar Pandit Pariwar sect that belongs to the Madhva Gaudiya Vaishnav Sampradaya. We also admire Lord Srikrishna Chaitanya and Lord Gadadhar Pandit Prabhu.</p>
-            <div className="mt-7"><Cta href="#guru">Discover Our History</Cta></div>
+            <div className="mt-7"><Cta href="/about-us">Discover Our History</Cta></div>
           </Reveal>
         </div>
-        {/* horizontal timeline with line-drawing animation */}
-        <div className="mt-20 overflow-x-auto pb-4">
-          <div className="relative grid min-w-[760px] grid-cols-4 gap-6 pt-8">
-            <motion.div initial={{ scaleX: 0 }} whileInView={{ scaleX: 1 }} viewport={{ once: true }} transition={{ duration: 2, ease: "easeInOut" }} className="absolute left-0 right-0 top-[15px] h-px origin-left bg-[#C59A52]" />
-            {steps.map(([t, d], k) => (
-              <Reveal key={t} delay={k * 0.2} className="relative">
-                <span className="absolute -top-8 left-0 h-3 w-3 rounded-full border-2 border-[#C59A52] bg-[#FFF9ED]" />
-                <p className="text-2xl font-bold text-[#D98232]" style={serif}>{t}</p>
-                <p className="mt-1 font-[Inter] text-sm leading-relaxed text-[#39251D]/80">{d}</p>
+
+        {/* ==============================================================
+            Responsive Timeline Presentation
+        ============================================================== */}
+
+        {/* 1. Mobile-Specific Vertical Sacred Stepper (< md screens) */}
+        <div className="mt-14 block md:hidden">
+          <div className="relative space-y-6">
+            {/* Connecting Vertical Sacred Line */}
+            <div className="absolute bottom-4 left-5 top-4 w-0.5 bg-gradient-to-b from-[#D98232] via-[#C59A52] to-[#78372B]" />
+
+            {steps.map((step, k) => (
+              <Reveal key={step.title} delay={k * 0.12} className="relative flex items-start">
+                {/* Stepper Node Icon */}
+                <div className="relative z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 border-[#D98232] bg-[#FFF9ED] shadow-md">
+                  <span className="font-serif text-xs font-bold text-[#78372B]">{step.num}</span>
+                </div>
+
+                {/* Mobile Content Card */}
+                <div className="ml-4 flex-1 rounded-2xl border border-[#C59A52]/40 bg-gradient-to-br from-[#FFF9ED] via-white to-[#FFF9ED] p-4.5 shadow-sm transition-all hover:border-[#D98232] hover:shadow-md">
+                  <div className="flex items-center justify-between border-b border-[#C59A52]/20 pb-2">
+                    <span className="font-[Inter] text-[10px] font-bold uppercase tracking-widest text-[#D98232]">
+                      {step.badge}
+                    </span>
+                    <span className="font-serif text-xs italic text-[#78372B]/70">Pariwar Heritage</span>
+                  </div>
+
+                  <h3 className="mt-2.5 font-serif text-2xl font-bold text-[#78372B]" style={serif}>
+                    {step.title}
+                  </h3>
+
+                  <p className="mt-1.5 font-[Inter] text-sm leading-relaxed text-[#39251D]/85">
+                    {step.desc}
+                  </p>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+
+        {/* 2. Desktop / Tablet Responsive Grid (>= md screens) */}
+        <div className="mt-20 hidden md:block">
+          <div className="relative grid grid-cols-2 gap-6 pt-8 lg:grid-cols-4">
+            {/* Horizontal Line across columns */}
+            <motion.div
+              initial={{ scaleX: 0 }}
+              whileInView={{ scaleX: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 1.6, ease: "easeInOut" }}
+              className="absolute left-0 right-0 top-[15px] h-0.5 origin-left bg-gradient-to-r from-[#D98232] via-[#C59A52] to-[#78372B]"
+            />
+
+            {steps.map((step, k) => (
+              <Reveal key={step.title} delay={k * 0.15} className="group relative flex flex-col justify-between rounded-2xl border border-[#C59A52]/40 bg-white/60 p-5 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-[#D98232] hover:bg-white hover:shadow-lg">
+                <div>
+                  {/* Timeline Node Marker */}
+                  <div className="absolute -top-[23px] left-5 flex h-4 w-4 items-center justify-center rounded-full border-2 border-[#D98232] bg-[#FFF9ED] shadow-sm transition-transform group-hover:scale-125">
+                    <span className="h-1.5 w-1.5 rounded-full bg-[#D98232]" />
+                  </div>
+
+                  <span className="inline-block rounded-full bg-[#EDE0C9]/60 px-2.5 py-0.5 font-[Inter] text-[10px] font-bold tracking-wider text-[#D98232]">
+                    {step.badge}
+                  </span>
+
+                  <h3 className="mt-3 font-serif text-2xl font-bold text-[#78372B]" style={serif}>
+                    {step.title}
+                  </h3>
+
+                  <p className="mt-2 font-[Inter] text-sm leading-relaxed text-[#39251D]/85">
+                    {step.desc}
+                  </p>
+                </div>
+
+                <div className="mt-4 border-t border-[#C59A52]/20 pt-2 text-right">
+                  <span className="font-serif text-xs italic text-[#C59A52]">{step.num}</span>
+                </div>
               </Reveal>
             ))}
           </div>
