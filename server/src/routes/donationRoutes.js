@@ -15,3 +15,4 @@ router.get('/stats/summary', getDonationStats);
 router.get('/:receiptNo', getDonationByReceiptNo);
 
 module.exports = router;
+

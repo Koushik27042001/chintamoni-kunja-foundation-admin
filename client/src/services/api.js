@@ -4,7 +4,7 @@
  * Provides resilient, automatic local storage fallback if the server or database is offline.
  */
 
-const API_BASE = '/api';
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api';
 
 // Realistic initial fallback data
 export const INITIAL_MEMBERS = [
@@ -546,3 +546,4 @@ export async function updateContactStatusAPI(id, status, replyNotes) {
   } catch (e) {}
   return { success: true };
 }
+

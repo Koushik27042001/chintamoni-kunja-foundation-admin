@@ -267,3 +267,4 @@ const seedInitialData = async () => {
 };
 
 module.exports = seedInitialData;
+

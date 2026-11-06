@@ -13,3 +13,4 @@ router.route('/')
 router.post('/:agentCode/settle', settleAgentCollections);
 
 module.exports = router;
+

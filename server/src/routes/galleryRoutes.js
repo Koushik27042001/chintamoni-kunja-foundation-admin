@@ -14,3 +14,4 @@ router.route('/:id')
   .delete(deleteGalleryItem);
 
 module.exports = router;
+

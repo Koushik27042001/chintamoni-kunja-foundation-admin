@@ -42,3 +42,4 @@ const collectionAgentSchema = new mongoose.Schema(
 );
 
 module.exports = mongoose.model('CollectionAgent', collectionAgentSchema);
+
