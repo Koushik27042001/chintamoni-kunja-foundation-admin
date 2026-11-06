@@ -517,9 +517,18 @@ export default function AdminPanel() {
   const [newGallery, setNewGallery] = useState({
     title: "",
     category: "Temple & Altar",
-    image: "/assets/Opulent Gaura-Nitai and Madan Mohan Altar.png",
+    image: "",
     caption: "",
   });
+
+  // Gallery Media Upload & Management States
+  const [galleryUploadMode, setGalleryUploadMode] = useState("device"); // "device" | "url"
+  const [galleryFilePreview, setGalleryFilePreview] = useState(null);
+  const [galleryFileInfo, setGalleryFileInfo] = useState(null); // { name, size, dimensions }
+  const [galleryDragOver, setGalleryDragOver] = useState(false);
+  const [galleryFilterCategory, setGalleryFilterCategory] = useState("All");
+  const [galleryDarshanModal, setGalleryDarshanModal] = useState(null);
+  const galleryFileInputRef = useRef(null);
 
   // Listen for session expiry custom events
   useEffect(() => {
@@ -875,10 +884,81 @@ export default function AdminPanel() {
     }
   };
 
+  /* ---------------------------------------------------------------
+     Gallery Media Upload & Optimization Handlers
+  --------------------------------------------------------------- */
+  const handleGalleryImageUpload = (file) => {
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      alert("Please select a valid image file (PNG, JPG, WEBP, AVIF, GIF).");
+      return;
+    }
+
+    const sizeKb = (file.size / 1024).toFixed(1);
+    const sizeMb = (file.size / (1024 * 1024)).toFixed(2);
+    const formattedSize = file.size > 1024 * 1024 ? `${sizeMb} MB` : `${sizeKb} KB`;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const dataUrl = e.target.result;
+      const img = new Image();
+      img.onload = () => {
+        // High-fidelity responsive canvas optimization
+        const MAX_WIDTH = 1600;
+        const MAX_HEIGHT = 1600;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > MAX_WIDTH || height > MAX_HEIGHT) {
+          if (width > height) {
+            height = Math.round((height * MAX_WIDTH) / width);
+            width = MAX_WIDTH;
+          } else {
+            width = Math.round((width * MAX_HEIGHT) / height);
+            height = MAX_HEIGHT;
+          }
+        }
+
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, width, height);
+
+        // High quality JPEG encoding
+        const optimizedDataUrl = canvas.toDataURL("image/jpeg", 0.88);
+
+        setNewGallery((prev) => ({
+          ...prev,
+          image: optimizedDataUrl,
+          title: prev.title || file.name.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " "),
+        }));
+
+        setGalleryFilePreview(optimizedDataUrl);
+        setGalleryFileInfo({
+          name: file.name,
+          size: formattedSize,
+          dimensions: `${img.width} × ${img.height} px (Optimized to ${width} × ${height} px)`,
+        });
+      };
+      img.src = dataUrl;
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleClearGalleryFile = () => {
+    setGalleryFilePreview(null);
+    setGalleryFileInfo(null);
+    setNewGallery((prev) => ({ ...prev, image: "" }));
+    if (galleryFileInputRef.current) {
+      galleryFileInputRef.current.value = "";
+    }
+  };
+
   const handleAddGallery = async (e) => {
     e.preventDefault();
     if (!newGallery.title || !newGallery.image) {
-      alert("Title and image path required.");
+      alert("Please provide both an image title and select/upload an image.");
       return;
     }
     const created = await createGalleryAPI(newGallery);
@@ -886,10 +966,13 @@ export default function AdminPanel() {
     setNewGallery({
       title: "",
       category: "Temple & Altar",
-      image: "/assets/Opulent Gaura-Nitai and Madan Mohan Altar.png",
+      image: "",
       caption: "",
     });
-    showAlert("Image added to gallery!");
+    setGalleryFilePreview(null);
+    setGalleryFileInfo(null);
+    if (galleryFileInputRef.current) galleryFileInputRef.current.value = "";
+    showAlert("✨ Sacred photograph uploaded and added to the gallery!");
   };
 
   const handleDeleteGallery = async (id) => {
@@ -3837,119 +3920,403 @@ export default function AdminPanel() {
           )}
 
           {/* ==============================================================
-              TAB 7: GALLERY MEDIA MANAGER
+              TAB 7: GALLERY MEDIA MANAGER (Local Device Upload & CMS)
           ============================================================== */}
           {activeTab === "gallery" && (
             <div className="space-y-8">
+              {/* Gallery Header & Category Filters */}
               <div className="flex flex-col justify-between gap-4 rounded-2xl border border-[#C59A52]/30 bg-[#16100E]/90 p-6 shadow-xl sm:flex-row sm:items-center">
                 <div>
-                  <h2
-                    className="font-serif text-2xl font-bold text-[#E8B94F]"
-                    style={{ fontFamily: "'Cormorant Garamond', serif" }}
-                  >
-                    Gallery Media Manager
-                  </h2>
+                  <div className="flex items-center gap-2">
+                    <ImageIcon size={22} className="text-[#E8B94F]" />
+                    <h2
+                      className="font-serif text-2xl font-bold text-[#E8B94F]"
+                      style={{ fontFamily: "'Cormorant Garamond', serif" }}
+                    >
+                      Gallery Media &amp; Darshan Manager
+                    </h2>
+                  </div>
                   <p className="mt-0.5 text-xs text-[#EDE0C9]/60">
-                    Manage photographs and sacred visuals across temple sanctum, altar, festivals, and seva.
+                    Upload sacred photographs directly from your local device or media library to display on the foundation website.
                   </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="rounded-xl border border-[#C59A52]/30 bg-[#251A16] px-3.5 py-1.5 font-mono text-xs font-bold text-[#E8B94F]">
+                    {gallery.length} Sacred Visuals Active
+                  </span>
                 </div>
               </div>
 
+              {/* Category Filter Pills */}
+              <div className="flex flex-wrap gap-2">
+                {[
+                  "All",
+                  "Temple & Altar",
+                  "Festivals & Utsavs",
+                  "Anna Daan Seva",
+                  "River Ghats & Dham",
+                  "Devotees & Kirtan",
+                ].map((cat) => (
+                  <button
+                    key={cat}
+                    onClick={() => setGalleryFilterCategory(cat)}
+                    className={`rounded-xl px-3.5 py-1.5 text-xs font-bold transition ${
+                      galleryFilterCategory === cat
+                        ? "border border-[#E8B94F]/60 bg-[#971515] text-[#FFF9ED] shadow-md"
+                        : "border border-[#C59A52]/20 bg-[#16100E] text-[#EDE0C9]/70 hover:bg-[#251A16] hover:text-[#FFF9ED]"
+                    }`}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
+
               <div className="grid gap-8 lg:grid-cols-12">
-                <div className="rounded-2xl border border-[#C59A52]/30 bg-[#16100E]/90 p-6 shadow-xl lg:col-span-4">
-                  <h3 className="font-serif text-lg font-bold text-[#E8B94F] border-b border-[#C59A52]/20 pb-3">
-                    Add Photo to Gallery
-                  </h3>
+                {/* Left 5 Cols: Add Photo Form with Local Device Upload Dropzone */}
+                <div className="rounded-2xl border border-[#C59A52]/30 bg-[#16100E]/90 p-6 shadow-xl lg:col-span-5">
+                  <div className="flex items-center justify-between border-b border-[#C59A52]/20 pb-3">
+                    <h3 className="font-serif text-lg font-bold text-[#E8B94F]">Add Sacred Photograph</h3>
+                    <span className="text-[11px] font-semibold text-[#EDE0C9]/50">Direct Device Upload</span>
+                  </div>
+
                   <form onSubmit={handleAddGallery} className="mt-4 space-y-4">
+                    {/* Title */}
                     <div>
-                      <label className="block text-xs font-bold text-[#E8B94F]">Title *</label>
+                      <label className="block text-xs font-bold text-[#E8B94F]">
+                        Photograph Title <span className="text-rose-400">*</span>
+                      </label>
                       <input
                         type="text"
                         required
                         value={newGallery.title}
                         onChange={(e) => setNewGallery({ ...newGallery, title: e.target.value })}
-                        placeholder="e.g. Gaura Purnima Aarti"
-                        className="mt-1 w-full rounded-xl border border-[#C59A52]/30 bg-[#0E0A09] p-2.5 text-xs font-semibold text-[#FFF9ED] focus:outline-none"
+                        placeholder="e.g. Gaura Purnima Sandhya Darshan"
+                        className="mt-1 w-full rounded-xl border border-[#C59A52]/30 bg-[#0E0A09] p-2.5 text-xs font-semibold text-[#FFF9ED] placeholder-[#EDE0C9]/30 focus:border-[#E8B94F] focus:outline-none"
                       />
                     </div>
+
+                    {/* Category */}
                     <div>
                       <label className="block text-xs font-bold text-[#E8B94F]">Category</label>
                       <select
                         value={newGallery.category}
                         onChange={(e) => setNewGallery({ ...newGallery, category: e.target.value })}
-                        className="mt-1 w-full rounded-xl border border-[#C59A52]/30 bg-[#0E0A09] p-2.5 text-xs text-[#FFF9ED] focus:outline-none"
+                        className="mt-1 w-full rounded-xl border border-[#C59A52]/30 bg-[#0E0A09] p-2.5 text-xs text-[#FFF9ED] focus:border-[#E8B94F] focus:outline-none"
                       >
-                        <option className="bg-[#16100E]">Temple & Altar</option>
-                        <option className="bg-[#16100E]">Festivals & Utsavs</option>
+                        <option className="bg-[#16100E]">Temple &amp; Altar</option>
+                        <option className="bg-[#16100E]">Festivals &amp; Utsavs</option>
                         <option className="bg-[#16100E]">Anna Daan Seva</option>
-                        <option className="bg-[#16100E]">River Ghats & Dham</option>
-                        <option className="bg-[#16100E]">Devotees & Kirtan</option>
+                        <option className="bg-[#16100E]">River Ghats &amp; Dham</option>
+                        <option className="bg-[#16100E]">Devotees &amp; Kirtan</option>
                       </select>
                     </div>
+
+                    {/* Upload Source Mode Toggle */}
                     <div>
-                      <label className="block text-xs font-bold text-[#E8B94F]">Image Path / URL *</label>
-                      <input
-                        type="text"
-                        required
-                        value={newGallery.image}
-                        onChange={(e) => setNewGallery({ ...newGallery, image: e.target.value })}
-                        placeholder="/assets/image.png or https://..."
-                        className="mt-1 w-full rounded-xl border border-[#C59A52]/30 bg-[#0E0A09] p-2.5 font-mono text-xs text-[#FFF9ED] focus:outline-none"
-                      />
+                      <label className="block text-xs font-bold text-[#E8B94F] mb-1.5">
+                        Image Source <span className="text-rose-400">*</span>
+                      </label>
+                      <div className="grid grid-cols-2 gap-2 rounded-xl border border-[#C59A52]/25 bg-[#120B09] p-1">
+                        <button
+                          type="button"
+                          onClick={() => setGalleryUploadMode("device")}
+                          className={`flex items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-bold transition ${
+                            galleryUploadMode === "device"
+                              ? "bg-gradient-to-r from-[#971515] to-[#78372B] text-white shadow-sm"
+                              : "text-[#EDE0C9]/70 hover:text-white"
+                          }`}
+                        >
+                          <Upload size={13} />
+                          <span>Upload From Media</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setGalleryUploadMode("url")}
+                          className={`flex items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-bold transition ${
+                            galleryUploadMode === "url"
+                              ? "bg-gradient-to-r from-[#971515] to-[#78372B] text-white shadow-sm"
+                              : "text-[#EDE0C9]/70 hover:text-white"
+                          }`}
+                        >
+                          <ExternalLink size={13} />
+                          <span>Web URL / Path</span>
+                        </button>
+                      </div>
                     </div>
+
+                    {/* Mode A: Local Device Upload Dropzone */}
+                    {galleryUploadMode === "device" && (
+                      <div>
+                        {/* Hidden native file input */}
+                        <input
+                          type="file"
+                          ref={galleryFileInputRef}
+                          accept="image/png, image/jpeg, image/jpg, image/webp, image/avif, image/gif"
+                          onChange={(e) => handleGalleryImageUpload(e.target.files?.[0])}
+                          className="hidden"
+                        />
+
+                        {!galleryFilePreview ? (
+                          /* Dropzone Empty State */
+                          <div
+                            onDragOver={(e) => {
+                              e.preventDefault();
+                              setGalleryDragOver(true);
+                            }}
+                            onDragLeave={() => setGalleryDragOver(false)}
+                            onDrop={(e) => {
+                              e.preventDefault();
+                              setGalleryDragOver(false);
+                              if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                                handleGalleryImageUpload(e.dataTransfer.files[0]);
+                              }
+                            }}
+                            onClick={() => galleryFileInputRef.current?.click()}
+                            className={`group cursor-pointer rounded-2xl border-2 border-dashed p-6 text-center transition ${
+                              galleryDragOver
+                                ? "border-[#E8B94F] bg-[#2A1C18]"
+                                : "border-[#C59A52]/40 bg-[#0E0A09]/80 hover:border-[#E8B94F] hover:bg-[#1A1210]"
+                            }`}
+                          >
+                            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-[#C59A52]/40 bg-[#221613] text-[#E8B94F] shadow-inner transition group-hover:scale-105">
+                              <Upload size={24} />
+                            </div>
+                            <h4 className="mt-3 text-xs font-bold text-[#FFF9ED]">
+                              Upload from your device or media
+                            </h4>
+                            <p className="mt-1 text-[11px] text-[#EDE0C9]/60">
+                              Drag &amp; drop file here, or click to browse photos
+                            </p>
+                            <span className="mt-2 inline-block rounded-full bg-[#1F1411] px-2.5 py-0.5 text-[10px] font-medium text-[#C59A52] border border-[#C59A52]/20">
+                              PNG, JPG, WEBP, AVIF up to 10MB
+                            </span>
+                            <div className="mt-3">
+                              <button
+                                type="button"
+                                className="rounded-xl border border-[#C59A52]/40 bg-[#261A16] px-4 py-1.5 text-xs font-bold text-[#E8B94F] shadow transition group-hover:bg-[#971515] group-hover:text-white"
+                              >
+                                Browse Local Files
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          /* Dropzone Preview State */
+                          <div className="overflow-hidden rounded-2xl border border-[#C59A52]/40 bg-[#0E0A09] p-3 shadow-lg">
+                            <div className="relative overflow-hidden rounded-xl border border-[#C59A52]/20">
+                              <img
+                                src={galleryFilePreview}
+                                alt="Local Media Preview"
+                                className="h-44 w-full object-cover"
+                              />
+                              <div className="absolute top-2 right-2 flex items-center gap-1.5">
+                                <span className="rounded-full bg-emerald-950/90 px-2.5 py-0.5 text-[10px] font-bold text-emerald-300 border border-emerald-500/40">
+                                  ✓ Image Ready
+                                </span>
+                              </div>
+                            </div>
+
+                            {/* File Metadata */}
+                            {galleryFileInfo && (
+                              <div className="mt-2.5 space-y-1 text-xs">
+                                <div className="flex items-center justify-between text-[#FFF9ED] font-semibold truncate">
+                                  <span className="truncate">{galleryFileInfo.name}</span>
+                                  <span className="ml-2 font-mono text-[#E8B94F] shrink-0">
+                                    {galleryFileInfo.size}
+                                  </span>
+                                </div>
+                                <div className="text-[11px] text-[#EDE0C9]/60">
+                                  {galleryFileInfo.dimensions}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Action Buttons */}
+                            <div className="mt-3 flex items-center justify-between border-t border-[#C59A52]/20 pt-2.5">
+                              <button
+                                type="button"
+                                onClick={() => galleryFileInputRef.current?.click()}
+                                className="text-xs font-bold text-[#E8B94F] hover:underline"
+                              >
+                                Choose Another File
+                              </button>
+                              <button
+                                type="button"
+                                onClick={handleClearGalleryFile}
+                                className="text-xs font-bold text-rose-400 hover:underline"
+                              >
+                                Remove File
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Mode B: Direct Image URL / Path */}
+                    {galleryUploadMode === "url" && (
+                      <div>
+                        <label className="block text-xs font-bold text-[#E8B94F]">
+                          Image Path / Web URL <span className="text-rose-400">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={newGallery.image}
+                          onChange={(e) => {
+                            setNewGallery({ ...newGallery, image: e.target.value });
+                            setGalleryFilePreview(e.target.value);
+                          }}
+                          placeholder="/assets/image.png or https://..."
+                          className="mt-1 w-full rounded-xl border border-[#C59A52]/30 bg-[#0E0A09] p-2.5 font-mono text-xs text-[#FFF9ED] placeholder-[#EDE0C9]/30 focus:border-[#E8B94F] focus:outline-none"
+                        />
+                        {newGallery.image && (
+                          <div className="mt-2 overflow-hidden rounded-xl border border-[#C59A52]/30 bg-[#0E0A09]">
+                            <img
+                              src={newGallery.image}
+                              alt="URL Preview"
+                              className="h-32 w-full object-cover"
+                              onError={(e) => (e.target.style.display = "none")}
+                            />
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Caption / Description */}
                     <div>
-                      <label className="block text-xs font-bold text-[#E8B94F]">Caption / Notes</label>
+                      <label className="block text-xs font-bold text-[#E8B94F]">Caption / Spiritual Description</label>
                       <input
                         type="text"
                         value={newGallery.caption}
                         onChange={(e) => setNewGallery({ ...newGallery, caption: e.target.value })}
-                        placeholder="Devotees chanting Harinam..."
-                        className="mt-1 w-full rounded-xl border border-[#C59A52]/30 bg-[#0E0A09] p-2.5 text-xs text-[#FFF9ED] focus:outline-none"
+                        placeholder="e.g. Revered devotees offering evening Aarti..."
+                        className="mt-1 w-full rounded-xl border border-[#C59A52]/30 bg-[#0E0A09] p-2.5 text-xs text-[#FFF9ED] placeholder-[#EDE0C9]/30 focus:border-[#E8B94F] focus:outline-none"
                       />
                     </div>
+
                     <button
                       type="submit"
-                      className="w-full rounded-xl border border-[#C59A52]/50 bg-gradient-to-r from-[#971515] to-[#78372B] py-2.5 text-xs font-bold uppercase tracking-wider text-white shadow hover:from-[#B01818] hover:to-[#971515]"
+                      disabled={!newGallery.image}
+                      className="w-full rounded-xl border border-[#C59A52]/50 bg-gradient-to-r from-[#971515] to-[#78372B] py-3 text-xs font-bold uppercase tracking-wider text-white shadow-lg transition hover:from-[#B01818] hover:to-[#971515] disabled:opacity-40 disabled:pointer-events-none"
                     >
-                      Add Photo
+                      Upload &amp; Add Photo To Gallery
                     </button>
                   </form>
                 </div>
 
-                <div className="rounded-2xl border border-[#C59A52]/30 bg-[#16100E]/90 p-6 shadow-xl lg:col-span-8">
-                  <h3 className="font-serif text-lg font-bold text-[#E8B94F] border-b border-[#C59A52]/20 pb-3">
-                    Gallery Visuals ({gallery.length})
-                  </h3>
-                  <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-                    {gallery.map((g) => (
-                      <div
-                        key={g._id || g.title}
-                        className="group relative overflow-hidden rounded-xl border border-[#C59A52]/30 bg-[#1E1513]"
-                      >
-                        <img
-                          src={g.image}
-                          alt={g.title}
-                          className="h-44 w-full object-cover transition duration-300 group-hover:scale-105"
-                        />
-                        <div className="p-3">
-                          <div className="flex items-center justify-between">
-                            <span className="text-xs font-bold text-[#E8B94F]">{g.title}</span>
-                            <button
-                              onClick={() => handleDeleteGallery(g._id)}
-                              className="rounded p-1 text-rose-400 transition hover:bg-rose-950"
-                              title="Remove"
-                            >
-                              <Trash2 size={14} />
-                            </button>
-                          </div>
-                          <div className="mt-0.5 text-[10px] font-semibold text-[#EDE0C9]/60">{g.category}</div>
-                          {g.caption && <p className="mt-1 line-clamp-1 text-[11px] text-[#EDE0C9]/80">{g.caption}</p>}
-                        </div>
-                      </div>
-                    ))}
+                {/* Right 7 Cols: Gallery Visuals Directory */}
+                <div className="rounded-2xl border border-[#C59A52]/30 bg-[#16100E]/90 p-6 shadow-xl lg:col-span-7">
+                  <div className="flex items-center justify-between border-b border-[#C59A52]/20 pb-3">
+                    <h3 className="font-serif text-lg font-bold text-[#E8B94F]">
+                      Gallery Visuals ({
+                        gallery.filter((g) => galleryFilterCategory === "All" || g.category === galleryFilterCategory).length
+                      })
+                    </h3>
+                    <span className="text-xs text-[#EDE0C9]/60">
+                      Category: <strong>{galleryFilterCategory}</strong>
+                    </span>
                   </div>
+
+                  {gallery.filter((g) => galleryFilterCategory === "All" || g.category === galleryFilterCategory).length === 0 ? (
+                    <div className="p-12 text-center text-xs text-[#EDE0C9]/50">
+                      No visuals found under "{galleryFilterCategory}". Upload one from your media on the left.
+                    </div>
+                  ) : (
+                    <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+                      {gallery
+                        .filter((g) => galleryFilterCategory === "All" || g.category === galleryFilterCategory)
+                        .map((g) => (
+                          <div
+                            key={g._id || g.title}
+                            className="group relative overflow-hidden rounded-xl border border-[#C59A52]/30 bg-[#1E1513] transition hover:border-[#E8B94F]/60 hover:shadow-xl"
+                          >
+                            <div className="relative overflow-hidden">
+                              <img
+                                src={g.image}
+                                alt={g.title}
+                                className="h-44 w-full object-cover transition duration-300 group-hover:scale-105 cursor-pointer"
+                                onClick={() => setGalleryDarshanModal(g)}
+                              />
+                              <div className="absolute top-2 left-2">
+                                <span className="rounded-full bg-black/70 px-2.5 py-0.5 text-[10px] font-bold text-[#E8B94F] border border-[#C59A52]/30 backdrop-blur-sm">
+                                  {g.category}
+                                </span>
+                              </div>
+                            </div>
+                            <div className="p-3">
+                              <div className="flex items-center justify-between">
+                                <span className="text-xs font-bold text-[#FFF9ED] truncate">{g.title}</span>
+                                <div className="flex items-center gap-1 shrink-0 ml-2">
+                                  <button
+                                    onClick={() => setGalleryDarshanModal(g)}
+                                    className="rounded p-1 text-[#E8B94F] hover:bg-[#2A1C18]"
+                                    title="View Full Darshan"
+                                  >
+                                    <Eye size={14} />
+                                  </button>
+                                  <button
+                                    onClick={() => handleDeleteGallery(g._id)}
+                                    className="rounded p-1 text-rose-400 transition hover:bg-rose-950"
+                                    title="Remove Photo"
+                                  >
+                                    <Trash2 size={14} />
+                                  </button>
+                                </div>
+                              </div>
+                              {g.caption && (
+                                <p className="mt-1 line-clamp-1 text-[11px] text-[#EDE0C9]/70">{g.caption}</p>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                    </div>
+                  )}
                 </div>
               </div>
+
+              {/* Full-Size Darshan Preview Modal */}
+              {galleryDarshanModal && (
+                <div
+                  className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4 backdrop-blur-md"
+                  onClick={() => setGalleryDarshanModal(null)}
+                >
+                  <div
+                    className="relative max-w-3xl w-full overflow-hidden rounded-3xl border border-[#C59A52]/50 bg-[#16100E] p-4 shadow-2xl"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <div className="relative overflow-hidden rounded-2xl border border-[#C59A52]/20 bg-black">
+                      <img
+                        src={galleryDarshanModal.image}
+                        alt={galleryDarshanModal.title}
+                        className="max-h-[70vh] w-full object-contain mx-auto"
+                      />
+                    </div>
+                    <div className="mt-4 flex items-start justify-between gap-4 px-2">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="rounded-full bg-[#971515] px-2.5 py-0.5 text-[10px] font-bold text-[#FFF9ED]">
+                            {galleryDarshanModal.category}
+                          </span>
+                          <h3 className="font-serif text-lg font-bold text-[#E8B94F]">
+                            {galleryDarshanModal.title}
+                          </h3>
+                        </div>
+                        {galleryDarshanModal.caption && (
+                          <p className="mt-1 text-xs text-[#EDE0C9]/80">
+                            {galleryDarshanModal.caption}
+                          </p>
+                        )}
+                      </div>
+                      <button
+                        onClick={() => setGalleryDarshanModal(null)}
+                        className="rounded-xl border border-[#C59A52]/30 bg-[#251A16] px-4 py-1.5 text-xs font-bold text-[#FFF9ED] hover:bg-[#971515]"
+                      >
+                        Close
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
