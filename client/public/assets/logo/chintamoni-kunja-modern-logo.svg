@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1200" viewBox="0 0 1200 1200">
+<defs>
+ <linearGradient id="rim" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#F2A52B"/><stop offset=".3" stop-color="#D84C8C"/><stop offset=".62" stop-color="#6256C7"/><stop offset=".85" stop-color="#1BA6A0"/><stop offset="1" stop-color="#B4D83B"/></linearGradient>
+ <linearGradient id="petal" x2="0" y2="1"><stop stop-color="#F6B0F1"/><stop offset=".55" stop-color="#C64CCB"/><stop offset="1" stop-color="#762A9A"/></linearGradient>
+ <linearGradient id="gold" x2="0" y2="1"><stop stop-color="#F8DF75"/><stop offset="1" stop-color="#D69A2D"/></linearGradient>
+ <radialGradient id="eye"><stop stop-color="#4AD5E8"/><stop offset=".5" stop-color="#1556A7"/><stop offset="1" stop-color="#091638"/></radialGradient>
+ <clipPath id="disc"><circle cx="600" cy="600" r="535"/></clipPath>
+</defs>
+<circle cx="600" cy="600" r="585" fill="url(#rim)"/><circle cx="600" cy="600" r="557" fill="#30204B"/><circle cx="600" cy="600" r="546" fill="#FFF9E9"/><circle cx="600" cy="600" r="526" fill="none" stroke="#D9B75D" stroke-width="3"/>
+<g clip-path="url(#disc)">
+ <path d="M65 850Q600 780 1135 850V1200H65Z" fill="#F7EED8" opacity=".6"/>
+ <g transform="translate(600 315)" fill="none" stroke-linecap="round">
+  <path d="M0 42C-18-54-5-152 5-224" stroke="#1C713E" stroke-width="9"/>
+  <path d="M0 34C-96-40-148-106-169-174M2 24C91-49 145-111 166-178" stroke="#258C47" stroke-width="5"/>
+  <path d="M-2 8C-127-22-196-67-224-116M2 5C127-22 196-67 224-116" stroke="#58A83D" stroke-width="4"/>
+  <path d="M-1-20C-91-88-112-151-116-205M1-20C91-88 112-151 116-205" stroke="#79B83E" stroke-width="4"/>
+  <path d="M0-38C-50-115-50-174-40-222M0-38C50-115 50-174 40-222" stroke="#2C8B43" stroke-width="4"/>
+  <path d="M0-100C-78-178-44-252 0-275C44-252 78-178 0-100Z" fill="#167C45" stroke="#0D623A" stroke-width="5"/>
+  <path d="M0-118C-53-178-28-222 0-242C28-222 53-178 0-118Z" fill="#25A4A0" stroke="#167C65" stroke-width="4"/>
+  <ellipse cy="-181" rx="30" ry="43" fill="url(#eye)" stroke="#D7B84F" stroke-width="5"/><ellipse cy="-184" rx="10" ry="22" fill="#101D52"/>
+ </g>
+ <g transform="translate(600 485)">
+  <path d="M0 35C-130-10-178-95-154-162C-76-146-20-83 0 35Z" fill="url(#petal)" stroke="#8C3AA9" stroke-width="4"/>
+  <path d="M0 35C130-10 178-95 154-162C76-146 20-83 0 35Z" fill="url(#petal)" stroke="#8C3AA9" stroke-width="4"/>
+  <path d="M0 32C-83-57-85-155 0-207C85-155 83-57 0 32Z" fill="#E47CE4" stroke="#9B3BB2" stroke-width="4"/>
+  <path d="M-12 35C-196 22-245-40-236-99C-153-105-66-54-12 35Z" fill="#D95DCE" stroke="#8C3AA9" stroke-width="4"/>
+  <path d="M12 35C196 22 245-40 236-99C153-105 66-54 12 35Z" fill="#D95DCE" stroke="#8C3AA9" stroke-width="4"/>
+  <path d="M-185 30Q0 102 185 30Q115 117 0 122Q-115 117-185 30Z" fill="#8E35A5" stroke="#68247F" stroke-width="4"/>
+  <ellipse cy="27" rx="46" ry="15" fill="url(#gold)"/>
+ </g>
+ <text x="600" y="690" text-anchor="middle" font-family="Noto Sans Devanagari,Nirmala UI,sans-serif" font-size="54" font-weight="700" fill="#54234D">सेवा ही परम धर्म</text>
+ <text x="600" y="780" text-anchor="middle" font-family="Georgia,serif" font-size="77" font-weight="700" letter-spacing="1.5" fill="#8B2834">CHINTAMONI KUNJA</text>
+ <path d="M240 842Q420 814 600 850Q780 814 960 842L925 895Q760 867 600 900Q440 867 275 895Z" fill="#1D6F9E"/>
+ <path d="M275 853Q430 832 600 864Q770 832 925 853" fill="none" stroke="#E6C75D" stroke-width="7"/>
+ <ellipse cx="600" cy="900" rx="113" ry="49" fill="#F9D84C" stroke="#D19A2B" stroke-width="5"/>
+ <text x="600" y="892" text-anchor="middle" font-family="Georgia,serif" font-size="34" font-weight="700" fill="#6A2D25">Estd.</text>
+ <text x="600" y="929" text-anchor="middle" font-family="Georgia,serif" font-size="34" font-weight="700" fill="#6A2D25">1809</text>
+ <text x="600" y="1010" text-anchor="middle" font-family="Arial,sans-serif" font-size="52" font-weight="800" letter-spacing="3" fill="#25224A">NABADWIP, NADIA</text>
+</g></svg>
