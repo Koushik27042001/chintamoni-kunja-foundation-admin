@@ -1,48 +1,32 @@
 import React, { useRef } from "react";
 import { Link } from "react-router-dom";
 import { motion, useScroll, useTransform, useReducedMotion } from "framer-motion";
-import {
-  Sparkles,
-  BookOpen,
-  HeartHandshake,
-  Compass,
-  ArrowRight,
-  ShieldCheck,
-  CheckCircle2,
-  Calendar,
-  Users,
-} from "lucide-react";
 
 /* ==================================================================
-   Guru Pranali – Sri Sri Chintamoni Kunja Foundation
-   Theme: Ivory #FFF9ED · Sacred Gold #C59A52 · Maroon #78372B / #971515
+   Guru Pranali – "Our Devotional Lineage" (route: /guru-pranali)
+   React + Tailwind v3 · npm i framer-motion · images in /public/assets
+   Render <GuruPranali /> between your Header and <Footer />.
 ================================================================== */
-
-const asset = (n) => encodeURI(`/assets/${n}`);
-const A = {
-  golden: asset("Krishna’s Golden Riverside Devotion.png"),
-  radhaKrishna: asset("Radha and Krishna by the Riverside.png"),
-  altar: asset("Opulent Gaura-Nitai and Madan Mohan Altar.png"),
-  temple: asset("Nabadwip Dham Temple in Sunshine.png"),
-  kirtan: asset("Golden Kirtan by the Sacred Ghats.png"),
-  separation: asset("seperation-image.png"),
-};
-
 const serif = { fontFamily: "'Cormorant Garamond','Playfair Display',serif" };
 const deva = { fontFamily: "'Noto Serif Devanagari',serif" };
 const beng = { fontFamily: "'Noto Serif Bengali',serif" };
-
 const frame = "border border-[#C59A52] shadow-[0_0_0_6px_#FFF9ED,0_0_0_7px_rgba(197,154,82,.6)]";
+const dots = {
+  backgroundImage: "radial-gradient(rgba(120,55,43,.05) 1px,transparent 1px)",
+  backgroundSize: "22px 22px",
+  backgroundColor: "rgba(237,224,201,.6)",
+};
+const asset = (n) => encodeURI(`/assets/${n}`);
 
 function Reveal({ children, className = "", delay = 0 }) {
   const calm = useReducedMotion();
   return (
     <motion.div
       className={className}
-      initial={calm ? false : { opacity: 0, y: 28 }}
+      initial={calm ? false : { opacity: 0, y: 24 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-60px" }}
-      transition={{ duration: 0.85, delay, ease: [0.22, 1, 0.36, 1] }}
+      transition={{ duration: 0.8, delay, ease: "easeOut" }}
     >
       {children}
     </motion.div>
@@ -63,22 +47,6 @@ function Parallax({ src, alt, speed = 40, className = "" }) {
         style={{ y }}
         className="absolute inset-0 h-full w-full scale-[1.18] object-cover"
       />
-    </div>
-  );
-}
-
-function Lotus({ className = "" }) {
-  return (
-    <div className={`flex items-center justify-center gap-4 ${className}`} aria-hidden="true">
-      <span className="h-px w-16 bg-gradient-to-r from-transparent to-[#C59A52] sm:w-28" />
-      <svg viewBox="0 0 60 36" className="h-7 w-12" fill="none" stroke="#C59A52" strokeWidth="1.2">
-        <path d="M30 4C38 12 38 24 30 32C22 24 22 12 30 4Z" />
-        <path d="M30 32C22 30 12 24 10 12C18 12 26 18 30 32Z" />
-        <path d="M30 32C38 30 48 24 50 12C42 12 34 18 30 32Z" />
-        <path d="M30 32C18 34 6 30 2 22C10 20 22 24 30 32Z" />
-        <path d="M30 32C42 34 54 30 58 22C50 20 38 24 30 32Z" />
-      </svg>
-      <span className="h-px w-16 bg-gradient-to-l from-transparent to-[#C59A52] sm:w-28" />
     </div>
   );
 }
@@ -107,306 +75,379 @@ function Mandala({ className = "" }) {
   );
 }
 
-const PARAMPARA_STAGES = [
-  {
-    order: "01",
-    sanskrit: "श्री कृष्ण चैतन्य महाप्रभु",
-    title: "Lord Sri Krishna Chaitanya Mahaprabhu",
-    role: "The Supreme Source of Gaudiya Bhakti & Avatar of Prema",
-    desc: "Appearing in holy Nabadwip Dham in 1486, Mahaprabhu inaugurated the Harinam Sankirtan movement and envisioned an egalitarian, caste-free society where every soul can taste pure love of God through the chanting of the Holy Names.",
-    tag: "Divine Fountainhead",
-  },
-  {
-    order: "02",
-    sanskrit: "श्री गदाधर पण्डित प्रभु",
-    title: "Sri Gadadhar Pandit Prabhu",
-    role: "Incarnation of Sri Radha Sakti & Mahaprabhu's Inseparable Associate",
-    desc: "Revered as the personification of Srimati Radharani's internal hladini potency, Gadadhar Pandit embodies unconditional surrender and devotion. Our entire Pariwar traces its spiritual identity, mood, and eternal shelter to him.",
-    tag: "Radha Sakti Incarnate",
-  },
-  {
-    order: "03",
-    sanskrit: "श्री वल्लभ भट्ट ও শাখা আচার্যগণ",
-    title: "Early Acharyas & Sacred Branches",
-    role: "Custodians of the Gadadhar Pariwar Lineage",
-    desc: "Disciples and revered spiritual successors preserved the esoteric mood of Radha-dasyam and Gaur-Gadadhar worship across Katwa, Nabadwip, and Nilachala (Puri Dham), transmitting the authentic initiation mantras through generations.",
-    tag: "Unbroken Parampara",
-  },
-  {
-    order: "04",
-    sanskrit: "श्री रामसुन्दर विद्यालङ्कार (चिन्तामणि गोस्वामी)",
-    title: "Sri Ramsundar Vidyalankar (Sri Chintamoni Goswami)",
-    role: "Founder of Chintamoni Kunja (1809) • Vedic Scholar & Social Reformer",
-    desc: "A luminous contemporary of Raja Ram Mohan Roy in 19th-century Bengal, he founded Sri Sri Chintamoni Kunja in Nabadwip Dham. He dedicated his scholarship to mass education and championed Lord Chaitanya's egalitarian mandate against medieval feudal orthodoxy.",
-    tag: "Foundation Pioneer",
-  },
-  {
-    order: "05",
-    sanskrit: "ধারাবাহিক গোস্বামী সম্প্রদায়",
-    title: "Succession of Revered Acharyas & Goswamis",
-    role: "Guardians of Ancient Palm-Leaf Manuscripts & Deities",
-    desc: "Generations of consecrated sevayats safeguarded sacred Gaudiya palm-leaf scriptures, the daily worship of Gaura-Nitai and Madan Mohan, and upheld the Zero Starvation Anna Daan tradition for traveling pilgrims.",
-    tag: "Sacred Heritage",
-  },
-  {
-    order: "06",
-    sanskrit: "শ্রী শ্রী চিন্তামণি কুঞ্জ পরিষদ",
-    title: "Modern Institutional Stewardship",
-    role: "Section 8 Non-Profit • NITI Aayog DARPAN Verified",
-    desc: "Today, under the stewardship of the Chakraborty sevayats (Smt. Shailaja Chakraborty, Sri Krishnendu Chakraborty, and Smt. Debarupa Chakraborty), the Foundation continues its spiritual teachings, student assistance, and humanitarian relief in an open and accountable framework.",
-    tag: "Contemporary Seva",
-  },
-];
-
-export default function GuruPranali() {
+function Lotus({ className = "" }) {
   return (
-    <div className="bg-[#FFF9ED] font-[Inter] text-[#39251D] antialiased">
-      {/* Hero Banner */}
-      <section className="relative flex min-h-[65vh] items-center justify-center overflow-hidden bg-[#39251D] text-center text-[#FFF9ED]">
-        <Parallax src={A.radhaKrishna} alt="Radha and Krishna" speed={60} className="absolute inset-0" />
-        <div className="absolute inset-0 bg-gradient-to-b from-[#39251D]/80 via-[#39251D]/60 to-[#39251D]/95" />
-
-        <div className="relative z-10 mx-auto max-w-4xl px-5 py-24">
-          <p className="font-serif text-sm font-semibold tracking-widest text-[#E3B873]" style={beng}>
-            শ্রী রাধা শক্তি গদাধর পণ্ডিত পরিবার • নবদ্বীপ ধাম
-          </p>
-          <h1 className="mt-3 font-serif text-5xl font-bold tracking-tight text-[#FFF9ED] sm:text-7xl" style={serif}>
-            Our Devotional Lineage
-          </h1>
-          <p className="mt-3 font-serif text-2xl italic text-[#E8B94F] sm:text-3xl" style={serif}>
-            The Unbroken Parampara of Divine Love & Sacred Seva
-          </p>
-          <p className="mx-auto mt-4 max-w-2xl font-[Inter] text-sm text-[#FFF9ED]/80 sm:text-base">
-            Rooted in the eternal Madhva Gaudiya Vaishnav Sampradaya, tracing back to Lord Sri Krishna Chaitanya Mahaprabhu and His intimate associate Sri Gadadhar Pandit Prabhu.
-          </p>
-
-          <nav
-            aria-label="Breadcrumb"
-            className="mt-6 flex items-center justify-center gap-2 font-[Inter] text-xs font-semibold uppercase tracking-wider text-[#FFF9ED]/75"
-          >
-            <Link to="/" className="transition-colors hover:text-[#E3B873]">
-              Home
-            </Link>
-            <span className="text-[#C59A52]">/</span>
-            <span className="text-[#E8B94F]">Guru Pranali</span>
-          </nav>
-        </div>
-
-        <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#971010] via-[#C59A52] to-[#971010]" />
-      </section>
-
-      {/* Overview Section */}
-      <section className="relative overflow-hidden bg-[#FFF9ED] py-24">
-        <div className="mx-auto grid max-w-6xl items-center gap-14 px-5 lg:grid-cols-2">
-          <Reveal>
-            <p className="font-[Inter] text-xs font-semibold tracking-[0.25em] text-[#971515]">
-              SACRED FOUNDATION
-            </p>
-            <h2 className="mt-2 font-serif text-4xl font-bold text-[#78372B] sm:text-5xl" style={serif}>
-              Sri Radha Sakti Gadadhar Pandit Pariwar
-            </h2>
-            <Lotus className="!justify-start my-6" />
-
-            <p className="font-[Inter] text-base leading-relaxed text-[#39251D]/90">
-              In Gaudiya Vaishnavism, spiritual initiation and spiritual knowledge (*sambandha-jnana*) do not arise in isolation; they flow down as an unbroken celestial river through bona fide spiritual succession (*guru-parampara*).
-            </p>
-
-            <p className="mt-4 font-[Inter] text-base leading-relaxed text-[#39251D]/90">
-              Our sanctuary in Nabadwip Dham belongs to the venerated <strong>Sri Radha Sakti Gadadhar Pandit Pariwar</strong>, one of the foremost branches of the Madhva Gaudiya Vaishnav Sampradaya. Sri Gadadhar Pandit Prabhu is revered as the internal potency (*hladini-shakti*) of the Supreme Lord, who accompanied Lord Chaitanya to demonstrate the supreme pinnacle of divine love and surrender.
-            </p>
-
-            <p className="mt-4 font-[Inter] text-base leading-relaxed text-[#39251D]/90">
-              Through Sri Ramsundar Vidyalankar (Sri Chintamoni Goswami), this sacred mood of selfless devotion was harmonized with deep scriptural scholarship and social reform, establishing Sri Sri Chintamoni Kunja in 1809.
-            </p>
-
-            <div className="mt-8 flex flex-wrap gap-4">
-              <Link
-                to="/diksha"
-                className="inline-flex items-center gap-2 rounded-lg bg-[#971515] px-6 py-3 font-[Inter] text-sm font-semibold text-white shadow-md transition-all hover:bg-[#78372B]"
-              >
-                <span>Learn About Diksha Tradition</span>
-                <ArrowRight size={16} />
-              </Link>
-              <Link
-                to="/about-us"
-                className="inline-flex items-center gap-2 rounded-lg border border-[#C59A52] px-6 py-3 font-[Inter] text-sm font-semibold text-[#78372B] transition-all hover:bg-[#C59A52]/10"
-              >
-                Foundation History
-              </Link>
-            </div>
-          </Reveal>
-
-          <Reveal delay={0.15}>
-            <div className="relative">
-              <Parallax
-                src={A.altar}
-                alt="Gaura-Nitai and Madan Mohan Altar"
-                className={`aspect-[4/5] rounded-2xl ${frame}`}
-              />
-              <div className="absolute -bottom-6 -left-4 right-4 rounded-xl border border-[#C59A52]/60 bg-[#FFF9ED]/95 p-4 shadow-xl backdrop-blur-md sm:-bottom-8 sm:left-6">
-                <p className="font-serif text-lg font-bold text-[#971515]" style={serif}>
-                  Deity Heritage of Chintamoni Kunja
-                </p>
-                <p className="mt-1 font-[Inter] text-xs text-[#39251D]/80">
-                  Sri Sri Gaura-Nitai & Sri Sri Madan Mohan worshipped with unbroken daily traditional seva since 1809.
-                </p>
-              </div>
-            </div>
-          </Reveal>
-        </div>
-      </section>
-
-      {/* Succession Timeline */}
-      <section className="relative overflow-hidden bg-[#78372B] py-24 text-[#FFF9ED]">
-        <Mandala className="absolute left-1/2 top-1/2 aspect-square h-[160%] min-h-[750px] -translate-x-1/2 -translate-y-1/2 opacity-[.12]" />
-
-        <div className="relative mx-auto max-w-6xl px-5">
-          <Reveal className="text-center">
-            <p className="font-[Inter] text-xs font-semibold tracking-[0.25em] text-[#E3B873]">
-              UNBROKEN SUCCESSION
-            </p>
-            <h2 className="mt-3 font-serif text-4xl font-bold sm:text-5xl lg:text-6xl text-[#FFF9ED]" style={serif}>
-              The Lineage of Acharyas
-            </h2>
-            <Lotus className="mt-4" />
-            <p className="mx-auto mt-4 max-w-2xl font-[Inter] text-sm text-[#FFF9ED]/80 sm:text-base">
-              Explore the celestial stages of our parampara connecting sacred Nabadwip Dham with the supreme source of Bhakti.
-            </p>
-          </Reveal>
-
-          <div className="mt-16 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-            {PARAMPARA_STAGES.map((stage, idx) => (
-              <Reveal key={stage.order} delay={idx * 0.08}>
-                <div className="flex h-full flex-col justify-between rounded-2xl border border-[#C59A52]/50 bg-gradient-to-b from-[#FFF9ED]/10 to-[#FFF9ED]/5 p-7 backdrop-blur-sm transition-all duration-300 hover:border-[#E8B94F] hover:bg-[#FFF9ED]/15">
-                  <div>
-                    <div className="flex items-center justify-between border-b border-[#C59A52]/30 pb-3">
-                      <span className="font-serif text-3xl font-bold text-[#E8B94F]" style={serif}>
-                        {stage.order}
-                      </span>
-                      <span className="rounded-full bg-[#E8B94F]/20 px-3 py-1 font-[Inter] text-xs font-semibold text-[#E8B94F]">
-                        {stage.tag}
-                      </span>
-                    </div>
-
-                    <p className="mt-4 text-sm font-semibold text-[#E3B873]" style={beng}>
-                      {stage.sanskrit}
-                    </p>
-                    <h3 className="mt-1 font-serif text-2xl font-bold text-[#FFF9ED]" style={serif}>
-                      {stage.title}
-                    </h3>
-                    <p className="mt-1 font-[Inter] text-xs font-semibold text-[#C59A52]">
-                      {stage.role}
-                    </p>
-                    <p className="mt-3 font-[Inter] text-sm leading-relaxed text-[#FFF9ED]/85">
-                      {stage.desc}
-                    </p>
-                  </div>
-
-                  <div className="mt-6 border-t border-[#C59A52]/30 pt-3 text-right">
-                    <span className="font-serif text-xs italic text-[#E3B873]" style={serif}>
-                      Sacred Link • Gadadhar Pandit Pariwar
-                    </span>
-                  </div>
-                </div>
-              </Reveal>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Tenets Section */}
-      <section className="bg-[#EDE0C9]/50 py-24">
-        <div className="mx-auto max-w-6xl px-5">
-          <Reveal className="text-center">
-            <p className="font-[Inter] text-xs font-semibold tracking-[0.25em] text-[#971515]">
-              DEVOTIONAL PRINCIPLES
-            </p>
-            <h2 className="mt-3 font-serif text-4xl font-bold text-[#78372B] sm:text-5xl" style={serif}>
-              Core Tenets of Our Pariwar
-            </h2>
-            <Lotus className="mt-4" />
-          </Reveal>
-
-          <div className="mt-14 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-            {[
-              {
-                title: "Radha-Dasyam",
-                desc: "Cultivating pure servitude to Srimati Radharani, who personifies the topmost pinnacle of unconditional devotion to Sri Krishna.",
-                icon: Sparkles,
-              },
-              {
-                title: "Congregational Sankirtan",
-                desc: "Chanting the Hare Krishna Mahamantra openly in public and in daily private japa as given by Sri Chaitanya Mahaprabhu.",
-                icon: BookOpen,
-              },
-              {
-                title: "Universal Equality",
-                desc: "Upholding the casteless, racism-free vision of Shikshastakam, rejecting medieval feudal dogmas and untouchability.",
-                icon: Users,
-              },
-              {
-                title: "Compassionate Seva",
-                desc: "Expressing bhakti through real action: the Zero Starvation Anna Daan, academic aid for 2,000+ students, and native health care.",
-                icon: HeartHandshake,
-              },
-            ].map((tenet, idx) => {
-              const Icon = tenet.icon;
-              return (
-                <Reveal key={tenet.title} delay={idx * 0.1}>
-                  <div className="flex h-full flex-col justify-between rounded-2xl border border-[#C59A52]/50 bg-white p-7 text-center shadow-sm transition hover:shadow-md">
-                    <div>
-                      <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[#FFF9ED] border border-[#C59A52]/50 text-[#971515]">
-                        <Icon size={24} />
-                      </div>
-                      <h3 className="mt-5 font-serif text-2xl font-bold text-[#78372B]" style={serif}>
-                        {tenet.title}
-                      </h3>
-                      <p className="mt-3 font-[Inter] text-sm leading-relaxed text-[#39251D]/85">
-                        {tenet.desc}
-                      </p>
-                    </div>
-                  </div>
-                </Reveal>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* Diksha Callout */}
-      <section className="relative overflow-hidden bg-[#39251D] py-20 text-center text-[#FFF9ED]">
-        <Parallax src={A.golden} alt="Golden riverside devotion" speed={50} className="absolute inset-0 opacity-20" />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#39251D] via-transparent to-[#39251D]" />
-
-        <Reveal className="relative mx-auto max-w-3xl px-5">
-          <h2 className="font-serif text-4xl font-bold sm:text-5xl text-[#FFF9ED]" style={serif}>
-            The Sacred Diksha Gateway
-          </h2>
-          <p className="mt-4 font-serif text-xl italic text-[#E8B94F]" style={serif}>
-            “Through bona fide spiritual initiation, transcendental knowledge awakens in the heart.”
-          </p>
-          <p className="mx-auto mt-4 max-w-xl font-[Inter] text-sm text-[#FFF9ED]/85">
-            Interested in learning about the qualifications, preparatory vows, and timeless tradition of receiving Vaishnav Diksha and Harinam under our lineage?
-          </p>
-
-          <div className="mt-8 flex flex-col justify-center gap-4 font-[Inter] text-sm font-semibold sm:flex-row">
-            <Link
-              to="/diksha"
-              className="inline-flex items-center justify-center gap-2 rounded-full bg-[#E8B94F] px-8 py-3.5 text-[#54251E] shadow-xl transition-all hover:bg-[#F4D27E] hover:scale-105"
-            >
-              <span>Explore Diksha Tradition</span>
-              <ArrowRight size={16} />
-            </Link>
-            <Link
-              to="/contact-us"
-              className="inline-flex items-center justify-center gap-2 rounded-full border-2 border-[#E8B94F] px-8 py-3 text-[#FFF9ED] transition-all hover:bg-[#E8B94F] hover:text-[#39251D]"
-            >
-              Contact Seva Desk
-            </Link>
-          </div>
-        </Reveal>
-      </section>
+    <div className={`flex items-center justify-center gap-4 ${className}`} aria-hidden="true">
+      <span className="h-px w-16 bg-gradient-to-r from-transparent to-[#C59A52] sm:w-28" />
+      <svg viewBox="0 0 60 36" className="h-7 w-12" fill="none" stroke="#C59A52" strokeWidth="1.2">
+        <path d="M30 4C38 12 38 24 30 32C22 24 22 12 30 4Z" />
+        <path d="M30 32C22 30 12 24 10 12C18 12 26 18 30 32Z" />
+        <path d="M30 32C38 30 48 24 50 12C42 12 34 18 30 32Z" />
+        <path d="M30 32C18 34 6 30 2 22C10 20 22 24 30 32Z" />
+        <path d="M30 32C42 34 54 30 58 22C50 20 38 24 30 32Z" />
+      </svg>
+      <span className="h-px w-16 bg-gradient-to-l from-transparent to-[#C59A52] sm:w-28" />
     </div>
   );
 }
 
+const Om = ({ pos }) => (
+  <span
+    aria-hidden="true"
+    style={deva}
+    className={`pointer-events-none absolute select-none text-[16rem] leading-none text-[#C59A52]/10 ${pos}`}
+  >
+    ॐ
+  </span>
+);
+
+const Eyebrow = ({ children, light }) => (
+  <p
+    className={`font-[Inter] text-xs font-semibold tracking-[0.25em] ${
+      light ? "text-[#E3B873]" : "text-[#D98232]"
+    }`}
+  >
+    {children.toUpperCase()}
+  </p>
+);
+
+const H2 = ({ children, light }) => (
+  <h2
+    className={`mt-3 text-4xl font-bold sm:text-5xl ${
+      light ? "text-[#FFF9ED]" : "text-[#78372B]"
+    }`}
+    style={serif}
+  >
+    {children}
+  </h2>
+);
+
+const P = ({ children, light, className = "" }) => (
+  <p
+    className={`font-[Inter] leading-relaxed ${
+      light ? "text-[#FFF9ED]/90" : "text-[#39251D]/90"
+    } ${className}`}
+  >
+    {children}
+  </p>
+);
+
+const Btn = ({ href, children, kind = "solid" }) => {
+  const isInternal = href && href.startsWith("/") && !href.startsWith("/#");
+  const className = `inline-block rounded-full px-7 py-3 text-center font-[Inter] text-sm font-semibold transition-all ${
+    kind === "solid"
+      ? "bg-[#D98232] text-white shadow-lg shadow-black/20 hover:bg-[#BD6D22]"
+      : kind === "gold"
+      ? "border-2 border-[#E3B873] text-[#E3B873] hover:bg-[#E3B873] hover:text-[#39251D]"
+      : "border-2 border-[#78372B] text-[#78372B] hover:bg-[#78372B] hover:text-[#FFF9ED]"
+  }`;
+
+  if (isInternal) {
+    return (
+      <Link to={href} className={className}>
+        {children}
+      </Link>
+    );
+  }
+
+  return (
+    <a href={href} className={className}>
+      {children}
+    </a>
+  );
+};
+
+function PageHero({ img, sk, bn, title, sub, crumb }) {
+  return (
+    <section className="relative flex min-h-[62vh] items-center justify-center overflow-hidden bg-[#39251D] text-center text-[#FFF9ED]">
+      <Parallax src={img} alt="" speed={60} className="absolute inset-0" />
+      <div className="absolute inset-0 bg-gradient-to-b from-[#39251D]/75 via-[#39251D]/55 to-[#39251D]/90" />
+      <div className="relative z-10 mx-auto max-w-3xl px-5 py-20">
+        <p className="animate-[fadeUp_1.4s_ease-out_both] text-[#E3B873] motion-reduce:animate-none">
+          <span style={deva}>{sk}</span> • <span style={beng}>{bn}</span>
+        </p>
+        <h1
+          className="mt-5 animate-[fadeUp_1.6s_.3s_ease-out_both] text-5xl font-bold leading-[1.05] motion-reduce:animate-none sm:text-7xl"
+          style={serif}
+        >
+          {title}
+        </h1>
+        <p
+          className="mt-3 animate-[fadeUp_1.6s_.6s_ease-out_both] text-xl italic text-[#E3B873] motion-reduce:animate-none sm:text-3xl"
+          style={serif}
+        >
+          {sub}
+        </p>
+        <nav aria-label="Breadcrumb" className="mt-6 font-[Inter] text-xs text-[#FFF9ED]/70">
+          <Link to="/" className="hover:text-[#E3B873]">
+            Home
+          </Link>{" "}
+          / {crumb}
+        </nav>
+      </div>
+    </section>
+  );
+}
+
+const KEYFRAMES = `@keyframes fadeUp{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}html{scroll-behavior:smooth}@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}`;
+const IDENT = [
+  ["Sampradaya", "Madhbacharya"],
+  ["Sect", "Gaudiya"],
+  ["Pariwar", "Gadadhar"],
+  ["Sub-Sect", "Chintamoni"],
+];
+
+const A = {
+  altar: asset("Opulent Gaura-Nitai and Madan Mohan Altar.png"),
+  golden: asset("Krishna’s Golden Riverside Devotion.png"),
+  temple: asset("Nabadwip Dham Temple in Sunshine.png"),
+};
+
+/* Family lineage (Pariwar Parampara) – transcribed from the Foundation's chart.
+   Each node: couple = [person, spouse?], children = [...] */
+const TREE = {
+  couple: ["Ramsundar Vidyalankar Chintamani Das", "Kalitara Devi"],
+  children: [
+    {
+      couple: ["Sri Krishnakanta Shiromani Goswami", "Srimati Laxmimani Devi"],
+      children: [
+        {
+          couple: ["Sri Radhikajiban Goswami", "Srimati Radhalaxmi Devi"],
+          children: [
+            {
+              couple: ["Sri Haridas Chakraborty", "Srimati Pravbati Devi"],
+              children: [
+                { couple: ["Sri Devimadhav Goswami"] },
+                { couple: ["Srimati Geeta Devi"] },
+                {
+                  couple: ["Sri Mihir Madhav Chakraborty", "Srimati Shailaja Devi"],
+                  children: [
+                    { couple: ["Sri Krishnendu Chakraborty"] },
+                    { couple: ["Srimati Debarupa Devi"] },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+        {
+          couple: ["Sri Yashodajiban Goswami", "Srimati Sushilasundari Devi"],
+          children: [
+            {
+              couple: ["Sri Krishnadas Goswami", "Srimati Bijan Devi"],
+              children: [
+                { couple: ["Sri Dipak Kumar Chakraborty"] },
+                { couple: ["Unmarried"] },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+    { couple: ["Navakanta Goswami"] },
+    { couple: ["Unmarried"] },
+  ],
+};
+
+function Branch({ node, depth = 0 }) {
+  const [a, b] = node.couple;
+  return (
+    <li className="relative">
+      <Reveal>
+        <div
+          className={`relative rounded-xl border bg-[#FFF9ED] px-5 py-3 ${
+            depth === 0 ? "border-[#D98232] shadow-lg" : "border-[#C59A52]/60"
+          }`}
+        >
+          <span
+            className="absolute -left-[26px] top-1/2 h-3 w-3 -translate-y-1/2 rounded-full border-2 border-[#C59A52] bg-[#FFF9ED] max-md:hidden"
+            aria-hidden="true"
+          />
+          <p className="font-[Inter] text-[10px] font-semibold tracking-[0.2em] text-[#D98232]">
+            {depth === 0 ? "FOUNDER" : `GENERATION ${depth + 1}`}
+          </p>
+          <p className={`font-bold text-[#78372B] ${depth === 0 ? "text-3xl" : "text-2xl"}`} style={serif}>
+            {a}
+          </p>
+          {b && (
+            <p className="font-[Inter] text-sm text-[#39251D]/75">
+              <span className="text-[#C59A52]" aria-hidden="true">
+                ✦
+              </span>{" "}
+              with {b}
+            </p>
+          )}
+        </div>
+      </Reveal>
+      {node.children && (
+        <ul className="ml-3 mt-3 space-y-3 border-l border-[#C59A52]/60 pl-5 md:ml-6 md:pl-6">
+          {node.children.map((c, i) => (
+            <Branch key={i} node={c} depth={depth + 1} />
+          ))}
+        </ul>
+      )}
+    </li>
+  );
+}
+
+function Identity() {
+  return (
+    <section className="relative overflow-hidden bg-[#FFF9ED] py-24">
+      <Om pos="-left-10 top-0" />
+      <div className="relative mx-auto max-w-6xl px-5">
+        <div className="grid items-center gap-12 lg:grid-cols-2">
+          <Reveal>
+            <Eyebrow>Our devotional lineage</Eyebrow>
+            <H2>A Living Parampara</H2>
+            <Lotus className="!justify-start my-6" />
+            <P>
+              Sri Sri Chintamoni Kunja was established in 1809 by Sri Ramsundar Vidyalankar (Sri Chintamoni
+              Goswami), an eminent academic personality and a contemporary of Raja Ram Mohan Roy.
+            </P>
+            <P className="mt-4">
+              We are a unique Sri Radha Sakti Gadadhar Pandit Pariwar sect that belongs to the Madhva
+              Gaudiya Vaishnav Sampradaya. This page records two threads of our heritage: the spiritual
+              succession of Diksha gurus, and the family line that has served the Kunja since its founding.
+            </P>
+          </Reveal>
+          <Reveal delay={0.1}>
+            <Parallax
+              src={A.altar}
+              alt="Gaura-Nitai and Madan Mohan altar"
+              className={`aspect-[4/3] rounded-xl ${frame}`}
+            />
+          </Reveal>
+        </div>
+        <dl className="mt-14 grid grid-cols-2 gap-4 lg:grid-cols-4">
+          {IDENT.map(([k, v], i) => (
+            <Reveal key={k} delay={i * 0.08}>
+              <div className="rounded-xl border border-[#C59A52]/60 bg-white/60 p-5 text-center shadow-sm">
+                <dt className="font-[Inter] text-xs font-semibold tracking-wide text-[#D98232]">
+                  {k.toUpperCase()}
+                </dt>
+                <dd className="mt-1 text-2xl font-bold text-[#78372B]" style={serif}>
+                  {v}
+                </dd>
+              </div>
+            </Reveal>
+          ))}
+        </dl>
+      </div>
+    </section>
+  );
+}
+
+function Paths() {
+  return (
+    <section className="relative overflow-hidden bg-[#78372B] py-20 text-[#FFF9ED]">
+      <Mandala className="absolute left-1/2 top-1/2 aspect-square h-[150%] min-h-[640px] -translate-x-1/2 -translate-y-1/2 opacity-[.12]" />
+      <div className="relative mx-auto grid max-w-5xl gap-6 px-5 md:grid-cols-2">
+        {[
+          [
+            "Diksha Tradition",
+            "The unbroken succession of spiritual teachers, from Sri Krishna Narayan down to the Gadadhar Pariwar.",
+            "/diksha",
+            "Explore the Diksha lineage",
+          ],
+          [
+            "Family Lineage",
+            "The household of Sri Ramsundar Vidyalankar, whose descendants have carried the Kunja forward, shown below.",
+            "#family",
+            "View the family tree",
+          ],
+        ].map(([t, d, h, c], i) => (
+          <Reveal key={t} delay={i * 0.12}>
+            <div className="h-full rounded-2xl border border-[#C59A52]/60 bg-[#FFF9ED]/5 p-8 text-center backdrop-blur-sm">
+              <h2 className="text-3xl font-bold text-[#E3B873]" style={serif}>
+                {t}
+              </h2>
+              <P light className="mt-3 text-sm">
+                {d}
+              </P>
+              <div className="mt-6">
+                <Btn href={h} kind="gold">
+                  {c}
+                </Btn>
+              </div>
+            </div>
+          </Reveal>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function Family() {
+  return (
+    <section id="family" className="py-24" style={dots}>
+      <div className="mx-auto max-w-4xl px-5">
+        <Reveal className="text-center">
+          <Eyebrow>Pariwar parampara</Eyebrow>
+          <H2>The Family Lineage of the Kunja</H2>
+          <P className="mx-auto mt-4 max-w-xl text-sm">
+            From the founder, Sri Ramsundar Vidyalankar Chintamani Das, through the generations to those
+            who serve the Foundation today.
+          </P>
+        </Reveal>
+        <ul className="mt-12">
+          <Branch node={TREE} />
+        </ul>
+        <Reveal className="mt-10 rounded-xl border-l-4 border-[#D98232] bg-[#FFF9ED] p-5 shadow-sm">
+          <P className="text-sm">
+            Sri Krishnendu Chakraborty and Srimati Debarupa Devi, shown in the latest generation, serve
+            the Foundation as Vice President and Treasurer. See{" "}
+            <Link
+              to="/about-us"
+              className="font-semibold text-[#78372B] underline decoration-[#C59A52] underline-offset-4"
+            >
+              About Us
+            </Link>{" "}
+            for office bearers.
+          </P>
+        </Reveal>
+      </div>
+    </section>
+  );
+}
+
+function Cta() {
+  return (
+    <section className="relative overflow-hidden bg-[#39251D] py-20 text-center text-[#FFF9ED]">
+      <Parallax src={A.golden} alt="" speed={50} className="absolute inset-0 opacity-20" />
+      <Reveal className="relative mx-auto max-w-2xl px-5">
+        <H2 light>Follow the Thread of Devotion</H2>
+        <P light className="mt-4">
+          Continue to the Diksha tradition to trace the spiritual succession that the Kunja belongs to.
+        </P>
+        <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+          <Btn href="/diksha">Diksha Tradition</Btn>
+          <Btn href="/contact-us" kind="gold">
+            Contact the Foundation
+          </Btn>
+        </div>
+      </Reveal>
+    </section>
+  );
+}
+
+export default function GuruPranali() {
+  return (
+    <div className="bg-[#FFF9ED] font-[Inter] text-[#39251D] antialiased">
+      <style>{KEYFRAMES}</style>
+      <main>
+        <PageHero
+          img={A.temple}
+          sk="गुरु प्रणाली"
+          bn="গুরু প্রণালী"
+          title="Guru Pranali"
+          sub="Our Devotional Lineage"
+          crumb="Guru Pranali"
+        />
+        <Identity />
+        <Paths />
+        <Family />
+        <Cta />
+      </main>
+    </div>
+  );
+}

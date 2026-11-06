@@ -14,6 +14,8 @@ const ArtOfLiving = lazy(() => import('./pages/ArtOfLiving.jsx'))
 const ContactUs = lazy(() => import('./pages/ContactUs.jsx'))
 const Donate = lazy(() => import('./pages/Donate.jsx'))
 const Gallery = lazy(() => import('./pages/Gallery.jsx'))
+const GuruPranali = lazy(() => import('./pages/GuruPranali.jsx'))
+const Diksha = lazy(() => import('./pages/Diksha.jsx'))
 const Items = lazy(() => import('./pages/Items.jsx'))
 
 function PageLoader() {
@@ -51,29 +53,9 @@ function App() {
             <Route path="/items" element={<Items />} />
             <Route path="/donate" element={<Donate />} />
 
-            <Route
-              path="/guru-pranali"
-              element={
-                <PagePlaceholder
-                  title="Our Devotional Lineage"
-                  subtitle="Sri Radha Sakti Gadadhar Pandit Pariwar"
-                  description="Delve into the unbroken spiritual succession tracing back to Sri Krishna Chaitanya Mahaprabhu and His intimate associate Sri Gadadhar Pandit Prabhu in sacred Nabadwip Dham."
-                  badge="Parampara & Heritage"
-                />
-              }
-            />
+            <Route path="/guru-pranali" element={<GuruPranali />} />
 
-            <Route
-              path="/diksha"
-              element={
-                <PagePlaceholder
-                  title="Diksha Tradition"
-                  subtitle="Sacred Initiation & Harinam"
-                  description="Understand the principles, preparatory guidance, and solemn significance of receiving Vaishnav Diksha and Harinam initiation under qualified spiritual lineage."
-                  badge="Spiritual Initiation"
-                />
-              }
-            />
+            <Route path="/diksha" element={<Diksha />} />
 
             <Route path="/gallery" element={<Gallery />} />
 
