@@ -16,7 +16,9 @@ const Donate = lazy(() => import('./pages/Donate.jsx'))
 const Gallery = lazy(() => import('./pages/Gallery.jsx'))
 const GuruPranali = lazy(() => import('./pages/GuruPranali.jsx'))
 const Diksha = lazy(() => import('./pages/Diksha.jsx'))
+const Events = lazy(() => import('./pages/Events.jsx'))
 const Items = lazy(() => import('./pages/Items.jsx'))
+const AdminPanel = lazy(() => import('./pages/AdminPanel.jsx'))
 
 function PageLoader() {
   return (
@@ -59,17 +61,9 @@ function App() {
 
             <Route path="/gallery" element={<Gallery />} />
 
-            <Route
-              path="/events"
-              element={
-                <PagePlaceholder
-                  title="Upcoming Events & Utsavs"
-                  subtitle="Vaishnav Festivals in Nabadwip Dham"
-                  description="Annual celebrations including Sri Gaur Purnima, Janmashtami, Rath Yatra, Radhashtami, and sanctified memorial gatherings in Nabadwip Dham."
-                  badge="Festivals & Calendar"
-                />
-              }
-            />
+            <Route path="/events" element={<Events />} />
+            <Route path="/admin" element={<AdminPanel />} />
+            <Route path="/admin-panel" element={<AdminPanel />} />
 
             <Route
               path="/blog"
