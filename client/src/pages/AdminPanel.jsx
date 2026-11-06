@@ -101,6 +101,7 @@ import {
   getGalleryAPI,
   createGalleryAPI,
   deleteGalleryAPI,
+  deduplicateGalleryItems,
   getContactsAPI,
   updateContactStatusAPI,
   INITIAL_MEMBERS,
@@ -566,7 +567,7 @@ export default function AdminPanel() {
       if (a && a.length) setAgents(a);
       if (ev && ev.length) setEvents(ev);
       if (bl && bl.length) setBlogs(bl);
-      if (gal && gal.length) setGallery(gal);
+      if (gal) setGallery(deduplicateGalleryItems(gal));
       if (cnt && cnt.length) setContacts(cnt);
       setLoading(false);
     }
@@ -962,7 +963,7 @@ export default function AdminPanel() {
       return;
     }
     const created = await createGalleryAPI(newGallery);
-    setGallery([created, ...gallery]);
+    setGallery((prev) => deduplicateGalleryItems([created, ...prev]));
     setNewGallery({
       title: "",
       category: "Temple & Altar",
@@ -975,11 +976,26 @@ export default function AdminPanel() {
     showAlert("✨ Sacred photograph uploaded and added to the gallery!");
   };
 
-  const handleDeleteGallery = async (id) => {
+  const handleDeleteGallery = async (target) => {
+    const id = typeof target === "object" ? (target._id || target.id) : target;
+    const title = typeof target === "object" ? target.title : "";
+    const image = typeof target === "object" ? (target.image || target.src) : "";
+
     if (confirm("Remove image from gallery?")) {
-      await deleteGalleryAPI(id);
-      setGallery(gallery.filter((g) => g._id !== id));
-      showAlert("Image removed.");
+      await deleteGalleryAPI(id, title, image);
+      setGallery((prev) =>
+        prev.filter((g) => {
+          const gId = g._id || g.id;
+          const gTitle = (g.title || "").toLowerCase().trim();
+          const gSrc = (g.image || g.src || "").trim();
+          return (
+            gId !== id &&
+            (!title || gTitle !== title.toLowerCase().trim()) &&
+            (!image || gSrc !== image.trim())
+          );
+        })
+      );
+      showAlert("Image removed from gallery.");
     }
   };
 
@@ -4255,7 +4271,7 @@ export default function AdminPanel() {
                                     <Eye size={14} />
                                   </button>
                                   <button
-                                    onClick={() => handleDeleteGallery(g._id)}
+                                    onClick={() => handleDeleteGallery(g)}
                                     className="rounded p-1 text-rose-400 transition hover:bg-rose-950"
                                     title="Remove Photo"
                                   >

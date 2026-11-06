@@ -678,14 +678,19 @@ function Events() {
     async function loadDynamicGallery() {
       try {
         const dynamicItems = await getGalleryAPI();
-        if (isMounted && dynamicItems && dynamicItems.length > 0) {
-          const formatted = dynamicItems
+        if (isMounted) {
+          const deletedSet = new Set(JSON.parse(localStorage.getItem("ckf_deleted_gallery_ids") || "[]"));
+          const formatted = (dynamicItems || [])
             .filter((item) => !item.image?.endsWith(".mp4") && !item.src?.endsWith(".mp4"))
             .map((item) => [item.image || item.src, item.title]);
 
-          // Take latest photos from admin, filling remaining slots up to 6 from defaults
+          // Take latest photos from admin, filling remaining slots up to 6 from defaults (excluding any deleted ones)
           const existingSrcs = new Set(formatted.map(([s]) => s));
-          const fillDefaults = defaultGallery.filter(([s]) => !existingSrcs.has(s));
+          const fillDefaults = defaultGallery.filter(([s, title]) =>
+            !existingSrcs.has(s) &&
+            !deletedSet.has(s) &&
+            !deletedSet.has(title.toLowerCase().trim())
+          );
           const combined = [...formatted, ...fillDefaults].slice(0, 6);
           setGallery(combined);
         }

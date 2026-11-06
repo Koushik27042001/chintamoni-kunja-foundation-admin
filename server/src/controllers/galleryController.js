@@ -16,7 +16,7 @@ const getGallery = async (req, res) => {
   }
 };
 
-// @desc    Add gallery item (with Cloudinary cloud storage & MongoDB persistence)
+// @desc    Add gallery item (with Cloudinary cloud storage, deduplication & MongoDB persistence)
 // @route   POST /api/gallery
 const createGalleryItem = async (req, res) => {
   try {
@@ -48,8 +48,34 @@ const createGalleryItem = async (req, res) => {
       }
     }
 
+    // Check if an item with the same title or image already exists to prevent duplicate rows
+    const trimmedTitle = title.trim();
+    const existing = await Gallery.findOne({
+      $or: [
+        { title: trimmedTitle },
+        { image: finalImageUrl }
+      ]
+    });
+
+    if (existing) {
+      existing.title = trimmedTitle;
+      existing.category = category || existing.category;
+      existing.image = finalImageUrl;
+      if (publicId) existing.public_id = publicId;
+      existing.storageProvider = storageProvider;
+      existing.caption = caption !== undefined ? caption : existing.caption;
+      await existing.save();
+
+      return res.status(200).json({
+        success: true,
+        data: existing,
+        storage: storageProvider,
+        message: 'Existing gallery visual updated with latest details',
+      });
+    }
+
     const item = await Gallery.create({
-      title,
+      title: trimmedTitle,
       category: category || 'Temple & Altar',
       image: finalImageUrl,
       public_id: publicId,
@@ -68,23 +94,34 @@ const createGalleryItem = async (req, res) => {
   }
 };
 
-// @desc    Delete gallery item (cleans up from Cloudinary and MongoDB)
+// @desc    Delete gallery item (cleans up from Cloudinary and MongoDB, handles ObjectId and title IDs)
 // @route   DELETE /api/gallery/:id
 const deleteGalleryItem = async (req, res) => {
   try {
-    const item = await Gallery.findById(req.params.id);
-    if (!item) return res.status(404).json({ success: false, message: 'Item not found' });
+    const { id } = req.params;
+    const mongoose = require('mongoose');
+    let item = null;
 
-    // Clean up from Cloudinary if stored in cloud
-    if (item.public_id && item.storageProvider === 'cloudinary') {
-      try {
-        await cloudinary.uploader.destroy(item.public_id);
-      } catch (cloudErr) {
-        console.warn('Could not remove asset from Cloudinary:', cloudErr.message);
-      }
+    if (mongoose.Types.ObjectId.isValid(id)) {
+      item = await Gallery.findById(id);
+    }
+    if (!item) {
+      item = await Gallery.findOne({ title: id });
     }
 
-    await Gallery.findByIdAndDelete(req.params.id);
+    if (item) {
+      // Clean up from Cloudinary if stored in cloud
+      if (item.public_id && item.storageProvider === 'cloudinary') {
+        try {
+          await cloudinary.uploader.destroy(item.public_id);
+        } catch (cloudErr) {
+          console.warn('Could not remove asset from Cloudinary:', cloudErr.message);
+        }
+      }
+
+      await Gallery.deleteOne({ _id: item._id });
+    }
+
     res.status(200).json({ success: true, message: 'Item removed from gallery and storage' });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });

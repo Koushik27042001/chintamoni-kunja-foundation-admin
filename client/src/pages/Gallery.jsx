@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowLeft, Play, X, HeartHandshake, Sparkles, Filter } from 'lucide-react'
-import { getGalleryAPI } from '../services/api'
+import { getGalleryAPI, deduplicateGalleryItems } from '../services/api'
 
 // Foundation Baseline Heritage Media
 const INITIAL_ASSETS = [
@@ -73,9 +73,36 @@ const CATEGORIES = [
   "Videos",
 ];
 
+const getInitialCleanAssets = () => {
+  try {
+    const deletedSet = new Set(JSON.parse(localStorage.getItem("ckf_deleted_gallery_ids") || "[]"));
+    const local = JSON.parse(localStorage.getItem("ckf_gallery") || "[]");
+    const base = local.length > 0 ? local : INITIAL_ASSETS;
+    const clean = base
+      .filter((item) => {
+        const id = item._id || item.id;
+        const title = (item.title || "").toLowerCase().trim();
+        const src = (item.image || item.src || "").trim();
+        return !deletedSet.has(id) && !deletedSet.has(title) && !deletedSet.has(src);
+      })
+      .map((item) => ({
+        _id: item._id || item.id || item.title,
+        title: item.title,
+        desc: item.caption || item.desc || "Sacred darshan at Sri Sri Chintamoni Kunja Foundation.",
+        src: item.image || item.src,
+        category: item.category || "Temple & Altar",
+        type: item.type || ((item.image || item.src)?.endsWith(".mp4") ? "video" : "image"),
+        isDynamic: Boolean(item.isDynamic || (item._id && item._id.length > 10) || item.public_id),
+      }));
+    return deduplicateGalleryItems(clean);
+  } catch (e) {
+    return INITIAL_ASSETS;
+  }
+};
+
 export default function Gallery() {
   const [selectedMedia, setSelectedMedia] = useState(null);
-  const [mediaList, setMediaList] = useState(INITIAL_ASSETS);
+  const [mediaList, setMediaList] = useState(getInitialCleanAssets);
   const [activeCategory, setActiveCategory] = useState("All");
   const [loading, setLoading] = useState(true);
 
@@ -84,26 +111,43 @@ export default function Gallery() {
     try {
       setLoading(true);
       const dynamicItems = await getGalleryAPI();
-      if (dynamicItems && Array.isArray(dynamicItems) && dynamicItems.length > 0) {
-        // Normalize dynamic items from admin/database
-        const normalizedDynamic = dynamicItems.map((item) => ({
-          _id: item._id || item.title,
+      const deletedSet = new Set(JSON.parse(localStorage.getItem("ckf_deleted_gallery_ids") || "[]"));
+
+      const sourceList = dynamicItems && Array.isArray(dynamicItems) && dynamicItems.length > 0
+        ? dynamicItems
+        : INITIAL_ASSETS;
+
+      const normalized = sourceList
+        .filter((item) => {
+          const id = item._id || item.id;
+          const title = (item.title || "").toLowerCase().trim();
+          const src = (item.image || item.src || "").trim();
+          return !deletedSet.has(id) && !deletedSet.has(title) && !deletedSet.has(src);
+        })
+        .map((item) => ({
+          _id: item._id || item.id || item.title,
           title: item.title,
           desc: item.caption || item.desc || "Sacred darshan at Sri Sri Chintamoni Kunja Foundation.",
           src: item.image || item.src,
           category: item.category || "Temple & Altar",
-          type: item.type || (item.image?.endsWith(".mp4") ? "video" : "image"),
-          isDynamic: true,
+          type: item.type || ((item.image || item.src)?.endsWith(".mp4") ? "video" : "image"),
+          isDynamic: Boolean(item.isDynamic || (item._id && item._id.length > 10) || item.public_id),
         }));
 
-        // Merge: Dynamic items from Admin appear FIRST, followed by baseline initial assets avoiding duplicate titles
-        const dynamicTitles = new Set(normalizedDynamic.map((d) => d.title.toLowerCase().trim()));
-        const uniqueInitial = INITIAL_ASSETS.filter(
-          (init) => !dynamicTitles.has(init.title.toLowerCase().trim())
-        );
+      // Also ensure baseline INITIAL_ASSETS fill any missing baseline photos that haven't been deleted
+      const seenTitles = new Set(normalized.map((n) => n.title.toLowerCase().trim()));
+      const seenSrcs = new Set(normalized.map((n) => n.src.trim()));
+      const missingInitial = INITIAL_ASSETS
+        .filter((init) => {
+          const id = init._id;
+          const title = (init.title || "").toLowerCase().trim();
+          const src = (init.src || "").trim();
+          return !deletedSet.has(id) && !deletedSet.has(title) && !deletedSet.has(src) && !seenTitles.has(title) && !seenSrcs.has(src);
+        })
+        .map((init) => ({ ...init, isDynamic: false }));
 
-        setMediaList([...normalizedDynamic, ...uniqueInitial]);
-      }
+      const combined = deduplicateGalleryItems([...normalized, ...missingInitial]);
+      setMediaList(combined);
     } catch (err) {
       console.warn("Failed to load dynamic gallery items:", err);
     } finally {

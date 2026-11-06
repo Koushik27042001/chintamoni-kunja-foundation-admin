@@ -360,31 +360,52 @@ export const INITIAL_BLOGS = [
 export const INITIAL_GALLERY = [
   {
     _id: "gal-1",
-    title: "Sri Sri Radha Madan Mohan & Gaura-Nitai Altar",
-    category: "Temple & Altar",
-    image: "/assets/Opulent Gaura-Nitai and Madan Mohan Altar.png",
-    caption: "Divine sanctum adorned with floral shringar during Mangala Aarti at Nabadwip Dham.",
+    title: "Krishna's Golden Riverside Devotion",
+    category: "River Ghats & Dham",
+    image: "/assets/Krishna’s Golden Riverside Devotion.png",
+    caption: "Sacred pastimes on the consecrated banks of Bhagirathi river in Nabadwip Dham.",
   },
   {
     _id: "gal-2",
-    title: "Sacred Harinam Sankirtan at Sacred Ghats",
-    category: "River Ghats & Dham",
-    image: "/assets/Golden Kirtan by the Sacred Ghats.png",
-    caption: "Devotees chanting Harinam on the banks of sacred Bhagirathi Ganga.",
+    title: "Radha & Krishna by the Riverside",
+    category: "Temple & Altar",
+    image: "/assets/Radha and Krishna by the Riverside.png",
+    caption: "Divine love of Sri Sri Radha-Madhava amidst the lush groves of Bengal.",
   },
   {
     _id: "gal-3",
-    title: "Nabadwip Dham Mandir in Golden Sunlight",
+    title: "Opulent Gaura-Nitai & Madan Mohan Altar",
     category: "Temple & Altar",
-    image: "/assets/Nabadwip Dham Temple in Sunshine.png",
-    caption: "Exterior heritage sanctum of Sri Sri Chintamoni Kunja established in 1809.",
+    image: "/assets/Opulent Gaura-Nitai and Madan Mohan Altar.png",
+    caption: "Venerable deities worshipped through centuries in the historic sanctuary.",
   },
   {
     _id: "gal-4",
+    title: "Nabadwip Dham Temple in Sunshine",
+    category: "River Ghats & Dham",
+    image: "/assets/Nabadwip Dham Temple in Sunshine.png",
+    caption: "Architectural heritage of Sri Sri Chintamoni Kunja founded in 1809.",
+  },
+  {
+    _id: "gal-5",
+    title: "Golden Kirtan by the Sacred Ghats",
+    category: "Devotees & Kirtan",
+    image: "/assets/Golden Kirtan by the Sacred Ghats.png",
+    caption: "Ecstatic chanting of the holy names echoing across the sacred waters.",
+  },
+  {
+    _id: "gal-6",
     title: "Devotional Procession Before Lord Jagannath",
     category: "Festivals & Utsavs",
     image: "/assets/Devotional Procession Before Lord Jagannath.png",
-    caption: "Annual Rath Yatra procession through Bowbazar Road, Nabadwip.",
+    caption: "Festive Rath Yatra and sankirtan processions in holy Nabadwip.",
+  },
+  {
+    _id: "gal-7",
+    title: "Sacred Temple Interaction & Parikrama",
+    category: "Videos",
+    image: "/assets/interaction-video.mp4",
+    caption: "Immersive video capturing devotional interactions and sacred moments at the Kunja.",
   },
 ];
 
@@ -623,31 +644,81 @@ export async function deleteBlogAPI(id) {
 }
 
 /* ==================================================================
-   Gallery API (MongoDB Atlas, Cloudinary CDN & Offline Sync)
+   Gallery API (Deduplication, Cloudinary CDN, MongoDB & Permanent Delete)
 ================================================================== */
+
+/**
+ * Strict deduplicator to prevent multiple duplicate visual cards
+ */
+export function deduplicateGalleryItems(items) {
+  if (!Array.isArray(items)) return [];
+  const seenIds = new Set();
+  const seenSrcs = new Set();
+  const seenTitles = new Set();
+  const result = [];
+
+  for (const item of items) {
+    if (!item) continue;
+    const id = item._id || item.id;
+    const title = (item.title || "").toLowerCase().trim();
+    const src = (item.image || item.src || "").trim();
+
+    // Skip if ID already processed
+    if (id && seenIds.has(id)) continue;
+    // Skip if identical image source already present
+    if (src && seenSrcs.has(src)) continue;
+    // Skip if same normalized title already present
+    if (title && seenTitles.has(title)) continue;
+
+    if (id) seenIds.add(id);
+    if (src) seenSrcs.add(src);
+    if (title) seenTitles.add(title);
+
+    result.push(item);
+  }
+
+  return result;
+}
+
 export async function getGalleryAPI() {
+  // Read deleted tracking tombstone IDs so deleted items never resurrect
+  const deletedSet = new Set(JSON.parse(localStorage.getItem("ckf_deleted_gallery_ids") || "[]"));
+
+  let fetchedItems = null;
+
   try {
     const res = await fetch(`${API_BASE}/gallery`, { signal: AbortSignal.timeout(15000) });
     if (res.ok) {
       const json = await res.json();
       if (json.data && Array.isArray(json.data) && json.data.length > 0) {
-        // Merge with any offline creations
-        const local = JSON.parse(localStorage.getItem("ckf_gallery") || "[]");
-        const serverIds = new Set(json.data.map((g) => g._id || g.title));
-        const merged = [...json.data, ...local.filter((l) => !serverIds.has(l._id) && !serverIds.has(l.title))];
-        localStorage.setItem("ckf_gallery", JSON.stringify(merged));
-        return merged;
+        fetchedItems = json.data;
       }
     }
   } catch (e) {
     console.warn("Gallery API probe failed, falling back to local store:", e.message);
   }
-  const saved = localStorage.getItem("ckf_gallery");
-  return saved ? JSON.parse(saved) : INITIAL_GALLERY;
+
+  // Combine server items with local storage
+  const local = JSON.parse(localStorage.getItem("ckf_gallery") || "[]");
+  const rawList = fetchedItems ? [...fetchedItems, ...local] : (local.length > 0 ? local : INITIAL_GALLERY);
+
+  // Filter out any deleted items permanently
+  const nonDeleted = rawList.filter((g) => {
+    const id = g._id || g.id;
+    const title = (g.title || "").toLowerCase().trim();
+    const src = (g.image || g.src || "").trim();
+    return !deletedSet.has(id) && !deletedSet.has(title) && !deletedSet.has(src);
+  });
+
+  const deduplicated = deduplicateGalleryItems(nonDeleted);
+  localStorage.setItem("ckf_gallery", JSON.stringify(deduplicated));
+  return deduplicated;
 }
 
 export async function createGalleryAPI(item) {
   let created = null;
+  const deletedSet = new Set(JSON.parse(localStorage.getItem("ckf_deleted_gallery_ids") || "[]"));
+
   try {
     const res = await fetch(`${API_BASE}/gallery`, {
       method: 'POST',
@@ -668,8 +739,15 @@ export async function createGalleryAPI(item) {
   }
 
   try {
+    // If this item was previously in deletedSet, remove from deletedSet so new upload shows
+    const id = created._id || created.id;
+    const title = (created.title || "").toLowerCase().trim();
+    const src = (created.image || created.src || "").trim();
+    const newDeletedList = [...deletedSet].filter((d) => d !== id && d !== title && d !== src);
+    localStorage.setItem("ckf_deleted_gallery_ids", JSON.stringify(newDeletedList));
+
     const existing = JSON.parse(localStorage.getItem("ckf_gallery") || "[]");
-    const updated = [created, ...existing.filter((g) => g._id !== created._id && g.title !== created.title)];
+    const updated = deduplicateGalleryItems([created, ...existing]);
     localStorage.setItem("ckf_gallery", JSON.stringify(updated));
     window.dispatchEvent(new CustomEvent("ckf_gallery_updated", { detail: created }));
   } catch (err) {}
@@ -677,16 +755,38 @@ export async function createGalleryAPI(item) {
   return created;
 }
 
-export async function deleteGalleryAPI(id) {
+export async function deleteGalleryAPI(id, title = "", src = "") {
   try {
-    await fetch(`${API_BASE}/gallery/${id}`, { method: 'DELETE', signal: AbortSignal.timeout(12000) });
-  } catch (e) {}
+    await fetch(`${API_BASE}/gallery/${encodeURIComponent(id)}`, { method: 'DELETE', signal: AbortSignal.timeout(12000) });
+  } catch (e) {
+    console.warn("Server gallery delete error:", e.message);
+  }
 
   try {
+    // Permanently remember deleted tombstone IDs & titles
+    const deletedList = JSON.parse(localStorage.getItem("ckf_deleted_gallery_ids") || "[]");
+    const normTitle = (title || "").toLowerCase().trim();
+    const normSrc = (src || "").trim();
+
+    if (id) deletedList.push(id);
+    if (normTitle) deletedList.push(normTitle);
+    if (normSrc) deletedList.push(normSrc);
+
+    localStorage.setItem("ckf_deleted_gallery_ids", JSON.stringify(Array.from(new Set(deletedList))));
+
+    // Remove from local active gallery
     const existing = JSON.parse(localStorage.getItem("ckf_gallery") || "[]");
-    const updated = existing.filter((g) => g._id !== id);
+    const updated = existing.filter((g) => {
+      const gId = g._id || g.id;
+      const gTitle = (g.title || "").toLowerCase().trim();
+      const gSrc = (g.image || g.src || "").trim();
+      return gId !== id && gTitle !== normTitle && (!normSrc || gSrc !== normSrc);
+    });
+
     localStorage.setItem("ckf_gallery", JSON.stringify(updated));
-    window.dispatchEvent(new CustomEvent("ckf_gallery_updated", { detail: { deletedId: id } }));
+    window.dispatchEvent(
+      new CustomEvent("ckf_gallery_updated", { detail: { deletedId: id, deletedTitle: title } })
+    );
   } catch (err) {}
 
   return { success: true };
