@@ -1,5 +1,5 @@
 import React, { Suspense, lazy } from 'react'
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, useLocation } from 'react-router-dom'
 import Navbar from './components/Navbar.jsx'
 import Footer from './components/Footer.jsx'
 import ScrollToTop from './components/ScrollToTop.jsx'
@@ -17,6 +17,7 @@ const Gallery = lazy(() => import('./pages/Gallery.jsx'))
 const GuruPranali = lazy(() => import('./pages/GuruPranali.jsx'))
 const Diksha = lazy(() => import('./pages/Diksha.jsx'))
 const Events = lazy(() => import('./pages/Events.jsx'))
+const Blog = lazy(() => import('./pages/Blog.jsx'))
 const Items = lazy(() => import('./pages/Items.jsx'))
 const AdminPanel = lazy(() => import('./pages/AdminPanel.jsx'))
 
@@ -41,10 +42,13 @@ function PageLoader() {
 }
 
 function App() {
+  const location = useLocation()
+  const isAdmin = location.pathname.startsWith('/admin')
+
   return (
-    <div className="flex flex-col min-h-screen bg-[#FFF9ED]">
+    <div className={`flex flex-col min-h-screen ${isAdmin ? 'bg-[#0E0A09] text-[#FFF9ED]' : 'bg-[#FFF9ED]'}`}>
       <ScrollToTop />
-      <Navbar />
+      {!isAdmin && <Navbar />}
       <main className="flex-grow">
         <Suspense fallback={<PageLoader />}>
           <Routes>
@@ -65,17 +69,7 @@ function App() {
             <Route path="/admin" element={<AdminPanel />} />
             <Route path="/admin-panel" element={<AdminPanel />} />
 
-            <Route
-              path="/blog"
-              element={
-                <PagePlaceholder
-                  title="Spiritual Articles & Blog"
-                  subtitle="Discourses, Katha & Vaishnav Heritage"
-                  description="Read inspiring writings, discourses on Bhakti, biographical chronicles of revered saints, and announcements from Sri Sri Chintamoni Kunja Foundation."
-                  badge="Knowledge & Publications"
-                />
-              }
-            />
+            <Route path="/blog" element={<Blog />} />
 
             <Route path="/contact-us" element={<ContactUs />} />
             <Route path="/contact" element={<ContactUs />} />
@@ -95,7 +89,7 @@ function App() {
           </Routes>
         </Suspense>
       </main>
-      <Footer />
+      {!isAdmin && <Footer />}
     </div>
   )
 }
