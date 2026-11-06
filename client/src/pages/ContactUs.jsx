@@ -76,9 +76,8 @@ export default function ContactUs() {
     setStatus({ type: "", message: "" });
 
     try {
-      const apiUrl = import.meta.env.VITE_API_URL
-        ? `${import.meta.env.VITE_API_URL}/api/contact`
-        : "/api/contact";
+      const rawBase = (import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || '/api').trim().replace(/\/+$/, '');
+      const apiUrl = rawBase.endsWith('/api') ? `${rawBase}/contact` : `${rawBase}/api/contact`;
 
       const res = await fetch(apiUrl, {
         method: "POST",

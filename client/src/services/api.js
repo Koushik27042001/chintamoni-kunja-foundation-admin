@@ -4,7 +4,19 @@
  * Provides resilient, automatic local storage fallback if the server or database is offline.
  */
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api';
+// Normalize API_BASE: strips trailing slashes, removes double slashes, and ensures `/api` endpoint path
+function getNormalizedApiBase() {
+  let envUrl = (import.meta.env.VITE_API_BASE_URL || '/api').trim();
+  // Strip trailing slashes
+  envUrl = envUrl.replace(/\/+$/, '');
+  // If user passed root domain without /api (e.g. "https://chintamoni-kunja-homepage.onrender.com"), append /api
+  if (envUrl !== '' && !envUrl.endsWith('/api')) {
+    envUrl = `${envUrl}/api`;
+  }
+  return envUrl || '/api';
+}
+
+const API_BASE = getNormalizedApiBase();
 
 /* ==================================================================
    JWT Authentication & Expiry Handling
@@ -376,16 +388,21 @@ export const INITIAL_GALLERY = [
   },
 ];
 
-// Helper to check server connectivity
+// Helper to check server connectivity (supports Render cold-start wake-up with dual /api/health and /health probes)
 export async function checkServerStatus() {
-  try {
-    const res = await fetch(`${API_BASE}/health`, { signal: AbortSignal.timeout(3000) });
-    if (res.ok) {
-      const data = await res.json();
-      return { online: true, database: data.database };
+  const rootHealth = API_BASE.replace(/\/api$/, '') + '/health';
+  const apiHealth = `${API_BASE}/health`;
+
+  for (const url of [apiHealth, rootHealth]) {
+    try {
+      const res = await fetch(url, { signal: AbortSignal.timeout(15000) });
+      if (res.ok) {
+        const data = await res.json();
+        return { online: true, database: data.database };
+      }
+    } catch (e) {
+      // try next probe
     }
-  } catch (e) {
-    // server unreachable
   }
   return { online: false, database: 'offline' };
 }
@@ -395,7 +412,7 @@ export async function checkServerStatus() {
 ================================================================== */
 export async function getMembersAPI() {
   try {
-    const res = await fetch(`${API_BASE}/members`, { signal: AbortSignal.timeout(4000) });
+    const res = await fetch(`${API_BASE}/members`, { signal: AbortSignal.timeout(15000) });
     if (res.ok) {
       const json = await res.json();
       if (json.data && json.data.length > 0) {
@@ -416,7 +433,7 @@ export async function createMemberAPI(member) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(member),
-      signal: AbortSignal.timeout(4000),
+      signal: AbortSignal.timeout(12000),
     });
     if (res.ok) {
       const json = await res.json();
@@ -433,7 +450,7 @@ export async function bulkCreateMembersAPI(membersList) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ members: membersList }),
-      signal: AbortSignal.timeout(8000),
+      signal: AbortSignal.timeout(15000),
     });
     if (res.ok) {
       const json = await res.json();
@@ -449,7 +466,7 @@ export async function bulkDeleteMembersAPI(ids) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ids }),
-      signal: AbortSignal.timeout(4000),
+      signal: AbortSignal.timeout(12000),
     });
     if (res.ok) {
       return await res.json();
@@ -463,7 +480,7 @@ export async function bulkDeleteMembersAPI(ids) {
 ================================================================== */
 export async function getDonationsAPI() {
   try {
-    const res = await fetch(`${API_BASE}/donations`, { signal: AbortSignal.timeout(4000) });
+    const res = await fetch(`${API_BASE}/donations`, { signal: AbortSignal.timeout(15000) });
     if (res.ok) {
       const json = await res.json();
       if (json.data && json.data.length > 0) {
@@ -482,7 +499,7 @@ export async function createDonationAPI(donation) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(donation),
-      signal: AbortSignal.timeout(4000),
+      signal: AbortSignal.timeout(12000),
     });
     if (res.ok) {
       const json = await res.json();
@@ -497,7 +514,7 @@ export async function createDonationAPI(donation) {
 ================================================================== */
 export async function getAgentsAPI() {
   try {
-    const res = await fetch(`${API_BASE}/agents`, { signal: AbortSignal.timeout(4000) });
+    const res = await fetch(`${API_BASE}/agents`, { signal: AbortSignal.timeout(15000) });
     if (res.ok) {
       const json = await res.json();
       if (json.data && json.data.length > 0) {
@@ -514,7 +531,7 @@ export async function settleAgentAPI(agentCode) {
   try {
     const res = await fetch(`${API_BASE}/agents/${agentCode}/settle`, {
       method: 'POST',
-      signal: AbortSignal.timeout(4000),
+      signal: AbortSignal.timeout(12000),
     });
     if (res.ok) {
       return await res.json();
@@ -528,7 +545,7 @@ export async function settleAgentAPI(agentCode) {
 ================================================================== */
 export async function getEventsAPI() {
   try {
-    const res = await fetch(`${API_BASE}/events`, { signal: AbortSignal.timeout(4000) });
+    const res = await fetch(`${API_BASE}/events`, { signal: AbortSignal.timeout(15000) });
     if (res.ok) {
       const json = await res.json();
       if (json.data && json.data.length > 0) {
@@ -547,7 +564,7 @@ export async function createEventAPI(event) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(event),
-      signal: AbortSignal.timeout(4000),
+      signal: AbortSignal.timeout(12000),
     });
     if (res.ok) {
       const json = await res.json();
@@ -559,7 +576,7 @@ export async function createEventAPI(event) {
 
 export async function deleteEventAPI(id) {
   try {
-    await fetch(`${API_BASE}/events/${id}`, { method: 'DELETE', signal: AbortSignal.timeout(4000) });
+    await fetch(`${API_BASE}/events/${id}`, { method: 'DELETE', signal: AbortSignal.timeout(12000) });
   } catch (e) {}
   return { success: true };
 }
@@ -569,7 +586,7 @@ export async function deleteEventAPI(id) {
 ================================================================== */
 export async function getBlogsAPI() {
   try {
-    const res = await fetch(`${API_BASE}/blogs`, { signal: AbortSignal.timeout(4000) });
+    const res = await fetch(`${API_BASE}/blogs`, { signal: AbortSignal.timeout(15000) });
     if (res.ok) {
       const json = await res.json();
       if (json.data && json.data.length > 0) {
@@ -588,7 +605,7 @@ export async function createBlogAPI(blog) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(blog),
-      signal: AbortSignal.timeout(4000),
+      signal: AbortSignal.timeout(12000),
     });
     if (res.ok) {
       const json = await res.json();
@@ -600,7 +617,7 @@ export async function createBlogAPI(blog) {
 
 export async function deleteBlogAPI(id) {
   try {
-    await fetch(`${API_BASE}/blogs/${id}`, { method: 'DELETE', signal: AbortSignal.timeout(4000) });
+    await fetch(`${API_BASE}/blogs/${id}`, { method: 'DELETE', signal: AbortSignal.timeout(12000) });
   } catch (e) {}
   return { success: true };
 }
@@ -610,7 +627,7 @@ export async function deleteBlogAPI(id) {
 ================================================================== */
 export async function getGalleryAPI() {
   try {
-    const res = await fetch(`${API_BASE}/gallery`, { signal: AbortSignal.timeout(4000) });
+    const res = await fetch(`${API_BASE}/gallery`, { signal: AbortSignal.timeout(15000) });
     if (res.ok) {
       const json = await res.json();
       if (json.data && json.data.length > 0) {
@@ -629,7 +646,7 @@ export async function createGalleryAPI(item) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(item),
-      signal: AbortSignal.timeout(4000),
+      signal: AbortSignal.timeout(12000),
     });
     if (res.ok) {
       const json = await res.json();
@@ -641,7 +658,7 @@ export async function createGalleryAPI(item) {
 
 export async function deleteGalleryAPI(id) {
   try {
-    await fetch(`${API_BASE}/gallery/${id}`, { method: 'DELETE', signal: AbortSignal.timeout(4000) });
+    await fetch(`${API_BASE}/gallery/${id}`, { method: 'DELETE', signal: AbortSignal.timeout(12000) });
   } catch (e) {}
   return { success: true };
 }
@@ -651,7 +668,7 @@ export async function deleteGalleryAPI(id) {
 ================================================================== */
 export async function getContactsAPI() {
   try {
-    const res = await fetch(`${API_BASE}/contact`, { signal: AbortSignal.timeout(4000) });
+    const res = await fetch(`${API_BASE}/contact`, { signal: AbortSignal.timeout(15000) });
     if (res.ok) {
       const json = await res.json();
       return json.data || [];
@@ -667,7 +684,7 @@ export async function updateContactStatusAPI(id, status, replyNotes) {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status, replyNotes }),
-      signal: AbortSignal.timeout(4000),
+      signal: AbortSignal.timeout(12000),
     });
     if (res.ok) return await res.json();
   } catch (e) {}

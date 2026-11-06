@@ -39,3 +39,4 @@ services:
         value: /admin
       - key: CLIENT_URL
         sync: false
+

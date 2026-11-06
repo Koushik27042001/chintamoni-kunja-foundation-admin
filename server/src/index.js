@@ -64,6 +64,14 @@ app.options('*', cors(corsOptions));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
+// URL Sanitizer Middleware (Eliminates accidental double slashes e.g. //donations -> /donations)
+app.use((req, res, next) => {
+  if (req.url && req.url.includes('//')) {
+    req.url = req.url.replace(/\/+/g, '/');
+  }
+  next();
+});
+
 // Health Check Routes (Required for Render health monitoring probes)
 const handleHealthCheck = (req, res) => {
   const mongoose = require('mongoose');
@@ -80,16 +88,44 @@ const handleHealthCheck = (req, res) => {
 app.get('/health', handleHealthCheck);
 app.get('/api/health', handleHealthCheck);
 
-// API Routes
-app.use('/api/auth', require('./routes/authRoutes'));
-app.use('/api/items', require('./routes/itemRoutes'));
-app.use('/api/contact', require('./routes/contactRoutes'));
-app.use('/api/members', require('./routes/memberRoutes'));
-app.use('/api/donations', require('./routes/donationRoutes'));
-app.use('/api/agents', require('./routes/agentRoutes'));
-app.use('/api/events', require('./routes/eventRoutes'));
-app.use('/api/blogs', require('./routes/blogRoutes'));
-app.use('/api/gallery', require('./routes/galleryRoutes'));
+// Route Controllers
+const authRoutes = require('./routes/authRoutes');
+const itemRoutes = require('./routes/itemRoutes');
+const contactRoutes = require('./routes/contactRoutes');
+const memberRoutes = require('./routes/memberRoutes');
+const donationRoutes = require('./routes/donationRoutes');
+const agentRoutes = require('./routes/agentRoutes');
+const eventRoutes = require('./routes/eventRoutes');
+const blogRoutes = require('./routes/blogRoutes');
+const galleryRoutes = require('./routes/galleryRoutes');
+
+// Mount routes on BOTH `/api/*` and direct `/*` for bulletproof compatibility
+app.use('/api/auth', authRoutes);
+app.use('/auth', authRoutes);
+
+app.use('/api/items', itemRoutes);
+app.use('/items', itemRoutes);
+
+app.use('/api/contact', contactRoutes);
+app.use('/contact', contactRoutes);
+
+app.use('/api/members', memberRoutes);
+app.use('/members', memberRoutes);
+
+app.use('/api/donations', donationRoutes);
+app.use('/donations', donationRoutes);
+
+app.use('/api/agents', agentRoutes);
+app.use('/agents', agentRoutes);
+
+app.use('/api/events', eventRoutes);
+app.use('/events', eventRoutes);
+
+app.use('/api/blogs', blogRoutes);
+app.use('/blogs', blogRoutes);
+
+app.use('/api/gallery', galleryRoutes);
+app.use('/gallery', galleryRoutes);
 
 // Welcome Root Route
 app.get('/', (req, res) => {
