@@ -172,7 +172,7 @@ export default function Events() {
             setFestivalList([...FESTIVALS, ...newOnes]);
           }
         }
-      } catch (e) {}
+      } catch (e) { }
     }
     loadDynamicEvents();
   }, []);
@@ -239,11 +239,10 @@ export default function Events() {
             <button
               key={cat}
               onClick={() => setActiveCategory(cat)}
-              className={`rounded-full px-5 py-2 text-xs font-semibold transition-all ${
-                activeCategory === cat
+              className={`rounded-full px-5 py-2 text-xs font-semibold transition-all ${activeCategory === cat
                   ? "bg-[#971515] text-white shadow-md"
                   : "border border-[#C59A52]/40 bg-white text-[#78372B] hover:bg-[#FFF9ED]"
-              }`}
+                }`}
             >
               {cat}
             </button>
