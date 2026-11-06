@@ -14,3 +14,4 @@ router.get('/me', protect, getMe);
 router.post('/refresh', protect, refreshToken);
 
 module.exports = router;
+
