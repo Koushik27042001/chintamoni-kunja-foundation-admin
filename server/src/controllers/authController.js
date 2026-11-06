@@ -14,23 +14,43 @@ const login = async (req, res) => {
       });
     }
 
-    // Check user with password field explicitly selected
-    const user = await User.findOne({ email: email.toLowerCase().trim() }).select('+password');
+    const trimmedEmail = email.toLowerCase().trim();
+    const envAdminEmail = (process.env.ADMIN_EMAIL || '').toLowerCase().trim();
+    const envAdminPassword = process.env.ADMIN_PASSWORD || '';
+
+    // Check user in database
+    let user = await User.findOne({ email: trimmedEmail }).select('+password');
 
     if (!user) {
-      return res.status(401).json({
-        success: false,
-        message: 'Invalid credentials. User not found.',
-      });
-    }
-
-    // Check password
-    const isMatch = await user.matchPassword(password);
-    if (!isMatch) {
-      return res.status(401).json({
-        success: false,
-        message: 'Invalid credentials. Password incorrect.',
-      });
+      // If user does not exist in DB yet, but matches backend .env credentials, auto-provision
+      if (envAdminEmail && trimmedEmail === envAdminEmail && password === envAdminPassword) {
+        user = await User.create({
+          name: process.env.ADMIN_NAME || 'Sri Chintamoni Kunja Admin',
+          email: envAdminEmail,
+          password: envAdminPassword,
+          role: 'admin',
+        });
+      } else {
+        return res.status(401).json({
+          success: false,
+          message: 'Invalid credentials. User not found.',
+        });
+      }
+    } else {
+      // User exists in DB: check password
+      const isMatch = await user.matchPassword(password);
+      if (!isMatch) {
+        // If password was updated in backend .env, sync it
+        if (envAdminEmail && user.email === envAdminEmail && password === envAdminPassword) {
+          user.password = envAdminPassword;
+          await user.save();
+        } else {
+          return res.status(401).json({
+            success: false,
+            message: 'Invalid credentials. Password incorrect.',
+          });
+        }
+      }
     }
 
     // Update last login
@@ -146,3 +166,4 @@ module.exports = {
   refreshToken,
   seedAdmin,
 };
+

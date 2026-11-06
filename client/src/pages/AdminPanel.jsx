@@ -170,8 +170,8 @@ export default function AdminPanel() {
   const [currentUser, setCurrentUser] = useState(() => getCurrentUser());
   const [isAuthenticated, setIsAuthenticated] = useState(() => !!getAuthToken());
   const [sessionExpiryWarning, setSessionExpiryWarning] = useState("");
-  const [loginEmail, setLoginEmail] = useState("admin@chintamonikunja.org");
-  const [loginPassword, setLoginPassword] = useState("Chintamoni@2026");
+  const [loginEmail, setLoginEmail] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
   const [loginError, setLoginError] = useState("");
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
@@ -865,16 +865,9 @@ export default function AdminPanel() {
             </form>
 
             <div className="mt-6 border-t border-[#C59A52]/20 pt-4 text-center">
-              <button
-                type="button"
-                onClick={() => {
-                  setLoginEmail("admin@chintamonikunja.org");
-                  setLoginPassword("Chintamoni@2026");
-                }}
-                className="text-xs font-semibold text-[#78372B] hover:text-[#971515] underline"
-              >
-                Auto-fill default credentials (admin@chintamonikunja.org)
-              </button>
+              <div className="text-xs text-[#39251D]/75 font-medium">
+                Authorized seva desk personnel only. Credentials are authenticated securely against backend environment configurations.
+              </div>
               <div className="mt-2 text-[10px] text-[#39251D]/60">
                 JWT Session Lifespan: 7 Days • Auto-refreshed on active collection work
               </div>

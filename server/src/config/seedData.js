@@ -11,13 +11,17 @@ const seedInitialData = async () => {
     // 0. Seed Default Admin if empty
     const userCount = await User.countDocuments();
     if (userCount === 0) {
+      const adminEmail = (process.env.ADMIN_EMAIL || 'admin@chintamonikunja.org').toLowerCase().trim();
+      const adminPassword = process.env.ADMIN_PASSWORD || 'Chintamoni@2026';
+      const adminName = process.env.ADMIN_NAME || 'Sri Chintamoni Kunja Admin';
+
       await User.create({
-        name: 'Sri Chintamoni Kunja Admin',
-        email: 'admin@chintamonikunja.org',
-        password: 'Chintamoni@2026',
+        name: adminName,
+        email: adminEmail,
+        password: adminPassword,
         role: 'admin',
       });
-      console.log('🌱 Seeded default administrator (admin@chintamonikunja.org)');
+      console.log(`🌱 Seeded default administrator (${adminEmail}) from backend .env`);
     }
 
     // 1. Seed Members if empty

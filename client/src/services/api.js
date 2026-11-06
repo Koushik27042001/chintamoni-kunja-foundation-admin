@@ -91,17 +91,9 @@ export async function loginAdminAPI(email, password) {
       localStorage.setItem('ckf_admin_user', JSON.stringify(json.user));
       return { success: true, user: json.user, token: json.token };
     }
-    return { success: false, message: json.message || 'Login failed' };
+    return { success: false, message: json.message || 'Invalid administrator credentials' };
   } catch (err) {
-    // Local / Offline fallback demo admin login
-    if (email === 'admin@chintamonikunja.org' && password === 'Chintamoni@2026') {
-      const demoUser = { name: 'Sri Chintamoni Kunja Admin', email, role: 'admin' };
-      const demoToken = 'mock-jwt-token-ckf-admin';
-      localStorage.setItem('ckf_admin_token', demoToken);
-      localStorage.setItem('ckf_admin_user', JSON.stringify(demoUser));
-      return { success: true, user: demoUser, token: demoToken };
-    }
-    return { success: false, message: 'Server unreachable. Check server connection.' };
+    return { success: false, message: 'Server unreachable. Please verify server connection.' };
   }
 }
 
