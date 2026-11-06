@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence, useScroll, useTransform, useInView, useReducedMotion, animate } from "framer-motion";
+import { getGalleryAPI } from "../services/api";
 
 /* ==================================================================
    Sri Sri Chintamoni Kunja Foundation – Cinematic Heritage Home Page
@@ -662,7 +663,43 @@ function Seva() {
 
 /* ---------- 07 devotional life & festivals ---------- */
 function Events() {
-  const gallery = [[A.procession, "Procession before Lord Jagannath"], [A.altar, "Gaura-Nitai & Madan Mohan altar"], [A.kirtan, "Kirtan by the ghats"], [A.golden, "Golden riverside devotion"], [A.radhaKrishna, "Radha and Krishna"], [A.temple, "Nabadwip Dham temple"]];
+  const defaultGallery = [
+    [A.procession, "Procession before Lord Jagannath"],
+    [A.altar, "Gaura-Nitai & Madan Mohan altar"],
+    [A.kirtan, "Kirtan by the ghats"],
+    [A.golden, "Golden riverside devotion"],
+    [A.radhaKrishna, "Radha and Krishna"],
+    [A.temple, "Nabadwip Dham temple"]
+  ];
+  const [gallery, setGallery] = useState(defaultGallery);
+
+  useEffect(() => {
+    let isMounted = true;
+    async function loadDynamicGallery() {
+      try {
+        const dynamicItems = await getGalleryAPI();
+        if (isMounted && dynamicItems && dynamicItems.length > 0) {
+          const formatted = dynamicItems
+            .filter((item) => !item.image?.endsWith(".mp4") && !item.src?.endsWith(".mp4"))
+            .map((item) => [item.image || item.src, item.title]);
+
+          // Take latest photos from admin, filling remaining slots up to 6 from defaults
+          const existingSrcs = new Set(formatted.map(([s]) => s));
+          const fillDefaults = defaultGallery.filter(([s]) => !existingSrcs.has(s));
+          const combined = [...formatted, ...fillDefaults].slice(0, 6);
+          setGallery(combined);
+        }
+      } catch (e) {}
+    }
+    loadDynamicGallery();
+
+    const handleUpdate = () => loadDynamicGallery();
+    window.addEventListener("ckf_gallery_updated", handleUpdate);
+    return () => {
+      isMounted = false;
+      window.removeEventListener("ckf_gallery_updated", handleUpdate);
+    };
+  }, []);
   return (
     <section id="events" className="relative overflow-hidden bg-[#FFF9ED] py-24">
       <Om pos="-right-10 top-10" />

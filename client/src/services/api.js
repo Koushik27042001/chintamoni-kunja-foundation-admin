@@ -623,24 +623,31 @@ export async function deleteBlogAPI(id) {
 }
 
 /* ==================================================================
-   Gallery API
+   Gallery API (MongoDB Atlas, Cloudinary CDN & Offline Sync)
 ================================================================== */
 export async function getGalleryAPI() {
   try {
     const res = await fetch(`${API_BASE}/gallery`, { signal: AbortSignal.timeout(15000) });
     if (res.ok) {
       const json = await res.json();
-      if (json.data && json.data.length > 0) {
-        localStorage.setItem("ckf_gallery", JSON.stringify(json.data));
-        return json.data;
+      if (json.data && Array.isArray(json.data) && json.data.length > 0) {
+        // Merge with any offline creations
+        const local = JSON.parse(localStorage.getItem("ckf_gallery") || "[]");
+        const serverIds = new Set(json.data.map((g) => g._id || g.title));
+        const merged = [...json.data, ...local.filter((l) => !serverIds.has(l._id) && !serverIds.has(l.title))];
+        localStorage.setItem("ckf_gallery", JSON.stringify(merged));
+        return merged;
       }
     }
-  } catch (e) {}
+  } catch (e) {
+    console.warn("Gallery API probe failed, falling back to local store:", e.message);
+  }
   const saved = localStorage.getItem("ckf_gallery");
   return saved ? JSON.parse(saved) : INITIAL_GALLERY;
 }
 
 export async function createGalleryAPI(item) {
+  let created = null;
   try {
     const res = await fetch(`${API_BASE}/gallery`, {
       method: 'POST',
@@ -650,18 +657,38 @@ export async function createGalleryAPI(item) {
     });
     if (res.ok) {
       const json = await res.json();
-      return json.data;
+      created = json.data;
     }
   } catch (e) {
-    console.warn("Server gallery create error, falling back locally:", e.message);
+    console.warn("Server gallery create error, saving locally:", e.message);
   }
-  return { ...item, _id: `gal-${Date.now()}` };
+
+  if (!created) {
+    created = { ...item, _id: `gal-${Date.now()}` };
+  }
+
+  try {
+    const existing = JSON.parse(localStorage.getItem("ckf_gallery") || "[]");
+    const updated = [created, ...existing.filter((g) => g._id !== created._id && g.title !== created.title)];
+    localStorage.setItem("ckf_gallery", JSON.stringify(updated));
+    window.dispatchEvent(new CustomEvent("ckf_gallery_updated", { detail: created }));
+  } catch (err) {}
+
+  return created;
 }
 
 export async function deleteGalleryAPI(id) {
   try {
     await fetch(`${API_BASE}/gallery/${id}`, { method: 'DELETE', signal: AbortSignal.timeout(12000) });
   } catch (e) {}
+
+  try {
+    const existing = JSON.parse(localStorage.getItem("ckf_gallery") || "[]");
+    const updated = existing.filter((g) => g._id !== id);
+    localStorage.setItem("ckf_gallery", JSON.stringify(updated));
+    window.dispatchEvent(new CustomEvent("ckf_gallery_updated", { detail: { deletedId: id } }));
+  } catch (err) {}
+
   return { success: true };
 }
 
