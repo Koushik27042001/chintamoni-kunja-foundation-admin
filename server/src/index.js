@@ -18,6 +18,12 @@ app.use(express.json());
 // Routes
 app.use('/api/items', require('./routes/itemRoutes'));
 app.use('/api/contact', require('./routes/contactRoutes'));
+app.use('/api/members', require('./routes/memberRoutes'));
+app.use('/api/donations', require('./routes/donationRoutes'));
+app.use('/api/agents', require('./routes/agentRoutes'));
+app.use('/api/events', require('./routes/eventRoutes'));
+app.use('/api/blogs', require('./routes/blogRoutes'));
+app.use('/api/gallery', require('./routes/galleryRoutes'));
 
 // Health check route
 app.get('/api/health', (req, res) => {

@@ -1,6 +1,7 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion, useScroll, useTransform, useReducedMotion } from "framer-motion";
+import { getEventsAPI } from "../services/api";
 import {
   Calendar,
   Clock,
@@ -155,10 +156,30 @@ const CATEGORIES = ["All Festivals", "Major Utsav", "Pariwar Seva", "Procession"
 
 export default function Events() {
   const [activeCategory, setActiveCategory] = useState("All Festivals");
+  const [festivalList, setFestivalList] = useState(FESTIVALS);
+
+  useEffect(() => {
+    async function loadDynamicEvents() {
+      try {
+        const dynamicEvents = await getEventsAPI();
+        if (dynamicEvents && dynamicEvents.length > 0) {
+          // Merge dynamic events with initial festivals, avoiding duplicates
+          const existingIds = new Set(FESTIVALS.map((f) => f.id || f.title));
+          const newOnes = dynamicEvents.filter(
+            (ev) => !existingIds.has(ev.id) && !existingIds.has(ev.title)
+          );
+          if (newOnes.length > 0) {
+            setFestivalList([...FESTIVALS, ...newOnes]);
+          }
+        }
+      } catch (e) {}
+    }
+    loadDynamicEvents();
+  }, []);
 
   const filtered = activeCategory === "All Festivals"
-    ? FESTIVALS
-    : FESTIVALS.filter((f) => f.category === activeCategory);
+    ? festivalList
+    : festivalList.filter((f) => f.category === activeCategory);
 
   return (
     <div className="bg-[#FFF9ED] font-[Inter] text-[#39251D] antialiased">

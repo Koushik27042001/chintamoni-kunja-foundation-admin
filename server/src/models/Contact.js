@@ -38,6 +38,15 @@ const contactSchema = new mongoose.Schema({
     required: [true, 'Please enter your message or prayer request'],
     trim: true,
   },
+  status: {
+    type: String,
+    enum: ['New', 'In Progress', 'Responded', 'Archived'],
+    default: 'New',
+  },
+  replyNotes: {
+    type: String,
+    default: '',
+  },
   createdAt: {
     type: Date,
     default: Date.now,

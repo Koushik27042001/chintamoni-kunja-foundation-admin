@@ -27,7 +27,45 @@ import {
   Sparkles,
   ShieldCheck,
   ExternalLink,
+  DollarSign,
+  TrendingUp,
+  UserCheck,
+  Briefcase,
+  Layers,
+  Inbox,
+  RefreshCw,
+  Server,
+  Wifi,
+  WifiOff,
 } from "lucide-react";
+import {
+  checkServerStatus,
+  getMembersAPI,
+  createMemberAPI,
+  bulkCreateMembersAPI,
+  bulkDeleteMembersAPI,
+  getDonationsAPI,
+  createDonationAPI,
+  getAgentsAPI,
+  settleAgentAPI,
+  getEventsAPI,
+  createEventAPI,
+  deleteEventAPI,
+  getBlogsAPI,
+  createBlogAPI,
+  deleteBlogAPI,
+  getGalleryAPI,
+  createGalleryAPI,
+  deleteGalleryAPI,
+  getContactsAPI,
+  updateContactStatusAPI,
+  INITIAL_MEMBERS,
+  INITIAL_AGENTS,
+  INITIAL_RECEIPTS,
+  INITIAL_EVENTS,
+  INITIAL_BLOGS,
+  INITIAL_GALLERY,
+} from "../services/api";
 
 /* ==================================================================
    Number to Words Converter (Indian Currency Format)
@@ -78,54 +116,6 @@ function numberToWords(num) {
 }
 
 /* ==================================================================
-   Mock Default Members Data
-================================================================== */
-const INITIAL_MEMBERS = [
-  {
-    id: "CKF-M-001",
-    name: "Shyamasundar Das",
-    address1: "House 14, Harisabha Para",
-    address2: "Near Ganga Ghat",
-    city: "Nabadwip",
-    postOffice: "Nabadwip",
-    district: "Nadia",
-    state: "West Bengal",
-    pincode: "741302",
-    country: "India",
-    mobile1: "9832104512",
-    mobile2: "9474905910",
-  },
-  {
-    id: "CKF-M-002",
-    name: "Anandamayee Devi",
-    address1: "Bowbazar Road, Ward 5",
-    address2: "Opposite Radha Madan Mohan Mandir",
-    city: "Nabadwip",
-    postOffice: "Nabadwip",
-    district: "Nadia",
-    state: "West Bengal",
-    pincode: "741302",
-    country: "India",
-    mobile1: "9679014230",
-    mobile2: "",
-  },
-  {
-    id: "CKF-M-003",
-    name: "Gouranga Charan Chakraborty",
-    address1: "College Para, Main Road",
-    address2: "Near Nabadwip Vidyasagar College",
-    city: "Nabadwip",
-    postOffice: "Nabadwip",
-    district: "Nadia",
-    state: "West Bengal",
-    pincode: "741302",
-    country: "India",
-    mobile1: "9123456780",
-    mobile2: "9876543210",
-  },
-];
-
-/* ==================================================================
    CSV Export Utilities
 ================================================================== */
 function exportToCSV(filename, rows) {
@@ -162,16 +152,25 @@ function exportToCSV(filename, rows) {
 }
 
 export default function AdminPanel() {
-  const [activeTab, setActiveTab] = useState("receipt"); // receipt, history, members, events, blogs, gallery
+  const [activeTab, setActiveTab] = useState("dashboard"); // dashboard, receipt, history, members, agents, events, blogs, gallery, inquiries
+  const [serverState, setServerState] = useState({ online: false, database: 'checking' });
+  const [loading, setLoading] = useState(false);
+  const [alertMsg, setAlertMsg] = useState("");
 
-  // Members state
-  const [members, setMembers] = useState(() => {
-    const saved = localStorage.getItem("ckf_members");
-    return saved ? JSON.parse(saved) : INITIAL_MEMBERS;
-  });
+  // Core Data States
+  const [members, setMembers] = useState(INITIAL_MEMBERS);
+  const [receipts, setReceipts] = useState(INITIAL_RECEIPTS);
+  const [agents, setAgents] = useState(INITIAL_AGENTS);
+  const [events, setEvents] = useState(INITIAL_EVENTS);
+  const [blogs, setBlogs] = useState(INITIAL_BLOGS);
+  const [gallery, setGallery] = useState(INITIAL_GALLERY);
+  const [contacts, setContacts] = useState([]);
 
+  // Selections & filters
   const [selectedMemberIds, setSelectedMemberIds] = useState([]);
   const [memberSearchQuery, setMemberSearchQuery] = useState("");
+  const [historySearchQuery, setHistorySearchQuery] = useState("");
+  const [historyChannelFilter, setHistoryChannelFilter] = useState("All");
 
   // New Member Manual Form State
   const [newMember, setNewMember] = useState({
@@ -187,6 +186,8 @@ export default function AdminPanel() {
     country: "India",
     mobile1: "",
     mobile2: "",
+    email: "",
+    category: "Life Member",
   });
 
   // Receipt Generation Form State
@@ -197,34 +198,88 @@ export default function AdminPanel() {
     amount: "1001",
     date: new Date().toLocaleDateString("en-GB"),
     paymentMode: "Cash",
-    collectionType: "Person comes to Foundation / Office", // Segmentation A vs B
+    channel: "Walk-in to Foundation", // Segmentation: Walk-in vs Field Collection vs Online
     purpose: "NGO Fund",
     collectedBy: "Krishnendu Chakraborty",
-  });
-
-  // Collection History (Saved receipts)
-  const [receipts, setReceipts] = useState(() => {
-    const saved = localStorage.getItem("ckf_receipts");
-    return saved ? JSON.parse(saved) : [];
+    agentId: "",
   });
 
   // Current Generated Receipt to Preview / Print
   const [currentReceipt, setCurrentReceipt] = useState(null);
 
-  // Status banners
-  const [alertMsg, setAlertMsg] = useState("");
+  // New Agent Form
+  const [newAgent, setNewAgent] = useState({
+    agentCode: "",
+    name: "",
+    phone: "",
+    assignedArea: "Nabadwip & Nadia District",
+  });
 
-  useEffect(() => {
-    localStorage.setItem("ckf_members", JSON.stringify(members));
-  }, [members]);
+  // New Event Form
+  const [newEvent, setNewEvent] = useState({
+    title: "",
+    bengali: "",
+    season: "",
+    time: "",
+    category: "Major Utsav",
+    desc: "",
+    seva: "Anna Daan Seva",
+    image: "/assets/Krishna’s Golden Riverside Devotion.png",
+    featured: true,
+  });
 
+  // New Blog Form
+  const [newBlog, setNewBlog] = useState({
+    title: "",
+    bengali: "",
+    category: "Katha & Philosophy",
+    readTime: "5 min read",
+    excerpt: "",
+    content: "",
+    image: "/assets/Opulent Gaura-Nitai and Madan Mohan Altar.png",
+    status: "published",
+  });
+
+  // New Gallery Item Form
+  const [newGallery, setNewGallery] = useState({
+    title: "",
+    category: "Temple & Altar",
+    image: "/assets/Opulent Gaura-Nitai and Madan Mohan Altar.png",
+    caption: "",
+  });
+
+  // Load all initial data from API or localStorage
   useEffect(() => {
-    localStorage.setItem("ckf_receipts", JSON.stringify(receipts));
-  }, [receipts]);
+    async function initData() {
+      setLoading(true);
+      const srv = await checkServerStatus();
+      setServerState(srv);
+
+      const [m, r, a, ev, bl, gal, cnt] = await Promise.all([
+        getMembersAPI(),
+        getDonationsAPI(),
+        getAgentsAPI(),
+        getEventsAPI(),
+        getBlogsAPI(),
+        getGalleryAPI(),
+        getContactsAPI(),
+      ]);
+
+      if (m && m.length) setMembers(m);
+      if (r && r.length) setReceipts(r);
+      if (a && a.length) setAgents(a);
+      if (ev && ev.length) setEvents(ev);
+      if (bl && bl.length) setBlogs(bl);
+      if (gal && gal.length) setGallery(gal);
+      if (cnt && cnt.length) setContacts(cnt);
+      setLoading(false);
+    }
+    initData();
+  }, []);
 
   const showAlert = (msg) => {
     setAlertMsg(msg);
-    setTimeout(() => setAlertMsg(""), 4000);
+    setTimeout(() => setAlertMsg(""), 4500);
   };
 
   /* ---------------------------------------------------------------
@@ -235,7 +290,7 @@ export default function AdminPanel() {
     setReceiptSearch(`${m.name} (${m.id})`);
   };
 
-  const handleGenerateReceipt = (e) => {
+  const handleGenerateReceipt = async (e) => {
     e.preventDefault();
     if (!selectedMemberForReceipt) {
       alert("Please search and select a registered Member first.");
@@ -246,27 +301,60 @@ export default function AdminPanel() {
       return;
     }
 
+    const assignedAgentObj = agents.find((ag) => ag.agentCode === receiptForm.agentId);
+
     const generated = {
-      ...receiptForm,
       receiptNo: receiptForm.receiptNo || `CKF-${Date.now().toString().slice(-6)}`,
-      member: selectedMemberForReceipt,
+      memberId: selectedMemberForReceipt.id,
+      donorName: selectedMemberForReceipt.name,
+      mobile: selectedMemberForReceipt.mobile1,
+      email: selectedMemberForReceipt.email || "",
+      address: `${selectedMemberForReceipt.address1}, ${selectedMemberForReceipt.city}`,
+      amount: parseFloat(receiptForm.amount),
       amountInWords: numberToWords(receiptForm.amount),
+      channel: receiptForm.channel,
+      paymentMode: receiptForm.paymentMode,
+      purpose: receiptForm.purpose,
+      collectedBy:
+        receiptForm.channel === "Field Collection" && assignedAgentObj
+          ? `${assignedAgentObj.name} (${assignedAgentObj.agentCode})`
+          : receiptForm.collectedBy,
+      agentId: receiptForm.channel === "Field Collection" ? receiptForm.agentId : "",
+      agentName: receiptForm.channel === "Field Collection" && assignedAgentObj ? assignedAgentObj.name : "",
+      settlementStatus:
+        receiptForm.channel === "Field Collection" ? "Pending Office Deposit" : "Settled",
+      status: "Completed",
+      date: receiptForm.date || new Date().toLocaleDateString("en-GB"),
+      member: selectedMemberForReceipt,
       createdAt: new Date().toISOString(),
     };
 
     setCurrentReceipt(generated);
-    showAlert(`Receipt ${generated.receiptNo} generated successfully!`);
-  };
+    setReceipts([generated, ...receipts]);
+    await createDonationAPI(generated);
 
-  const handleSaveOfficeRecord = () => {
-    if (!currentReceipt) return;
-    const exists = receipts.find((r) => r.receiptNo === currentReceipt.receiptNo);
-    if (exists) {
-      showAlert("This receipt is already saved in Office Collection History.");
-      return;
+    // If field collection, update agent's pending settlement locally
+    if (receiptForm.channel === "Field Collection" && assignedAgentObj) {
+      setAgents(
+        agents.map((ag) =>
+          ag.agentCode === receiptForm.agentId
+            ? {
+                ...ag,
+                totalCollected: ag.totalCollected + parseFloat(receiptForm.amount),
+                pendingSettlement: ag.pendingSettlement + parseFloat(receiptForm.amount),
+              }
+            : ag
+        )
+      );
     }
-    setReceipts([currentReceipt, ...receipts]);
-    showAlert(`Receipt ${currentReceipt.receiptNo} saved to Office Collection Records.`);
+
+    // Refresh receipt form ID
+    setReceiptForm((prev) => ({
+      ...prev,
+      receiptNo: `CKF-${Date.now().toString().slice(-6)}`,
+    }));
+
+    showAlert(`Official Receipt ${generated.receiptNo} generated & recorded!`);
   };
 
   const handlePrint = () => {
@@ -276,15 +364,17 @@ export default function AdminPanel() {
   /* ---------------------------------------------------------------
      Member Database Handlers
   --------------------------------------------------------------- */
-  const handleAddMember = (e) => {
+  const handleAddMember = async (e) => {
     e.preventDefault();
     if (!newMember.name || !newMember.mobile1) {
       alert("Please provide at least Name and Mobile-1.");
       return;
     }
     const memberId = newMember.id.trim() || `CKF-M-${String(members.length + 1).padStart(3, "0")}`;
-    const entry = { ...newMember, id: memberId };
-    setMembers([entry, ...members]);
+    const entry = { ...newMember, id: memberId, totalDonations: 0, status: "Active" };
+
+    const saved = await createMemberAPI(entry);
+    setMembers([saved || entry, ...members]);
     setNewMember({
       id: "",
       name: "",
@@ -298,16 +388,18 @@ export default function AdminPanel() {
       country: "India",
       mobile1: "",
       mobile2: "",
+      email: "",
+      category: "Life Member",
     });
     showAlert(`Member ${entry.name} (${entry.id}) added successfully.`);
   };
 
-  const handleFileUpload = (e) => {
+  const handleFileUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
     const reader = new FileReader();
-    reader.onload = (evt) => {
+    reader.onload = async (evt) => {
       try {
         const text = evt.target.result;
         const lines = text.split(/\r?\n/).filter((l) => l.trim().length > 0);
@@ -316,9 +408,7 @@ export default function AdminPanel() {
           return;
         }
 
-        const headers = lines[0].split(",").map((h) => h.trim().toUpperCase());
         const parsedMembers = [];
-
         for (let i = 1; i < lines.length; i++) {
           const values = lines[i].split(",").map((v) => v.trim().replace(/^"|"$/g, ""));
           if (values.length >= 2 && values[1]) {
@@ -335,14 +425,18 @@ export default function AdminPanel() {
               country: values[9] || "India",
               mobile1: values[10] || "",
               mobile2: values[11] || "",
+              email: values[12] || "",
+              category: "Life Member",
+              status: "Active",
             });
           }
         }
 
+        await bulkCreateMembersAPI(parsedMembers);
         setMembers([...parsedMembers, ...members]);
         showAlert(`Successfully imported ${parsedMembers.length} members from file!`);
       } catch (err) {
-        alert("Error parsing CSV/Excel file. Please ensure standard comma-separated format.");
+        alert("Error parsing file. Please ensure standard comma-separated format.");
       }
     };
     reader.readAsText(file);
@@ -356,14 +450,173 @@ export default function AdminPanel() {
     }
   };
 
-  const handleRemoveSelectedMembers = () => {
+  const handleRemoveSelectedMembers = async () => {
     if (!selectedMemberIds.length) return;
     if (confirm(`Remove ${selectedMemberIds.length} selected member(s)?`)) {
+      await bulkDeleteMembersAPI(selectedMemberIds);
       setMembers(members.filter((m) => !selectedMemberIds.includes(m.id)));
       setSelectedMemberIds([]);
       showAlert("Selected members removed.");
     }
   };
+
+  /* ---------------------------------------------------------------
+     Agent Management Handlers
+  --------------------------------------------------------------- */
+  const handleAddAgent = (e) => {
+    e.preventDefault();
+    if (!newAgent.name || !newAgent.phone) {
+      alert("Name and phone number are required.");
+      return;
+    }
+    const code = newAgent.agentCode.trim() || `AGT-${String(agents.length + 1).padStart(3, "0")}`;
+    const entry = {
+      ...newAgent,
+      agentCode: code,
+      totalCollected: 0,
+      pendingSettlement: 0,
+      active: true,
+    };
+    setAgents([entry, ...agents]);
+    setNewAgent({ agentCode: "", name: "", phone: "", assignedArea: "Nabadwip & Nadia District" });
+    showAlert(`Agent ${entry.name} (${entry.agentCode}) registered.`);
+  };
+
+  const handleSettleAgent = async (ag) => {
+    if (confirm(`Settle all pending collections (₹${ag.pendingSettlement.toLocaleString('en-IN')}) for ${ag.name} with Central Office?`)) {
+      await settleAgentAPI(ag.agentCode);
+      setAgents(
+        agents.map((item) =>
+          item.agentCode === ag.agentCode ? { ...item, pendingSettlement: 0 } : item
+        )
+      );
+      setReceipts(
+        receipts.map((r) =>
+          r.agentId === ag.agentCode ? { ...r, settlementStatus: "Settled" } : r
+        )
+      );
+      showAlert(`Office deposit settled for ${ag.name}.`);
+    }
+  };
+
+  /* ---------------------------------------------------------------
+     CMS: Events Handlers
+  --------------------------------------------------------------- */
+  const handleAddEvent = async (e) => {
+    e.preventDefault();
+    if (!newEvent.title || !newEvent.desc) {
+      alert("Please provide title and description.");
+      return;
+    }
+    const created = await createEventAPI(newEvent);
+    setEvents([created, ...events]);
+    setNewEvent({
+      title: "",
+      bengali: "",
+      season: "",
+      time: "",
+      category: "Major Utsav",
+      desc: "",
+      seva: "Anna Daan Seva",
+      image: "/assets/Krishna’s Golden Riverside Devotion.png",
+      featured: true,
+    });
+    showAlert(`Event "${newEvent.title}" published!`);
+  };
+
+  const handleDeleteEvent = async (id) => {
+    if (confirm("Delete this event?")) {
+      await deleteEventAPI(id);
+      setEvents(events.filter((ev) => ev._id !== id));
+      showAlert("Event removed.");
+    }
+  };
+
+  /* ---------------------------------------------------------------
+     CMS: Blogs Handlers
+  --------------------------------------------------------------- */
+  const handleAddBlog = async (e) => {
+    e.preventDefault();
+    if (!newBlog.title || !newBlog.content) {
+      alert("Title and content are required.");
+      return;
+    }
+    const created = await createBlogAPI(newBlog);
+    setBlogs([created, ...blogs]);
+    setNewBlog({
+      title: "",
+      bengali: "",
+      category: "Katha & Philosophy",
+      readTime: "5 min read",
+      excerpt: "",
+      content: "",
+      image: "/assets/Opulent Gaura-Nitai and Madan Mohan Altar.png",
+      status: "published",
+    });
+    showAlert(`Article "${newBlog.title}" published!`);
+  };
+
+  const handleDeleteBlog = async (id) => {
+    if (confirm("Delete this article?")) {
+      await deleteBlogAPI(id);
+      setBlogs(blogs.filter((b) => b._id !== id));
+      showAlert("Article removed.");
+    }
+  };
+
+  /* ---------------------------------------------------------------
+     CMS: Gallery Handlers
+  --------------------------------------------------------------- */
+  const handleAddGallery = async (e) => {
+    e.preventDefault();
+    if (!newGallery.title || !newGallery.image) {
+      alert("Title and image path required.");
+      return;
+    }
+    const created = await createGalleryAPI(newGallery);
+    setGallery([created, ...gallery]);
+    setNewGallery({
+      title: "",
+      category: "Temple & Altar",
+      image: "/assets/Opulent Gaura-Nitai and Madan Mohan Altar.png",
+      caption: "",
+    });
+    showAlert("Image added to gallery!");
+  };
+
+  const handleDeleteGallery = async (id) => {
+    if (confirm("Remove image from gallery?")) {
+      await deleteGalleryAPI(id);
+      setGallery(gallery.filter((g) => g._id !== id));
+      showAlert("Image removed.");
+    }
+  };
+
+  /* ---------------------------------------------------------------
+     Inquiries Handler
+  --------------------------------------------------------------- */
+  const handleUpdateContactStatus = async (id, status) => {
+    await updateContactStatusAPI(id, status);
+    setContacts(contacts.map((c) => (c._id === id ? { ...c, status } : c)));
+    showAlert(`Inquiry marked as ${status}`);
+  };
+
+  /* ---------------------------------------------------------------
+     Analytics Calculations
+  --------------------------------------------------------------- */
+  const totalDonationAmount = receipts.reduce((sum, r) => sum + (Number(r.amount) || 0), 0);
+  const onlineDonationAmount = receipts
+    .filter((r) => r.channel === "Online Donation")
+    .reduce((sum, r) => sum + (Number(r.amount) || 0), 0);
+  const walkInDonationAmount = receipts
+    .filter((r) => r.channel === "Walk-in to Foundation")
+    .reduce((sum, r) => sum + (Number(r.amount) || 0), 0);
+  const fieldDonationAmount = receipts
+    .filter((r) => r.channel === "Field Collection")
+    .reduce((sum, r) => sum + (Number(r.amount) || 0), 0);
+  const pendingFieldSettlement = receipts
+    .filter((r) => r.channel === "Field Collection" && r.settlementStatus === "Pending Office Deposit")
+    .reduce((sum, r) => sum + (Number(r.amount) || 0), 0);
 
   /* ---------------------------------------------------------------
      Filtered Lists
@@ -373,21 +626,34 @@ export default function AdminPanel() {
     return (
       m.name.toLowerCase().includes(q) ||
       m.id.toLowerCase().includes(q) ||
-      m.mobile1.includes(q) ||
+      (m.mobile1 && m.mobile1.includes(q)) ||
       (m.city && m.city.toLowerCase().includes(q))
     );
   });
 
-  const memberSearchResults = receiptSearch.trim().length > 0
-    ? members.filter((m) => {
-        const q = receiptSearch.toLowerCase();
-        return (
-          m.name.toLowerCase().includes(q) ||
-          m.id.toLowerCase().includes(q) ||
-          m.mobile1.includes(q)
-        );
-      })
-    : [];
+  const memberSearchResults =
+    receiptSearch.trim().length > 0
+      ? members.filter((m) => {
+          const q = receiptSearch.toLowerCase();
+          return (
+            m.name.toLowerCase().includes(q) ||
+            m.id.toLowerCase().includes(q) ||
+            (m.mobile1 && m.mobile1.includes(q))
+          );
+        })
+      : [];
+
+  const filteredReceipts = receipts.filter((r) => {
+    const matchChannel = historyChannelFilter === "All" || r.channel === historyChannelFilter;
+    const q = historySearchQuery.toLowerCase();
+    const matchQuery =
+      !q ||
+      r.receiptNo.toLowerCase().includes(q) ||
+      r.donorName.toLowerCase().includes(q) ||
+      (r.mobile && r.mobile.includes(q)) ||
+      (r.collectedBy && r.collectedBy.toLowerCase().includes(q));
+    return matchChannel && matchQuery;
+  });
 
   return (
     <div className="min-h-screen bg-[#FDFBF7] font-[Inter] text-[#39251D]">
@@ -420,20 +686,31 @@ export default function AdminPanel() {
           <div className="flex items-center gap-3">
             <Link
               to="/"
-              className="flex items-center gap-2 rounded-lg border border-[#C59A52]/30 px-3 py-1.5 text-xs font-semibold text-[#78372B] hover:bg-[#FFF9ED]"
+              className="flex items-center gap-2 rounded-lg border border-[#C59A52]/30 px-3 py-1.5 text-xs font-semibold text-[#78372B] hover:bg-[#FFF9ED] transition"
             >
               <ArrowLeft size={14} />
               <span>Back to Website</span>
             </Link>
             <div className="h-4 w-px bg-[#C59A52]/30" />
             <h1 className="font-serif text-xl font-bold text-[#971515]" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
-              Sri Sri Chintamoni Kunja Foundation — Seva Admin Portal
+              Sri Sri Chintamoni Kunja Foundation — Central Seva Admin Portal
             </h1>
           </div>
 
-          <div className="flex items-center gap-2">
-            <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-800 border border-emerald-300">
-              ● Central Office (Nabadwip Dham)
+          <div className="flex items-center gap-3">
+            {serverState.online ? (
+              <span className="flex items-center gap-1.5 rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-800 border border-emerald-300">
+                <Wifi size={12} className="text-emerald-600" />
+                <span>Server API: Connected ({serverState.database})</span>
+              </span>
+            ) : (
+              <span className="flex items-center gap-1.5 rounded-full bg-amber-100 px-3 py-1 text-xs font-bold text-amber-800 border border-amber-300">
+                <WifiOff size={12} className="text-amber-600" />
+                <span>Offline Resilient Mode</span>
+              </span>
+            )}
+            <span className="hidden sm:inline-flex rounded-full bg-[#FFF9ED] px-3 py-1 text-xs font-bold text-[#78372B] border border-[#C59A52]/40">
+              ● Nabadwip Dham HQ
             </span>
           </div>
         </div>
@@ -452,9 +729,15 @@ export default function AdminPanel() {
         {/* Navigation Tabs */}
         <div className="no-print mb-8 flex flex-wrap gap-2 border-b border-[#C59A52]/30 pb-4">
           {[
+            { id: "dashboard", label: "Dashboard & Analytics", icon: LayoutDashboard },
             { id: "receipt", label: "New Fund Receipt", icon: Receipt },
-            { id: "history", label: "Office Copy / History", icon: FileText },
-            { id: "members", label: "Members / Upload Excel", icon: Users },
+            { id: "history", label: "Office Copy / Receipts History", icon: FileText },
+            { id: "members", label: "Members Database", icon: Users },
+            { id: "agents", label: "Field Collectors / Agents", icon: Briefcase },
+            { id: "events", label: "Events & Utsavs CMS", icon: Calendar },
+            { id: "blogs", label: "Blogs & Katha CMS", icon: BookOpenIcon },
+            { id: "gallery", label: "Gallery Manager", icon: ImageIcon },
+            { id: "inquiries", label: `Devotee Inquiries (${contacts.length})`, icon: Inbox },
           ].map((tab) => {
             const Icon = tab.icon;
             const active = activeTab === tab.id;
@@ -462,13 +745,13 @@ export default function AdminPanel() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold transition-all ${
+                className={`flex items-center gap-2 rounded-xl px-4 py-2 text-xs sm:text-sm font-bold transition-all ${
                   active
                     ? "bg-[#971515] text-white shadow-md shadow-[#971515]/25"
                     : "border border-[#C59A52]/40 bg-white text-[#78372B] hover:bg-[#FFF9ED]"
                 }`}
               >
-                <Icon size={16} />
+                <Icon size={15} />
                 <span>{tab.label}</span>
               </button>
             );
@@ -476,7 +759,193 @@ export default function AdminPanel() {
         </div>
 
         {/* ==============================================================
-            TAB 1: NEW FUND RECEIPT GENERATOR
+            TAB 0: DASHBOARD & ANALYTICS
+        ============================================================== */}
+        {activeTab === "dashboard" && (
+          <div className="space-y-8">
+            {/* KPI Cards Row */}
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {/* Total Members */}
+              <div className="rounded-2xl border border-[#C59A52]/30 bg-white p-5 shadow-sm">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold uppercase tracking-wider text-[#78372B]/70">Registered Members</span>
+                  <div className="rounded-xl bg-[#FFF9ED] p-2.5 text-[#C59A52] border border-[#C59A52]/20">
+                    <Users size={20} />
+                  </div>
+                </div>
+                <div className="mt-4 flex items-baseline gap-2">
+                  <span className="font-serif text-3xl font-bold text-[#78372B]">{members.length}</span>
+                  <span className="text-xs text-emerald-600 font-semibold">100% Active</span>
+                </div>
+                <p className="mt-1 text-xs text-[#39251D]/60">12-column certified directory</p>
+              </div>
+
+              {/* Total Collections */}
+              <div className="rounded-2xl border border-[#C59A52]/30 bg-white p-5 shadow-sm">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold uppercase tracking-wider text-[#78372B]/70">Total Seva Collections</span>
+                  <div className="rounded-xl bg-emerald-50 p-2.5 text-emerald-600 border border-emerald-200">
+                    <TrendingUp size={20} />
+                  </div>
+                </div>
+                <div className="mt-4 flex items-baseline gap-2">
+                  <span className="font-serif text-3xl font-bold text-[#971515]">₹{totalDonationAmount.toLocaleString("en-IN")}</span>
+                </div>
+                <p className="mt-1 text-xs text-[#39251D]/60">{receipts.length} Official Receipts Issued</p>
+              </div>
+
+              {/* Walk-in vs Field vs Online */}
+              <div className="rounded-2xl border border-[#C59A52]/30 bg-white p-5 shadow-sm">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold uppercase tracking-wider text-[#78372B]/70">Walk-in vs Field</span>
+                  <div className="rounded-xl bg-amber-50 p-2.5 text-amber-700 border border-amber-200">
+                    <Building2 size={20} />
+                  </div>
+                </div>
+                <div className="mt-4 space-y-1 text-xs font-semibold">
+                  <div className="flex justify-between">
+                    <span className="text-[#39251D]/70">Office Walk-in:</span>
+                    <span className="font-bold text-[#78372B]">₹{walkInDonationAmount.toLocaleString("en-IN")}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-[#39251D]/70">Field Doorstep:</span>
+                    <span className="font-bold text-[#C59A52]">₹{fieldDonationAmount.toLocaleString("en-IN")}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-[#39251D]/70">Online Portal:</span>
+                    <span className="font-bold text-emerald-700">₹{onlineDonationAmount.toLocaleString("en-IN")}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Pending Agent Settlement */}
+              <div className="rounded-2xl border border-rose-200 bg-rose-50/50 p-5 shadow-sm">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold uppercase tracking-wider text-rose-800">Pending Field Deposit</span>
+                  <div className="rounded-xl bg-rose-100 p-2.5 text-rose-700 border border-rose-300">
+                    <Briefcase size={20} />
+                  </div>
+                </div>
+                <div className="mt-4 flex items-baseline gap-2">
+                  <span className="font-serif text-3xl font-bold text-rose-900">₹{pendingFieldSettlement.toLocaleString("en-IN")}</span>
+                </div>
+                <button
+                  onClick={() => setActiveTab("agents")}
+                  className="mt-2 text-xs font-bold text-[#971515] underline hover:text-[#78372B]"
+                >
+                  Review & Settle with Office →
+                </button>
+              </div>
+            </div>
+
+            {/* Quick Action Buttons */}
+            <div className="rounded-2xl border border-[#C59A52]/30 bg-[#FFF9ED]/60 p-6">
+              <h3 className="font-serif text-lg font-bold text-[#78372B]">Quick Seva Actions</h3>
+              <div className="mt-4 flex flex-wrap gap-3">
+                <button
+                  onClick={() => setActiveTab("receipt")}
+                  className="flex items-center gap-2 rounded-xl bg-[#971515] px-4 py-2.5 text-xs font-bold text-white shadow hover:bg-[#78372B] transition"
+                >
+                  <Plus size={15} />
+                  <span>Issue New Receipt (Dual Print)</span>
+                </button>
+                <button
+                  onClick={() => setActiveTab("members")}
+                  className="flex items-center gap-2 rounded-xl border border-[#C59A52]/40 bg-white px-4 py-2.5 text-xs font-bold text-[#78372B] hover:bg-white/80 transition"
+                >
+                  <Users size={15} />
+                  <span>Add / Import Member</span>
+                </button>
+                <button
+                  onClick={() => setActiveTab("events")}
+                  className="flex items-center gap-2 rounded-xl border border-[#C59A52]/40 bg-white px-4 py-2.5 text-xs font-bold text-[#78372B] hover:bg-white/80 transition"
+                >
+                  <Calendar size={15} />
+                  <span>Post Upcoming Festival</span>
+                </button>
+                <button
+                  onClick={() => setActiveTab("blogs")}
+                  className="flex items-center gap-2 rounded-xl border border-[#C59A52]/40 bg-white px-4 py-2.5 text-xs font-bold text-[#78372B] hover:bg-white/80 transition"
+                >
+                  <BookOpenIcon size={15} />
+                  <span>Publish Spiritual Katha</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Recent Collections Table & Purpose Breakdown */}
+            <div className="grid gap-8 lg:grid-cols-12">
+              <div className="rounded-2xl border border-[#C59A52]/30 bg-white p-6 shadow-sm lg:col-span-8">
+                <div className="flex items-center justify-between border-b border-[#C59A52]/20 pb-3">
+                  <h3 className="font-serif text-lg font-bold text-[#78372B]">Recent Official Receipts</h3>
+                  <button onClick={() => setActiveTab("history")} className="text-xs font-bold text-[#971515] hover:underline">
+                    View All ({receipts.length}) →
+                  </button>
+                </div>
+                <div className="mt-4 overflow-x-auto">
+                  <table className="w-full text-left text-xs">
+                    <thead className="bg-[#FFF9ED] text-[#78372B] uppercase font-bold tracking-wider">
+                      <tr>
+                        <th className="p-3">Receipt No</th>
+                        <th className="p-3">Donor Name</th>
+                        <th className="p-3">Channel</th>
+                        <th className="p-3">Mode</th>
+                        <th className="p-3 text-right">Amount</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-[#C59A52]/20">
+                      {receipts.slice(0, 5).map((r) => (
+                        <tr key={r.receiptNo} className="hover:bg-[#FFF9ED]/30">
+                          <td className="p-3 font-mono font-bold text-[#971515]">{r.receiptNo}</td>
+                          <td className="p-3 font-semibold">{r.donorName}</td>
+                          <td className="p-3">
+                            <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                              r.channel === "Online Donation"
+                                ? "bg-emerald-100 text-emerald-800"
+                                : r.channel === "Field Collection"
+                                ? "bg-amber-100 text-amber-800"
+                                : "bg-blue-100 text-blue-800"
+                            }`}>
+                              {r.channel}
+                            </span>
+                          </td>
+                          <td className="p-3 text-[#39251D]/70">{r.paymentMode}</td>
+                          <td className="p-3 text-right font-bold text-[#78372B]">₹{Number(r.amount).toLocaleString("en-IN")}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Purpose Distribution */}
+              <div className="rounded-2xl border border-[#C59A52]/30 bg-white p-6 shadow-sm lg:col-span-4">
+                <h3 className="font-serif text-lg font-bold text-[#78372B] border-b border-[#C59A52]/20 pb-3">Seva Distribution</h3>
+                <div className="mt-4 space-y-3">
+                  {[
+                    { label: "Daily Anna Daan Seva", pct: "38%", color: "bg-[#971515]" },
+                    { label: "Temple Renovation Seva", pct: "26%", color: "bg-[#C59A52]" },
+                    { label: "Festivals & Utsavs Seva", pct: "20%", color: "bg-emerald-700" },
+                    { label: "Vedic Education & Go Seva", pct: "16%", color: "bg-amber-600" },
+                  ].map((item) => (
+                    <div key={item.label}>
+                      <div className="flex justify-between text-xs font-semibold">
+                        <span className="text-[#39251D]">{item.label}</span>
+                        <span className="text-[#78372B] font-bold">{item.pct}</span>
+                      </div>
+                      <div className="mt-1 h-2 w-full rounded-full bg-[#EDE0C9]/40 overflow-hidden">
+                        <div className={`h-full rounded-full ${item.color}`} style={{ width: item.pct }} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ==============================================================
+            TAB 1: NEW FUND RECEIPT GENERATOR (Dual Donor & Office Copies)
         ============================================================== */}
         {activeTab === "receipt" && (
           <div className="grid gap-8 lg:grid-cols-12">
@@ -488,7 +957,7 @@ export default function AdminPanel() {
                     New Fund Receipt
                   </h2>
                   <p className="mt-0.5 text-xs text-[#39251D]/70">
-                    Search registered member or auto-fill details to generate dual receipt.
+                    Search registered member or select offline channel (Walk-in vs Field Collector).
                   </p>
                 </div>
 
@@ -499,54 +968,90 @@ export default function AdminPanel() {
                       Search Member <span className="text-[#971515]">*</span>
                     </label>
                     <div className="relative mt-1">
+                      <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#C59A52]" />
                       <input
                         type="text"
-                        placeholder="Search by Member ID, Name or Phone..."
                         value={receiptSearch}
-                        onChange={(e) => setReceiptSearch(e.target.value)}
-                        className="w-full rounded-lg border border-[#C59A52]/50 bg-[#FFF9ED]/30 px-3.5 py-2 text-sm text-[#39251D] placeholder-[#39251D]/40 focus:border-[#971515] focus:outline-none"
+                        onChange={(e) => {
+                          setReceiptSearch(e.target.value);
+                          if (!e.target.value) setSelectedMemberForReceipt(null);
+                        }}
+                        placeholder="Type name, ID (e.g. CKF-M-001) or mobile..."
+                        className="w-full rounded-xl border border-[#C59A52]/40 py-2.5 pl-10 pr-4 text-xs font-medium focus:border-[#971515] focus:outline-none"
                       />
-                      <Search size={16} className="absolute right-3 top-2.5 text-[#C59A52]" />
                     </div>
 
                     {/* Member Dropdown Results */}
                     {memberSearchResults.length > 0 && !selectedMemberForReceipt && (
-                      <div className="absolute z-20 mt-1 max-h-48 w-full overflow-y-auto rounded-lg border border-[#C59A52] bg-white p-1 shadow-lg">
+                      <div className="absolute z-20 mt-1 max-h-48 w-full overflow-y-auto rounded-xl border border-[#C59A52]/30 bg-white shadow-xl">
                         {memberSearchResults.map((m) => (
-                          <button
-                            type="button"
+                          <div
                             key={m.id}
                             onClick={() => handleSelectMemberForReceipt(m)}
-                            className="flex w-full flex-col p-2 text-left text-xs transition hover:bg-[#FFF9ED]"
+                            className="cursor-pointer border-b border-[#EDE0C9]/40 p-2.5 text-xs hover:bg-[#FFF9ED] transition"
                           >
-                            <span className="font-bold text-[#971515]">{m.name} ({m.id})</span>
-                            <span className="text-[11px] text-[#39251D]/70">{m.address1}, {m.city} • Ph: {m.mobile1}</span>
-                          </button>
+                            <div className="flex items-center justify-between font-bold text-[#78372B]">
+                              <span>{m.name}</span>
+                              <span className="rounded bg-[#EDE0C9]/50 px-1.5 py-0.5 font-mono text-[10px] text-[#39251D]">
+                                {m.id}
+                              </span>
+                            </div>
+                            <div className="mt-0.5 text-[11px] text-[#39251D]/70">
+                              Ph: {m.mobile1} • {m.city}, {m.district}
+                            </div>
+                          </div>
                         ))}
-                      </div>
-                    )}
-
-                    {selectedMemberForReceipt && (
-                      <div className="mt-2 flex items-center justify-between rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-1.5 text-xs text-emerald-800">
-                        <span>Selected: <strong>{selectedMemberForReceipt.name}</strong> ({selectedMemberForReceipt.id})</span>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setSelectedMemberForReceipt(null);
-                            setReceiptSearch("");
-                          }}
-                          className="text-[11px] font-bold text-emerald-900 underline"
-                        >
-                          Clear
-                        </button>
                       </div>
                     )}
                   </div>
 
-                  {/* Amount (₹) */}
+                  {/* Selected Member Details Card */}
+                  {selectedMemberForReceipt && (
+                    <div className="rounded-xl border border-emerald-300 bg-emerald-50/60 p-3.5 text-xs">
+                      <div className="flex items-center justify-between font-bold text-emerald-950">
+                        <span className="flex items-center gap-1.5">
+                          <Check size={14} className="text-emerald-600" />
+                          <span>{selectedMemberForReceipt.name}</span>
+                        </span>
+                        <span className="font-mono text-[11px] text-emerald-800">
+                          {selectedMemberForReceipt.id}
+                        </span>
+                      </div>
+                      <p className="mt-1 text-[11px] text-emerald-800">
+                        {selectedMemberForReceipt.address1}, {selectedMemberForReceipt.city} – {selectedMemberForReceipt.pincode}
+                      </p>
+                      <p className="mt-0.5 text-[11px] text-emerald-700">
+                        Mobile: {selectedMemberForReceipt.mobile1}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Receipt No & Date */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-bold text-[#78372B]">Receipt No.</label>
+                      <input
+                        type="text"
+                        value={receiptForm.receiptNo}
+                        onChange={(e) => setReceiptForm({ ...receiptForm, receiptNo: e.target.value })}
+                        className="mt-1 w-full rounded-xl border border-[#C59A52]/40 bg-white p-2.5 font-mono text-xs font-bold text-[#971515] focus:outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-[#78372B]">Date</label>
+                      <input
+                        type="text"
+                        value={receiptForm.date}
+                        onChange={(e) => setReceiptForm({ ...receiptForm, date: e.target.value })}
+                        className="mt-1 w-full rounded-xl border border-[#C59A52]/40 bg-white p-2.5 text-xs font-medium focus:outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Amount (INR) with Indian Number to Words Preview */}
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-[#78372B]">
-                      Amount (₹) <span className="text-[#971515]">*</span>
+                    <label className="block text-xs font-bold text-[#78372B]">
+                      Donation Amount (INR ₹) <span className="text-[#971515]">*</span>
                     </label>
                     <input
                       type="number"
@@ -554,117 +1059,96 @@ export default function AdminPanel() {
                       min="1"
                       value={receiptForm.amount}
                       onChange={(e) => setReceiptForm({ ...receiptForm, amount: e.target.value })}
-                      placeholder="e.g. 1001"
-                      className="mt-1 w-full rounded-lg border border-[#C59A52]/50 bg-[#FFF9ED]/30 px-3.5 py-2 text-sm font-bold text-[#39251D] focus:border-[#971515] focus:outline-none"
+                      placeholder="e.g. 5001"
+                      className="mt-1 w-full rounded-xl border border-[#C59A52]/40 bg-white p-2.5 text-base font-bold text-[#78372B] focus:border-[#971515] focus:outline-none"
                     />
-                    <p className="mt-1 text-[11px] italic text-[#C59A52]">
-                      {numberToWords(receiptForm.amount)}
-                    </p>
+                    <div className="mt-1.5 rounded-lg bg-[#FFF9ED] p-2 text-xs italic text-[#78372B]">
+                      Words: <span className="font-semibold">{numberToWords(receiptForm.amount)}</span>
+                    </div>
                   </div>
 
-                  {/* Payment Mode */}
+                  {/* Collection Channel Segmentation: Walk-in vs Field Collector */}
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-[#78372B]">
-                      Payment Mode
+                    <label className="block text-xs font-bold text-[#78372B]">
+                      Collection Channel / Segmentation <span className="text-[#971515]">*</span>
                     </label>
                     <select
-                      value={receiptForm.paymentMode}
-                      onChange={(e) => setReceiptForm({ ...receiptForm, paymentMode: e.target.value })}
-                      className="mt-1 w-full rounded-lg border border-[#C59A52]/50 bg-[#FFF9ED]/30 px-3.5 py-2 text-sm text-[#39251D] focus:border-[#971515] focus:outline-none"
+                      value={receiptForm.channel}
+                      onChange={(e) => setReceiptForm({ ...receiptForm, channel: e.target.value })}
+                      className="mt-1 w-full rounded-xl border border-[#C59A52]/40 bg-white p-2.5 text-xs font-semibold text-[#78372B] focus:outline-none"
                     >
-                      <option value="Cash">Cash</option>
-                      <option value="Online / UPI">Online / UPI</option>
-                      <option value="Bank Transfer (NEFT/RTGS)">Bank Transfer (NEFT/RTGS)</option>
-                      <option value="Cheque / DD">Cheque / DD</option>
+                      <option value="Walk-in to Foundation">Mode A: Person comes to Foundation / Office (Nabadwip)</option>
+                      <option value="Field Collection">Mode B: Field / Doorstep collection by representative</option>
+                      <option value="Online Donation">Mode C: Online / Digital Seva Portal</option>
                     </select>
                   </div>
 
-                  {/* Offline Donation Segmentation: Person came to Foundation OR Field Collection */}
-                  <div className="rounded-xl border border-[#C59A52]/40 bg-[#FFF9ED]/60 p-3">
-                    <label className="block text-xs font-bold uppercase tracking-wider text-[#971515]">
-                      Collection Segmentation (Offline/Direct)
-                    </label>
-                    <div className="mt-2 space-y-2 text-xs">
-                      <label className="flex items-center gap-2 cursor-pointer font-medium">
-                        <input
-                          type="radio"
-                          name="collectionType"
-                          value="Person comes to Foundation / Office"
-                          checked={receiptForm.collectionType === "Person comes to Foundation / Office"}
-                          onChange={(e) => setReceiptForm({ ...receiptForm, collectionType: e.target.value })}
-                          className="accent-[#971515]"
-                        />
-                        <span>Donor visited Foundation / Office in Nabadwip</span>
+                  {/* Field Collector Selection (Conditional if Field Collection) */}
+                  {receiptForm.channel === "Field Collection" && (
+                    <div className="rounded-xl border border-amber-300 bg-amber-50/60 p-3">
+                      <label className="block text-xs font-bold text-amber-900">
+                        Select Field Representative / Agent <span className="text-[#971515]">*</span>
                       </label>
-                      <label className="flex items-center gap-2 cursor-pointer font-medium">
-                        <input
-                          type="radio"
-                          name="collectionType"
-                          value="Field / Doorstep Collection (Collector visited donor)"
-                          checked={receiptForm.collectionType === "Field / Doorstep Collection (Collector visited donor)"}
-                          onChange={(e) => setReceiptForm({ ...receiptForm, collectionType: e.target.value })}
-                          className="accent-[#971515]"
-                        />
-                        <span>Foundation individual went to donor's place</span>
-                      </label>
+                      <select
+                        value={receiptForm.agentId}
+                        onChange={(e) => setReceiptForm({ ...receiptForm, agentId: e.target.value })}
+                        className="mt-1 w-full rounded-lg border border-amber-300 bg-white p-2 text-xs font-semibold text-amber-950 focus:outline-none"
+                      >
+                        <option value="">-- Choose Assigned Agent --</option>
+                        {agents.map((ag) => (
+                          <option key={ag.agentCode} value={ag.agentCode}>
+                            {ag.name} ({ag.agentCode}) - {ag.assignedArea}
+                          </option>
+                        ))}
+                      </select>
+                      <p className="mt-1 text-[11px] text-amber-800">
+                        Agent will hold this receipt batch until settled with central office.
+                      </p>
                     </div>
-                  </div>
+                  )}
 
-                  {/* Date & Purpose Grid */}
-                  <div className="grid gap-3 sm:grid-cols-2">
+                  {/* Payment Mode & Purpose */}
+                  <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-xs font-bold uppercase tracking-wider text-[#78372B]">
-                        Date
-                      </label>
-                      <input
-                        type="text"
-                        value={receiptForm.date}
-                        onChange={(e) => setReceiptForm({ ...receiptForm, date: e.target.value })}
-                        className="mt-1 w-full rounded-lg border border-[#C59A52]/50 bg-[#FFF9ED]/30 px-3 py-2 text-xs text-[#39251D] focus:border-[#971515] focus:outline-none"
-                      />
+                      <label className="block text-xs font-bold text-[#78372B]">Payment Mode</label>
+                      <select
+                        value={receiptForm.paymentMode}
+                        onChange={(e) => setReceiptForm({ ...receiptForm, paymentMode: e.target.value })}
+                        className="mt-1 w-full rounded-xl border border-[#C59A52]/40 bg-white p-2.5 text-xs font-medium focus:outline-none"
+                      >
+                        <option>Cash</option>
+                        <option>UPI</option>
+                        <option>Bank Transfer / NEFT</option>
+                        <option>Cheque</option>
+                        <option>Card</option>
+                      </select>
                     </div>
+
                     <div>
-                      <label className="block text-xs font-bold uppercase tracking-wider text-[#78372B]">
-                        Purpose
-                      </label>
+                      <label className="block text-xs font-bold text-[#78372B]">Seva Purpose</label>
                       <select
                         value={receiptForm.purpose}
                         onChange={(e) => setReceiptForm({ ...receiptForm, purpose: e.target.value })}
-                        className="mt-1 w-full rounded-lg border border-[#C59A52]/50 bg-[#FFF9ED]/30 px-3 py-2 text-xs text-[#39251D] focus:border-[#971515] focus:outline-none"
+                        className="mt-1 w-full rounded-xl border border-[#C59A52]/40 bg-white p-2.5 text-xs font-medium focus:outline-none"
                       >
-                        <option value="NGO Fund">NGO Fund</option>
-                        <option value="Anna Daan (Zero Starvation)">Anna Daan (Zero Starvation)</option>
-                        <option value="Academic Help for Students">Academic Help for Students</option>
-                        <option value="Nitya Puja & Altar Seva">Nitya Puja & Altar Seva</option>
-                        <option value="Festival Utsav & Rath Yatra">Festival Utsav & Rath Yatra</option>
-                        <option value="General Donation">General Donation</option>
+                        <option>NGO Fund</option>
+                        <option>Daily Anna Daan Seva</option>
+                        <option>Temple Renovation & Maintenance</option>
+                        <option>Vedic Education & Chhatra Seva</option>
+                        <option>Go Seva (Cow Protection)</option>
+                        <option>Festivals & Utsavs Seva</option>
+                        <option>Sadhu & Vaishnava Seva</option>
                       </select>
                     </div>
-                  </div>
-
-                  {/* Collected By */}
-                  <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-[#78372B]">
-                      Collected By (Collector Name)
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={receiptForm.collectedBy}
-                      onChange={(e) => setReceiptForm({ ...receiptForm, collectedBy: e.target.value })}
-                      placeholder="Collector name / Staff ID"
-                      className="mt-1 w-full rounded-lg border border-[#C59A52]/50 bg-[#FFF9ED]/30 px-3.5 py-2 text-sm text-[#39251D] focus:border-[#971515] focus:outline-none"
-                    />
                   </div>
 
                   {/* Submit Button */}
                   <div className="pt-2">
                     <button
                       type="submit"
-                      className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#971515] px-6 py-3 text-sm font-bold text-white shadow-md transition hover:bg-[#78372B]"
+                      className="w-full rounded-xl bg-[#971515] py-3 text-xs font-bold uppercase tracking-wider text-white shadow-lg shadow-[#971515]/20 hover:bg-[#78372B] transition"
                     >
-                      <Sparkles size={16} />
-                      <span>Generate Receipt</span>
+                      Generate Official Dual Receipt
                     </button>
                   </div>
                 </form>
@@ -673,323 +1157,199 @@ export default function AdminPanel() {
 
             {/* Right 7 Cols: Printable Dual Receipt Preview */}
             <div className="lg:col-span-7">
-              <div className="rounded-2xl border border-[#C59A52]/40 bg-white p-6 shadow-sm">
-                <div className="no-print flex items-center justify-between border-b border-[#C59A52]/30 pb-3">
-                  <div>
-                    <h3 className="font-serif text-xl font-bold text-[#78372B]">
-                      Receipt Preview & Actions
-                    </h3>
-                    <p className="text-xs text-[#39251D]/70">
-                      Standard Dual Receipt: Top copy for Donor, Bottom copy for Foundation records.
-                    </p>
+              {currentReceipt ? (
+                <div className="space-y-4">
+                  {/* Action Bar for Print */}
+                  <div className="no-print flex items-center justify-between rounded-xl border border-[#C59A52]/30 bg-[#FFF9ED] p-4">
+                    <div>
+                      <h4 className="font-bold text-[#78372B]">Dual Receipt Ready for Printing</h4>
+                      <p className="text-xs text-[#39251D]/70">
+                        Contains Donor Copy (top) and Office Copy (bottom) with perforated separator line.
+                      </p>
+                    </div>
+                    <button
+                      onClick={handlePrint}
+                      className="flex items-center gap-2 rounded-xl bg-[#971515] px-5 py-2.5 text-xs font-bold text-white shadow hover:bg-[#78372B] transition"
+                    >
+                      <Printer size={16} />
+                      <span>Print Dual Receipt</span>
+                    </button>
                   </div>
 
-                  {currentReceipt && (
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={handleSaveOfficeRecord}
-                        className="flex items-center gap-1.5 rounded-lg border border-[#C59A52] bg-[#FFF9ED] px-3 py-1.5 text-xs font-bold text-[#78372B] hover:bg-[#C59A52]/20"
-                      >
-                        <FileSpreadsheet size={14} />
-                        <span>Save Office Record</span>
-                      </button>
-                      <button
-                        onClick={handlePrint}
-                        className="flex items-center gap-1.5 rounded-lg bg-[#971515] px-3.5 py-1.5 text-xs font-bold text-white hover:bg-[#78372B] shadow-sm"
-                      >
-                        <Printer size={14} />
-                        <span>Print Receipt + Office Copy</span>
-                      </button>
-                    </div>
-                  )}
-                </div>
-
-                {/* Printable Receipt Content Area */}
-                <div id="print-area" className="mt-4 space-y-6">
-                  {currentReceipt ? (
-                    <>
-                      {/* 1. DONOR COPY */}
-                      <div className="rounded-xl border-2 border-[#971515] bg-[#FFFCF7] p-5 text-[#39251D] shadow-sm">
-                        <div className="flex items-start justify-between border-b border-[#C59A52]/40 pb-3">
-                          <div>
-                            <span className="font-bold text-[10px] uppercase tracking-widest text-[#971515] border border-[#971515] px-2 py-0.5 rounded">
-                              DONOR COPY
-                            </span>
-                            <h2 className="mt-1 font-serif text-xl font-bold text-[#971515]" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
-                              Sri Sri Chintamoni Kunja Foundation
-                            </h2>
-                            <p className="text-[11px] text-[#39251D]/75">
-                              Bowbazar Rd, Nabadwip, Nadia, West Bengal 741302 • Section 8 Registered (ROC) • DARPAN: WB/2025/0513262
-                            </p>
-                          </div>
-                          <div className="text-right text-xs">
-                            <p className="font-bold text-[#971515]">Receipt No: {currentReceipt.receiptNo}</p>
-                            <p className="text-[#39251D]/80">Date: {currentReceipt.date}</p>
-                          </div>
-                        </div>
-
-                        {/* Table of Details */}
-                        <div className="mt-3 grid grid-cols-2 gap-x-4 gap-y-1.5 text-xs">
-                          <div><span className="text-[#78372B] font-semibold">Member ID:</span> {currentReceipt.member.id}</div>
-                          <div><span className="text-[#78372B] font-semibold">Member Name:</span> <strong>{currentReceipt.member.name}</strong></div>
-                          <div><span className="text-[#78372B] font-semibold">Address - 1:</span> {currentReceipt.member.address1 || "—"}</div>
-                          <div><span className="text-[#78372B] font-semibold">Address - 2:</span> {currentReceipt.member.address2 || "—"}</div>
-                          <div><span className="text-[#78372B] font-semibold">Village/Town/City:</span> {currentReceipt.member.city || "—"}</div>
-                          <div><span className="text-[#78372B] font-semibold">Post Office:</span> {currentReceipt.member.postOffice || "—"}</div>
-                          <div><span className="text-[#78372B] font-semibold">District/City:</span> {currentReceipt.member.district || "—"}</div>
-                          <div><span className="text-[#78372B] font-semibold">State:</span> {currentReceipt.member.state} ({currentReceipt.member.pincode})</div>
-                          <div><span className="text-[#78372B] font-semibold">Mobile - 1:</span> {currentReceipt.member.mobile1}</div>
-                          <div><span className="text-[#78372B] font-semibold">Mobile - 2:</span> {currentReceipt.member.mobile2 || "—"}</div>
-                          <div><span className="text-[#78372B] font-semibold">Purpose:</span> {currentReceipt.purpose}</div>
-                          <div><span className="text-[#78372B] font-semibold">Payment Mode:</span> {currentReceipt.paymentMode}</div>
-                          <div className="col-span-2 text-[11px] text-[#971515] italic">
-                            <span className="font-semibold">Collection Mode:</span> {currentReceipt.collectionType}
-                          </div>
-                        </div>
-
-                        {/* Amount Box */}
-                        <div className="mt-3 flex items-center justify-between rounded-lg border border-[#C59A52] bg-white p-2.5">
-                          <div>
-                            <span className="text-[10px] uppercase font-bold text-[#78372B]">Amount in Words:</span>
-                            <p className="font-serif text-sm font-bold text-[#971515] italic">{currentReceipt.amountInWords}</p>
-                          </div>
-                          <div className="text-right">
-                            <span className="text-[10px] uppercase font-bold text-[#78372B]">Amount:</span>
-                            <p className="text-lg font-bold text-[#971515]">₹ {currentReceipt.amount}/-</p>
-                          </div>
-                        </div>
-
-                        {/* Signatures */}
-                        <div className="mt-5 flex items-center justify-between pt-4 border-t border-[#C59A52]/20 text-[11px]">
-                          <div className="text-center">
-                            <div className="h-6 border-b border-dashed border-[#39251D]/40 w-36 mb-1" />
-                            <span>Member / Collector Signature</span>
-                          </div>
-                          <div className="text-center text-[10px] text-[#39251D]/70">
-                            <span>Collected By: {currentReceipt.collectedBy}</span>
-                          </div>
-                          <div className="text-center">
-                            <div className="h-6 border-b border-dashed border-[#39251D]/40 w-36 mb-1" />
-                            <span>Authorized Signature & Seal</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Perforated separator */}
-                      <div className="relative my-4 text-center">
-                        <div className="border-b-2 border-dashed border-[#C59A52]/50" />
-                        <span className="absolute left-1/2 -top-2.5 -translate-x-1/2 bg-white px-3 text-[10px] text-[#78372B] font-semibold uppercase">
-                          ✂ Fold or Detach Here (Official Perforation)
-                        </span>
-                      </div>
-
-                      {/* 2. OFFICE COPY */}
-                      <div className="rounded-xl border-2 border-[#78372B] bg-[#FFF9ED] p-5 text-[#39251D] shadow-sm">
-                        <div className="flex items-start justify-between border-b border-[#C59A52]/40 pb-3">
-                          <div>
-                            <span className="font-bold text-[10px] uppercase tracking-widest text-[#78372B] border border-[#78372B] px-2 py-0.5 rounded">
-                              OFFICE COPY / RECORD
-                            </span>
-                            <h2 className="mt-1 font-serif text-xl font-bold text-[#78372B]" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
-                              Sri Sri Chintamoni Kunja Foundation
-                            </h2>
-                            <p className="text-[11px] text-[#39251D]/75">
-                              Nabadwip Dham Office • Section 8 Reg. No. 253219 • DARPAN ID: WB/2025/0513262
-                            </p>
-                          </div>
-                          <div className="text-right text-xs">
-                            <p className="font-bold text-[#78372B]">Receipt No: {currentReceipt.receiptNo}</p>
-                            <p className="text-[#39251D]/80">Date: {currentReceipt.date}</p>
-                          </div>
-                        </div>
-
-                        {/* Table */}
-                        <div className="mt-3 grid grid-cols-2 gap-x-4 gap-y-1.5 text-xs">
-                          <div><span className="text-[#78372B] font-semibold">Member ID:</span> {currentReceipt.member.id}</div>
-                          <div><span className="text-[#78372B] font-semibold">Member Name:</span> <strong>{currentReceipt.member.name}</strong></div>
-                          <div><span className="text-[#78372B] font-semibold">City / District:</span> {currentReceipt.member.city}, {currentReceipt.member.district}</div>
-                          <div><span className="text-[#78372B] font-semibold">Phone:</span> {currentReceipt.member.mobile1}</div>
-                          <div><span className="text-[#78372B] font-semibold">Purpose:</span> {currentReceipt.purpose}</div>
-                          <div><span className="text-[#78372B] font-semibold">Payment Mode:</span> {currentReceipt.paymentMode}</div>
-                          <div className="col-span-2 text-[11px] text-[#78372B] italic">
-                            <span className="font-semibold">Collection Mode:</span> {currentReceipt.collectionType}
-                          </div>
-                        </div>
-
-                        {/* Amount */}
-                        <div className="mt-3 flex items-center justify-between rounded-lg border border-[#C59A52] bg-white p-2.5">
-                          <div>
-                            <span className="text-[10px] uppercase font-bold text-[#78372B]">Amount in Words:</span>
-                            <p className="font-serif text-sm font-bold text-[#78372B] italic">{currentReceipt.amountInWords}</p>
-                          </div>
-                          <div className="text-right">
-                            <span className="text-[10px] uppercase font-bold text-[#78372B]">Amount:</span>
-                            <p className="text-lg font-bold text-[#78372B]">₹ {currentReceipt.amount}/-</p>
-                          </div>
-                        </div>
-
-                        {/* Signatures */}
-                        <div className="mt-5 flex items-center justify-between pt-4 border-t border-[#C59A52]/20 text-[11px]">
-                          <div className="text-center">
-                            <div className="h-6 border-b border-dashed border-[#39251D]/40 w-36 mb-1" />
-                            <span>Member / Collector</span>
-                          </div>
-                          <div className="text-center text-[10px] text-[#39251D]/70">
-                            <span>Collected By: {currentReceipt.collectedBy}</span>
-                          </div>
-                          <div className="text-center">
-                            <div className="h-6 border-b border-dashed border-[#39251D]/40 w-36 mb-1" />
-                            <span>Authorized Signatory</span>
-                          </div>
-                        </div>
-                      </div>
-                    </>
-                  ) : (
-                    <div className="flex min-h-[360px] flex-col items-center justify-center rounded-xl border border-dashed border-[#C59A52]/50 p-8 text-center text-[#39251D]/60">
-                      <Receipt size={40} className="text-[#C59A52]/60 mb-3" />
-                      <p className="font-serif text-lg font-bold text-[#78372B]">
-                        No Receipt Generated Yet
-                      </p>
-                      <p className="mt-1 text-xs max-w-sm">
-                        Select a member from the left panel, fill in donation amount & payment details, and click "Generate Receipt".
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* ==============================================================
-            TAB 2: OFFICE COPY / COLLECTION HISTORY
-        ============================================================== */}
-        {activeTab === "history" && (
-          <div className="rounded-2xl border border-[#C59A52]/40 bg-white p-6 shadow-sm">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-[#C59A52]/30 pb-4">
-              <div>
-                <h2 className="font-serif text-2xl font-bold text-[#78372B]" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
-                  Office Copy / Collection History
-                </h2>
-                <p className="text-xs text-[#39251D]/70">
-                  Saved receipts can be reprinted and exported for office documentation and auditing.
-                </p>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() =>
-                    exportToCSV(
-                      `CKF-Office-Collection-Records-${new Date().toISOString().slice(0, 10)}.csv`,
-                      receipts.map((r) => ({
-                        ReceiptNo: r.receiptNo,
-                        Date: r.date,
-                        MemberID: r.member.id,
-                        MemberName: r.member.name,
-                        Amount: r.amount,
-                        PaymentMode: r.paymentMode,
-                        CollectionType: r.collectionType,
-                        Purpose: r.purpose,
-                        CollectedBy: r.collectedBy,
-                        Phone: r.member.mobile1,
-                      }))
-                    )
-                  }
-                  disabled={!receipts.length}
-                  className="flex items-center gap-2 rounded-lg bg-[#971515] px-4 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-[#78372B] disabled:opacity-50"
-                >
-                  <Download size={14} />
-                  <span>Export Office Records CSV</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Collection Summary Counters */}
-            <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
-              <div className="rounded-xl border border-[#C59A52]/30 bg-[#FFF9ED] p-4 text-center">
-                <span className="text-xs uppercase font-bold text-[#C59A52]">Total Receipts</span>
-                <p className="mt-1 font-serif text-2xl font-bold text-[#78372B]">{receipts.length}</p>
-              </div>
-              <div className="rounded-xl border border-[#C59A52]/30 bg-[#FFF9ED] p-4 text-center">
-                <span className="text-xs uppercase font-bold text-[#C59A52]">Total Funds</span>
-                <p className="mt-1 font-serif text-2xl font-bold text-[#971515]">
-                  ₹ {receipts.reduce((acc, r) => acc + (parseFloat(r.amount) || 0), 0).toLocaleString("en-IN")}
-                </p>
-              </div>
-              <div className="rounded-xl border border-[#C59A52]/30 bg-[#FFF9ED] p-4 text-center">
-                <span className="text-xs uppercase font-bold text-[#C59A52]">In-Office / Desk</span>
-                <p className="mt-1 font-serif text-xl font-bold text-[#39251D]">
-                  {receipts.filter((r) => r.collectionType && r.collectionType.includes("Foundation")).length}
-                </p>
-              </div>
-              <div className="rounded-xl border border-[#C59A52]/30 bg-[#FFF9ED] p-4 text-center">
-                <span className="text-xs uppercase font-bold text-[#C59A52]">Field / Doorstep</span>
-                <p className="mt-1 font-serif text-xl font-bold text-[#39251D]">
-                  {receipts.filter((r) => r.collectionType && r.collectionType.includes("Field")).length}
-                </p>
-              </div>
-            </div>
-
-            {/* Receipts Table */}
-            <div className="mt-6 overflow-x-auto">
-              {receipts.length > 0 ? (
-                <table className="w-full text-left text-xs border border-[#C59A52]/20">
-                  <thead className="bg-[#FFF9ED] text-[#78372B] border-b border-[#C59A52]/30 uppercase tracking-wider text-[11px]">
-                    <tr>
-                      <th className="p-3">Receipt No</th>
-                      <th className="p-3">Date</th>
-                      <th className="p-3">Member ID & Name</th>
-                      <th className="p-3">Amount (₹)</th>
-                      <th className="p-3">Mode</th>
-                      <th className="p-3">Collection Segmentation</th>
-                      <th className="p-3">Purpose</th>
-                      <th className="p-3">Collected By</th>
-                      <th className="p-3 text-right">Action</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-[#C59A52]/20">
-                    {receipts.map((r) => (
-                      <tr key={r.receiptNo} className="hover:bg-[#FFF9ED]/40 transition">
-                        <td className="p-3 font-bold text-[#971515]">{r.receiptNo}</td>
-                        <td className="p-3">{r.date}</td>
-                        <td className="p-3">
-                          <strong>{r.member.name}</strong> <span className="text-[#C59A52]">({r.member.id})</span>
-                        </td>
-                        <td className="p-3 font-bold text-emerald-800">₹ {r.amount}</td>
-                        <td className="p-3">{r.paymentMode}</td>
-                        <td className="p-3">
-                          <span
-                            className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold ${
-                              r.collectionType && r.collectionType.includes("Foundation")
-                                ? "bg-amber-100 text-amber-900 border border-amber-300"
-                                : "bg-blue-100 text-blue-900 border border-blue-300"
-                            }`}
-                          >
-                            {r.collectionType && r.collectionType.includes("Foundation") ? "In-Office" : "Field Pickup"}
+                  {/* PRINT AREA (CONTAINING BOTH DONOR COPY & OFFICE RECORD COPY) */}
+                  <div id="print-area" className="rounded-2xl border-2 border-[#C59A52]/40 bg-white p-6 shadow-md text-[#39251D]">
+                    {/* -------------------- 1. DONOR COPY (TOP) -------------------- */}
+                    <div className="border border-[#C59A52]/50 p-5 rounded-xl bg-[#FFF9ED]/20">
+                      <div className="flex items-start justify-between border-b border-[#C59A52]/30 pb-3">
+                        <div>
+                          <span className="rounded bg-[#971515] px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-white">
+                            Official Donor Copy
                           </span>
-                        </td>
-                        <td className="p-3">{r.purpose}</td>
-                        <td className="p-3">{r.collectedBy}</td>
-                        <td className="p-3 text-right space-x-2">
-                          <button
-                            onClick={() => {
-                              setCurrentReceipt(r);
-                              setActiveTab("receipt");
-                            }}
-                            className="font-bold text-[#971515] hover:underline"
-                          >
-                            Reprint
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                          <h3 className="mt-1 font-serif text-xl font-bold text-[#971515]" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+                            SRI SRI CHINTAMONI KUNJA FOUNDATION
+                          </h3>
+                          <p className="text-[11px] text-[#39251D]/80">
+                            Registered Under Companies Act 2013 (Section 8) • NITI Aayog DARPAN ID: WB/2025/0513262
+                          </p>
+                          <p className="text-[10px] text-[#39251D]/70">
+                            Bowbazar Road, P.O. Nabadwip, Nadia, West Bengal – 741302 • Helpline: 947-490-5910
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <div className="font-mono text-xs font-bold text-[#971515]">
+                            Receipt: {currentReceipt.receiptNo}
+                          </div>
+                          <div className="text-[11px] text-[#39251D]/70">
+                            Date: {currentReceipt.date}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Donor Particulars */}
+                      <div className="mt-3 grid grid-cols-2 gap-3 text-xs">
+                        <div>
+                          <span className="font-bold text-[#78372B]">Received with thanks from:</span>
+                          <div className="font-bold text-sm text-[#39251D] mt-0.5">
+                            {currentReceipt.donorName} ({currentReceipt.memberId})
+                          </div>
+                          <div className="text-[11px] text-[#39251D]/80 mt-0.5">
+                            Address: {currentReceipt.address}
+                          </div>
+                          <div className="text-[11px] text-[#39251D]/80">
+                            Mobile: {currentReceipt.mobile}
+                          </div>
+                        </div>
+                        <div className="rounded-lg border border-[#C59A52]/30 bg-white p-3">
+                          <div className="flex justify-between">
+                            <span className="text-[#39251D]/70">Amount Received:</span>
+                            <span className="font-bold text-base text-[#971515]">
+                              ₹{Number(currentReceipt.amount).toLocaleString("en-IN")}
+                            </span>
+                          </div>
+                          <div className="mt-1 text-[11px] text-[#39251D]">
+                            <span className="font-bold">In Words: </span>
+                            <span className="italic">{currentReceipt.amountInWords}</span>
+                          </div>
+                          <div className="mt-2 flex justify-between text-[11px] text-[#39251D]/80 border-t border-[#EDE0C9] pt-1">
+                            <span>Mode: {currentReceipt.paymentMode}</span>
+                            <span>Channel: {currentReceipt.channel}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Purpose & Footer */}
+                      <div className="mt-3 flex items-end justify-between border-t border-[#C59A52]/20 pt-3 text-xs">
+                        <div>
+                          <span className="font-bold text-[#78372B]">Seva Purpose: </span>
+                          <span className="font-semibold text-[#971515]">{currentReceipt.purpose}</span>
+                          <p className="mt-1 text-[9px] text-[#39251D]/60 max-w-sm">
+                            * Donations are gratefully utilized towards foundational seva, daily Anna Daan, and temple upkeep.
+                          </p>
+                        </div>
+                        <div className="text-center">
+                          <div className="font-serif italic text-xs text-[#78372B] mb-1">
+                            {currentReceipt.collectedBy}
+                          </div>
+                          <div className="h-0.5 w-28 bg-[#C59A52]/40 mx-auto" />
+                          <span className="text-[10px] text-[#39251D]/70 font-bold">Authorized Signatory</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* -------------------- PERFORATED SEPARATOR LINE -------------------- */}
+                    <div className="my-5 relative flex items-center justify-center">
+                      <div className="w-full border-t-2 border-dashed border-[#C59A52]/60" />
+                      <span className="absolute bg-white px-3 font-mono text-[10px] uppercase font-bold text-[#78372B] tracking-wider border border-[#C59A52]/40 rounded-full">
+                        ✂ TEAR HERE — OFFICE COPY BELOW
+                      </span>
+                    </div>
+
+                    {/* -------------------- 2. OFFICE RECORD COPY (BOTTOM) -------------------- */}
+                    <div className="border border-[#C59A52]/50 p-5 rounded-xl bg-amber-50/20">
+                      <div className="flex items-start justify-between border-b border-[#C59A52]/30 pb-3">
+                        <div>
+                          <span className="rounded bg-[#78372B] px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-white">
+                            Central Office Collection Record
+                          </span>
+                          <h3 className="mt-1 font-serif text-lg font-bold text-[#78372B]" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+                            SRI SRI CHINTAMONI KUNJA FOUNDATION — OFFICE COPY
+                          </h3>
+                          <p className="text-[10px] text-[#39251D]/70">
+                            Nabadwip Dham Office • Internal Audit & Collection Ledger
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <div className="font-mono text-xs font-bold text-[#971515]">
+                            Receipt: {currentReceipt.receiptNo}
+                          </div>
+                          <div className="text-[11px] text-[#39251D]/70">
+                            Date: {currentReceipt.date}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Office Details */}
+                      <div className="mt-3 grid grid-cols-2 gap-3 text-xs">
+                        <div>
+                          <span className="font-bold text-[#78372B]">Donor Particulars:</span>
+                          <div className="font-bold text-[#39251D] mt-0.5">
+                            {currentReceipt.donorName} ({currentReceipt.memberId})
+                          </div>
+                          <div className="text-[11px] text-[#39251D]/80">
+                            Mobile: {currentReceipt.mobile} • {currentReceipt.address}
+                          </div>
+                          <div className="mt-1 text-[11px] text-[#78372B]">
+                            <span className="font-bold">Channel: </span>
+                            <span className="font-semibold">{currentReceipt.channel}</span>
+                          </div>
+                        </div>
+                        <div className="rounded-lg border border-[#C59A52]/30 bg-white p-3">
+                          <div className="flex justify-between">
+                            <span className="text-[#39251D]/70">Collected Amount:</span>
+                            <span className="font-bold text-base text-[#78372B]">
+                              ₹{Number(currentReceipt.amount).toLocaleString("en-IN")}
+                            </span>
+                          </div>
+                          <div className="mt-1 text-[10px] italic text-[#39251D]">
+                            {currentReceipt.amountInWords}
+                          </div>
+                          <div className="mt-2 flex justify-between text-[11px] text-[#39251D]/80 border-t border-[#EDE0C9] pt-1">
+                            <span>Payment: {currentReceipt.paymentMode}</span>
+                            <span>Status: {currentReceipt.settlementStatus || "Settled"}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Collector & Office Signatures */}
+                      <div className="mt-3 flex items-end justify-between border-t border-[#C59A52]/20 pt-3 text-xs">
+                        <div>
+                          <span className="font-bold text-[#78372B]">Allocated Seva Fund: </span>
+                          <span className="font-semibold">{currentReceipt.purpose}</span>
+                          <div className="text-[10px] text-[#39251D]/70 mt-0.5">
+                            Representative: {currentReceipt.collectedBy}
+                          </div>
+                        </div>
+                        <div className="flex gap-6 text-center">
+                          <div>
+                            <div className="h-0.5 w-24 bg-[#C59A52]/40 mx-auto mt-4" />
+                            <span className="text-[9px] text-[#39251D]/70 font-bold">Collector Sig.</span>
+                          </div>
+                          <div>
+                            <div className="h-0.5 w-24 bg-[#C59A52]/40 mx-auto mt-4" />
+                            <span className="text-[9px] text-[#39251D]/70 font-bold">Office Accountant</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               ) : (
-                <div className="py-16 text-center text-[#39251D]/60">
-                  <FileText size={36} className="mx-auto mb-2 text-[#C59A52]/60" />
-                  <p className="font-serif text-lg font-bold text-[#78372B]">No saved receipts.</p>
-                  <p className="text-xs">Generated receipts will be listed here with office copies.</p>
+                <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-[#C59A52]/40 bg-white/60 p-12 text-center">
+                  <Receipt size={48} className="text-[#C59A52]/60" />
+                  <h3 className="mt-4 font-serif text-xl font-bold text-[#78372B]">Dual Receipt Preview</h3>
+                  <p className="mt-1 max-w-sm text-xs text-[#39251D]/70">
+                    Search a member on the left and enter donation amount to generate and print official Donor and Office receipts.
+                  </p>
                 </div>
               )}
             </div>
@@ -997,296 +1357,419 @@ export default function AdminPanel() {
         )}
 
         {/* ==============================================================
-            TAB 3: MEMBERS / UPLOAD EXCEL / BULK ACTIONS
+            TAB 2: OFFICE COPY / COLLECTION HISTORY LEDGER
+        ============================================================== */}
+        {activeTab === "history" && (
+          <div className="space-y-6">
+            <div className="flex flex-col justify-between gap-4 rounded-2xl border border-[#C59A52]/40 bg-white p-6 shadow-sm sm:flex-row sm:items-center">
+              <div>
+                <h2 className="font-serif text-2xl font-bold text-[#78372B]" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+                  Office Copy / Collection History
+                </h2>
+                <p className="mt-0.5 text-xs text-[#39251D]/70">
+                  Central repository of all issued receipts with segmentation filtering and CSV export.
+                </p>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-3">
+                <button
+                  onClick={() => exportToCSV(`ckf_office_records_${Date.now()}.csv`, receipts)}
+                  className="flex items-center gap-2 rounded-xl bg-[#78372B] px-4 py-2.5 text-xs font-bold text-white shadow hover:bg-[#971515] transition"
+                >
+                  <Download size={15} />
+                  <span>Export Office Records CSV</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Filter and Search Bar */}
+            <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-[#C59A52]/30 bg-white p-4">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-[#78372B]">Channel:</span>
+                {["All", "Walk-in to Foundation", "Field Collection", "Online Donation"].map((ch) => (
+                  <button
+                    key={ch}
+                    onClick={() => setHistoryChannelFilter(ch)}
+                    className={`rounded-lg px-3 py-1.5 text-xs font-bold transition ${
+                      historyChannelFilter === ch
+                        ? "bg-[#971515] text-white"
+                        : "bg-[#FFF9ED] text-[#78372B] hover:bg-[#EDE0C9]/40 border border-[#C59A52]/30"
+                    }`}
+                  >
+                    {ch === "Walk-in to Foundation" ? "Walk-in" : ch === "Field Collection" ? "Field Agent" : ch}
+                  </button>
+                ))}
+              </div>
+
+              <div className="relative w-full sm:w-64">
+                <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#C59A52]" />
+                <input
+                  type="text"
+                  value={historySearchQuery}
+                  onChange={(e) => setHistorySearchQuery(e.target.value)}
+                  placeholder="Search receipt, donor, phone..."
+                  className="w-full rounded-lg border border-[#C59A52]/30 py-2 pl-9 pr-3 text-xs focus:border-[#971515] focus:outline-none"
+                />
+              </div>
+            </div>
+
+            {/* History Table */}
+            <div className="rounded-2xl border border-[#C59A52]/40 bg-white shadow-sm overflow-hidden">
+              {filteredReceipts.length > 0 ? (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs">
+                    <thead className="bg-[#FFF9ED] text-[#78372B] uppercase font-bold tracking-wider">
+                      <tr>
+                        <th className="p-3.5">Receipt No</th>
+                        <th className="p-3.5">Date</th>
+                        <th className="p-3.5">Donor Name & ID</th>
+                        <th className="p-3.5">Channel / Mode</th>
+                        <th className="p-3.5">Purpose</th>
+                        <th className="p-3.5">Collector</th>
+                        <th className="p-3.5">Status</th>
+                        <th className="p-3.5 text-right">Amount</th>
+                        <th className="p-3.5 text-center">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-[#C59A52]/20">
+                      {filteredReceipts.map((r) => (
+                        <tr key={r.receiptNo} className="hover:bg-[#FFF9ED]/30">
+                          <td className="p-3.5 font-mono font-bold text-[#971515]">{r.receiptNo}</td>
+                          <td className="p-3.5 text-[#39251D]/70">{r.date}</td>
+                          <td className="p-3.5">
+                            <div className="font-bold text-[#39251D]">{r.donorName}</div>
+                            <div className="text-[10px] text-[#39251D]/60">{r.memberId || "General Donor"}</div>
+                          </td>
+                          <td className="p-3.5">
+                            <span className={`inline-block rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                              r.channel === "Online Donation"
+                                ? "bg-emerald-100 text-emerald-800"
+                                : r.channel === "Field Collection"
+                                ? "bg-amber-100 text-amber-800"
+                                : "bg-blue-100 text-blue-800"
+                            }`}>
+                              {r.channel}
+                            </span>
+                            <div className="text-[10px] text-[#39251D]/60 mt-0.5">{r.paymentMode}</div>
+                          </td>
+                          <td className="p-3.5 text-[#39251D]/80 font-medium">{r.purpose}</td>
+                          <td className="p-3.5 text-[#39251D]/70">{r.collectedBy}</td>
+                          <td className="p-3.5">
+                            <span className={`rounded px-1.5 py-0.5 text-[10px] font-bold ${
+                              r.settlementStatus === "Pending Office Deposit"
+                                ? "bg-rose-100 text-rose-800"
+                                : "bg-emerald-100 text-emerald-800"
+                            }`}>
+                              {r.settlementStatus || "Settled"}
+                            </span>
+                          </td>
+                          <td className="p-3.5 text-right font-bold text-sm text-[#78372B]">
+                            ₹{Number(r.amount).toLocaleString("en-IN")}
+                          </td>
+                          <td className="p-3.5 text-center">
+                            <button
+                              onClick={() => {
+                                setCurrentReceipt(r);
+                                setActiveTab("receipt");
+                              }}
+                              className="rounded-lg border border-[#C59A52]/40 bg-[#FFF9ED] px-2.5 py-1 text-[11px] font-bold text-[#78372B] hover:bg-[#971515] hover:text-white transition"
+                            >
+                              Reprint
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <div className="p-12 text-center text-xs text-[#39251D]/60">
+                  No saved receipts matching your filter criteria.
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* ==============================================================
+            TAB 3: MEMBER DATABASE (ALL 12 COLUMNS)
         ============================================================== */}
         {activeTab === "members" && (
           <div className="space-y-8">
-            {/* Top Row: Upload Excel/CSV Box & Actions */}
-            <div className="grid gap-6 md:grid-cols-2">
-              {/* Box 1: Upload Excel/CSV */}
-              <div className="rounded-2xl border border-[#C59A52]/40 bg-white p-6 shadow-sm">
-                <div className="flex items-center gap-2 border-b border-[#C59A52]/20 pb-3">
-                  <Upload size={18} className="text-[#971515]" />
-                  <h3 className="font-serif text-xl font-bold text-[#78372B]">
-                    Member Database
-                  </h3>
-                </div>
-                <p className="mt-3 text-xs leading-relaxed text-[#39251D]/80">
-                  Upload your updated Excel / CSV member list whenever you add or change members.
-                  <br />
-                  <strong className="text-[#971515]">Required columns:</strong> ID, NAME, ADDRESS - 1, ADDRESS - 2, VILLAGE/TOWN/CITY, POST OFFICE, DISTRICT/CITY, STATE, PIN CODE, COUNTRY, MOBILE - 1, MOBILE - 2.
+            <div className="flex flex-col justify-between gap-4 rounded-2xl border border-[#C59A52]/40 bg-white p-6 shadow-sm sm:flex-row sm:items-center">
+              <div>
+                <h2 className="font-serif text-2xl font-bold text-[#78372B]" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+                  Member Database (12 Columns)
+                </h2>
+                <p className="mt-0.5 text-xs text-[#39251D]/70">
+                  Required Columns: ID, NAME, ADDRESS - 1, ADDRESS - 2, VILLAGE/TOWN/CITY, POST OFFICE, DISTRICT/CITY, STATE, PIN CODE, COUNTRY, MOBILE - 1, MOBILE - 2.
                 </p>
-
-                <div className="mt-4">
-                  <label className="block text-xs font-bold text-[#78372B] mb-1">
-                    Choose Excel / CSV File
-                  </label>
-                  <input
-                    type="file"
-                    accept=".csv,.txt"
-                    onChange={handleFileUpload}
-                    className="block w-full text-xs text-[#39251D] file:mr-4 file:rounded-lg file:border-0 file:bg-[#971515] file:px-4 file:py-2 file:text-xs file:font-semibold file:text-white hover:file:bg-[#78372B] cursor-pointer"
-                  />
-                </div>
               </div>
 
-              {/* Box 2: Bulk Actions & Export */}
-              <div className="rounded-2xl border border-[#C59A52]/40 bg-white p-6 shadow-sm flex flex-col justify-between">
-                <div>
-                  <div className="flex items-center gap-2 border-b border-[#C59A52]/20 pb-3">
-                    <Download size={18} className="text-[#971515]" />
-                    <h3 className="font-serif text-xl font-bold text-[#78372B]">
-                      Bulk Add / Remove Members
-                    </h3>
+              <div className="flex flex-wrap items-center gap-3">
+                <button
+                  onClick={() => exportToCSV(`ckf_members_${Date.now()}.csv`, members)}
+                  className="flex items-center gap-2 rounded-xl bg-[#78372B] px-4 py-2.5 text-xs font-bold text-white shadow hover:bg-[#971515] transition"
+                >
+                  <Download size={15} />
+                  <span>Export Members CSV</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Top Grid: Add Member Form + Excel Bulk Upload */}
+            <div className="grid gap-8 lg:grid-cols-12">
+              {/* Left 7 Cols: Manual Add Member Form with all 12 fields */}
+              <div className="rounded-2xl border border-[#C59A52]/40 bg-white p-6 shadow-sm lg:col-span-7">
+                <h3 className="font-serif text-lg font-bold text-[#78372B] border-b border-[#C59A52]/20 pb-3">
+                  Add New Member Manually
+                </h3>
+                <form onSubmit={handleAddMember} className="mt-4 space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-bold text-[#78372B]">Member ID</label>
+                      <input
+                        type="text"
+                        value={newMember.id}
+                        onChange={(e) => setNewMember({ ...newMember, id: e.target.value })}
+                        placeholder="Auto-generated if empty"
+                        className="mt-1 w-full rounded-xl border border-[#C59A52]/40 p-2.5 text-xs font-mono font-semibold focus:outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-[#78372B]">
+                        Name <span className="text-[#971515]">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={newMember.name}
+                        onChange={(e) => setNewMember({ ...newMember, name: e.target.value })}
+                        placeholder="Full devotee name"
+                        className="mt-1 w-full rounded-xl border border-[#C59A52]/40 p-2.5 text-xs font-semibold focus:outline-none"
+                      />
+                    </div>
                   </div>
-                  <p className="mt-3 text-xs leading-relaxed text-[#39251D]/80">
-                    Add multiple members by uploading an Excel/CSV file, or remove multiple existing members by selecting them below. The rest of the member database and receipt functions remain unchanged.
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-bold text-[#78372B]">Address - 1</label>
+                      <input
+                        type="text"
+                        value={newMember.address1}
+                        onChange={(e) => setNewMember({ ...newMember, address1: e.target.value })}
+                        placeholder="House / Street"
+                        className="mt-1 w-full rounded-xl border border-[#C59A52]/40 p-2.5 text-xs focus:outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-[#78372B]">Address - 2</label>
+                      <input
+                        type="text"
+                        value={newMember.address2}
+                        onChange={(e) => setNewMember({ ...newMember, address2: e.target.value })}
+                        placeholder="Landmark / Locality"
+                        className="mt-1 w-full rounded-xl border border-[#C59A52]/40 p-2.5 text-xs focus:outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <div>
+                      <label className="block text-xs font-bold text-[#78372B]">Village/Town/City</label>
+                      <input
+                        type="text"
+                        value={newMember.city}
+                        onChange={(e) => setNewMember({ ...newMember, city: e.target.value })}
+                        className="mt-1 w-full rounded-xl border border-[#C59A52]/40 p-2 text-xs focus:outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-[#78372B]">Post Office</label>
+                      <input
+                        type="text"
+                        value={newMember.postOffice}
+                        onChange={(e) => setNewMember({ ...newMember, postOffice: e.target.value })}
+                        className="mt-1 w-full rounded-xl border border-[#C59A52]/40 p-2 text-xs focus:outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-[#78372B]">District/City</label>
+                      <input
+                        type="text"
+                        value={newMember.district}
+                        onChange={(e) => setNewMember({ ...newMember, district: e.target.value })}
+                        className="mt-1 w-full rounded-xl border border-[#C59A52]/40 p-2 text-xs focus:outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-[#78372B]">State</label>
+                      <input
+                        type="text"
+                        value={newMember.state}
+                        onChange={(e) => setNewMember({ ...newMember, state: e.target.value })}
+                        className="mt-1 w-full rounded-xl border border-[#C59A52]/40 p-2 text-xs focus:outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <div>
+                      <label className="block text-xs font-bold text-[#78372B]">PIN Code</label>
+                      <input
+                        type="text"
+                        value={newMember.pincode}
+                        onChange={(e) => setNewMember({ ...newMember, pincode: e.target.value })}
+                        className="mt-1 w-full rounded-xl border border-[#C59A52]/40 p-2 text-xs font-mono focus:outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-[#78372B]">Country</label>
+                      <input
+                        type="text"
+                        value={newMember.country}
+                        onChange={(e) => setNewMember({ ...newMember, country: e.target.value })}
+                        className="mt-1 w-full rounded-xl border border-[#C59A52]/40 p-2 text-xs focus:outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-[#78372B]">
+                        Mobile - 1 <span className="text-[#971515]">*</span>
+                      </label>
+                      <input
+                        type="tel"
+                        required
+                        value={newMember.mobile1}
+                        onChange={(e) => setNewMember({ ...newMember, mobile1: e.target.value })}
+                        placeholder="10-digit mobile"
+                        className="mt-1 w-full rounded-xl border border-[#C59A52]/40 p-2 text-xs font-mono focus:outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-[#78372B]">Mobile - 2</label>
+                      <input
+                        type="tel"
+                        value={newMember.mobile2}
+                        onChange={(e) => setNewMember({ ...newMember, mobile2: e.target.value })}
+                        placeholder="Secondary mobile"
+                        className="mt-1 w-full rounded-xl border border-[#C59A52]/40 p-2 text-xs font-mono focus:outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="pt-2">
+                    <button
+                      type="submit"
+                      className="w-full rounded-xl bg-[#971515] py-2.5 text-xs font-bold uppercase tracking-wider text-white shadow hover:bg-[#78372B] transition"
+                    >
+                      Add Member
+                    </button>
+                  </div>
+                </form>
+              </div>
+
+              {/* Right 5 Cols: Bulk Upload & Actions */}
+              <div className="space-y-6 lg:col-span-5">
+                <div className="rounded-2xl border border-[#C59A52]/40 bg-white p-6 shadow-sm">
+                  <h3 className="font-serif text-lg font-bold text-[#78372B] border-b border-[#C59A52]/20 pb-3">
+                    Bulk Add / Upload Excel or CSV
+                  </h3>
+                  <p className="mt-2 text-xs text-[#39251D]/70">
+                    Upload your updated member list whenever you add or change members. Required columns: ID, NAME, ADDRESS - 1, ADDRESS - 2, CITY, POST OFFICE, DISTRICT, STATE, PIN CODE, COUNTRY, MOBILE - 1, MOBILE - 2.
                   </p>
+
+                  <div className="mt-4 rounded-xl border-2 border-dashed border-[#C59A52]/40 bg-[#FFF9ED]/30 p-5 text-center">
+                    <FileSpreadsheet size={32} className="mx-auto text-[#C59A52]" />
+                    <input
+                      type="file"
+                      id="member-csv-upload"
+                      accept=".csv, .xlsx, .xls"
+                      onChange={handleFileUpload}
+                      className="hidden"
+                    />
+                    <label
+                      htmlFor="member-csv-upload"
+                      className="mt-3 inline-flex cursor-pointer items-center gap-2 rounded-xl bg-[#971515] px-4 py-2 text-xs font-bold text-white shadow hover:bg-[#78372B] transition"
+                    >
+                      <Upload size={14} />
+                      <span>Choose Excel / CSV File</span>
+                    </label>
+                    <p className="mt-2 text-[11px] text-[#39251D]/60">Supports CSV, XLS, XLSX formats</p>
+                  </div>
                 </div>
 
-                <div className="mt-6 flex flex-wrap gap-2 pt-2">
-                  <button
-                    onClick={() =>
-                      exportToCSV(
-                        `CKF-Members-Database-${new Date().toISOString().slice(0, 10)}.csv`,
-                        members
-                      )
-                    }
-                    className="flex items-center gap-1.5 rounded-lg border border-[#C59A52] bg-[#FFF9ED] px-4 py-2 text-xs font-bold text-[#78372B] hover:bg-[#C59A52]/20"
-                  >
-                    <Download size={14} />
-                    <span>Export Members CSV</span>
-                  </button>
+                {/* Bulk Select / Delete Actions */}
+                <div className="rounded-2xl border border-[#C59A52]/40 bg-white p-6 shadow-sm">
+                  <h3 className="font-serif text-lg font-bold text-[#78372B] border-b border-[#C59A52]/20 pb-3">
+                    Bulk Selection & Cleanup
+                  </h3>
+                  <div className="mt-4 flex flex-wrap items-center gap-3">
+                    <button
+                      onClick={handleSelectAllMembers}
+                      className="flex items-center gap-1.5 rounded-xl border border-[#C59A52]/40 bg-[#FFF9ED] px-3.5 py-2 text-xs font-bold text-[#78372B] hover:bg-[#EDE0C9]/50 transition"
+                    >
+                      {selectedMemberIds.length === members.length ? <CheckSquare size={14} /> : <Square size={14} />}
+                      <span>{selectedMemberIds.length === members.length ? "Clear Selection" : "Select All"}</span>
+                    </button>
 
-                  <button
-                    onClick={handleSelectAllMembers}
-                    className="flex items-center gap-1.5 rounded-lg border border-[#C59A52]/50 bg-white px-3 py-2 text-xs font-medium text-[#39251D] hover:bg-[#FFF9ED]"
-                  >
-                    <CheckSquare size={14} />
-                    <span>{selectedMemberIds.length === members.length ? "Clear Selection" : "Select All"}</span>
-                  </button>
-
-                  {selectedMemberIds.length > 0 && (
                     <button
                       onClick={handleRemoveSelectedMembers}
-                      className="flex items-center gap-1.5 rounded-lg bg-rose-700 px-4 py-2 text-xs font-bold text-white hover:bg-rose-800"
+                      disabled={!selectedMemberIds.length}
+                      className="flex items-center gap-1.5 rounded-xl bg-rose-700 px-3.5 py-2 text-xs font-bold text-white shadow hover:bg-rose-800 transition disabled:opacity-40"
                     >
                       <Trash2 size={14} />
                       <span>Remove Selected ({selectedMemberIds.length})</span>
                     </button>
-                  )}
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Add New Member Manually Card */}
-            <div className="rounded-2xl border border-[#C59A52]/40 bg-white p-6 shadow-sm">
-              <div className="border-b border-[#C59A52]/20 pb-3">
-                <h3 className="font-serif text-xl font-bold text-[#78372B]">
-                  Add New Member Manually
-                </h3>
-                <p className="text-xs text-[#39251D]/70">
-                  Register a single member into the official Chintamoni Kunja Foundation directory.
-                </p>
-              </div>
-
-              <form onSubmit={handleAddMember} className="mt-6 grid gap-4 sm:grid-cols-3 lg:grid-cols-4">
-                <div>
-                  <label className="block text-xs font-bold uppercase text-[#78372B]">Member ID</label>
-                  <input
-                    type="text"
-                    value={newMember.id}
-                    onChange={(e) => setNewMember({ ...newMember, id: e.target.value })}
-                    placeholder="Auto-generated if blank"
-                    className="mt-1 w-full rounded-lg border border-[#C59A52]/50 bg-[#FFF9ED]/30 px-3 py-2 text-xs text-[#39251D] focus:border-[#971515] focus:outline-none"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold uppercase text-[#78372B]">Name *</label>
-                  <input
-                    type="text"
-                    required
-                    value={newMember.name}
-                    onChange={(e) => setNewMember({ ...newMember, name: e.target.value })}
-                    placeholder="Full name"
-                    className="mt-1 w-full rounded-lg border border-[#C59A52]/50 bg-[#FFF9ED]/30 px-3 py-2 text-xs text-[#39251D] focus:border-[#971515] focus:outline-none"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold uppercase text-[#78372B]">Address - 1</label>
-                  <input
-                    type="text"
-                    value={newMember.address1}
-                    onChange={(e) => setNewMember({ ...newMember, address1: e.target.value })}
-                    placeholder="Street / Lane"
-                    className="mt-1 w-full rounded-lg border border-[#C59A52]/50 bg-[#FFF9ED]/30 px-3 py-2 text-xs text-[#39251D] focus:border-[#971515] focus:outline-none"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold uppercase text-[#78372B]">Address - 2</label>
-                  <input
-                    type="text"
-                    value={newMember.address2}
-                    onChange={(e) => setNewMember({ ...newMember, address2: e.target.value })}
-                    placeholder="Landmark"
-                    className="mt-1 w-full rounded-lg border border-[#C59A52]/50 bg-[#FFF9ED]/30 px-3 py-2 text-xs text-[#39251D] focus:border-[#971515] focus:outline-none"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold uppercase text-[#78372B]">Village/Town/City</label>
-                  <input
-                    type="text"
-                    value={newMember.city}
-                    onChange={(e) => setNewMember({ ...newMember, city: e.target.value })}
-                    className="mt-1 w-full rounded-lg border border-[#C59A52]/50 bg-[#FFF9ED]/30 px-3 py-2 text-xs text-[#39251D] focus:border-[#971515] focus:outline-none"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold uppercase text-[#78372B]">Post Office</label>
-                  <input
-                    type="text"
-                    value={newMember.postOffice}
-                    onChange={(e) => setNewMember({ ...newMember, postOffice: e.target.value })}
-                    className="mt-1 w-full rounded-lg border border-[#C59A52]/50 bg-[#FFF9ED]/30 px-3 py-2 text-xs text-[#39251D] focus:border-[#971515] focus:outline-none"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold uppercase text-[#78372B]">District/City</label>
-                  <input
-                    type="text"
-                    value={newMember.district}
-                    onChange={(e) => setNewMember({ ...newMember, district: e.target.value })}
-                    className="mt-1 w-full rounded-lg border border-[#C59A52]/50 bg-[#FFF9ED]/30 px-3 py-2 text-xs text-[#39251D] focus:border-[#971515] focus:outline-none"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold uppercase text-[#78372B]">State</label>
-                  <input
-                    type="text"
-                    value={newMember.state}
-                    onChange={(e) => setNewMember({ ...newMember, state: e.target.value })}
-                    className="mt-1 w-full rounded-lg border border-[#C59A52]/50 bg-[#FFF9ED]/30 px-3 py-2 text-xs text-[#39251D] focus:border-[#971515] focus:outline-none"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold uppercase text-[#78372B]">PIN Code</label>
-                  <input
-                    type="text"
-                    value={newMember.pincode}
-                    onChange={(e) => setNewMember({ ...newMember, pincode: e.target.value })}
-                    className="mt-1 w-full rounded-lg border border-[#C59A52]/50 bg-[#FFF9ED]/30 px-3 py-2 text-xs text-[#39251D] focus:border-[#971515] focus:outline-none"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold uppercase text-[#78372B]">Country</label>
-                  <input
-                    type="text"
-                    value={newMember.country}
-                    onChange={(e) => setNewMember({ ...newMember, country: e.target.value })}
-                    className="mt-1 w-full rounded-lg border border-[#C59A52]/50 bg-[#FFF9ED]/30 px-3 py-2 text-xs text-[#39251D] focus:border-[#971515] focus:outline-none"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold uppercase text-[#78372B]">Mobile - 1 *</label>
-                  <input
-                    type="tel"
-                    required
-                    value={newMember.mobile1}
-                    onChange={(e) => setNewMember({ ...newMember, mobile1: e.target.value })}
-                    placeholder="Primary contact"
-                    className="mt-1 w-full rounded-lg border border-[#C59A52]/50 bg-[#FFF9ED]/30 px-3 py-2 text-xs text-[#39251D] focus:border-[#971515] focus:outline-none"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold uppercase text-[#78372B]">Mobile - 2</label>
-                  <input
-                    type="tel"
-                    value={newMember.mobile2}
-                    onChange={(e) => setNewMember({ ...newMember, mobile2: e.target.value })}
-                    placeholder="Secondary contact"
-                    className="mt-1 w-full rounded-lg border border-[#C59A52]/50 bg-[#FFF9ED]/30 px-3 py-2 text-xs text-[#39251D] focus:border-[#971515] focus:outline-none"
-                  />
-                </div>
-
-                <div className="sm:col-span-3 lg:col-span-4 pt-2">
-                  <button
-                    type="submit"
-                    className="flex items-center gap-2 rounded-xl bg-[#971515] px-6 py-2.5 text-xs font-bold text-white shadow-md transition hover:bg-[#78372B]"
-                  >
-                    <Plus size={16} />
-                    <span>Add Member</span>
-                  </button>
-                </div>
-              </form>
-            </div>
-
-            {/* Member Directory Table */}
-            <div className="rounded-2xl border border-[#C59A52]/40 bg-white p-6 shadow-sm">
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-[#C59A52]/30 pb-4">
-                <div className="flex items-center gap-3">
-                  <h3 className="font-serif text-xl font-bold text-[#78372B]">
-                    Registered Members ({filteredMembers.length})
-                  </h3>
-                </div>
-
-                {/* Search Bar */}
+            {/* Member Directory Full Table */}
+            <div className="rounded-2xl border border-[#C59A52]/40 bg-white shadow-sm overflow-hidden">
+              <div className="flex flex-col justify-between gap-3 border-b border-[#C59A52]/20 p-4 sm:flex-row sm:items-center">
+                <span className="font-serif text-lg font-bold text-[#78372B]">
+                  Member Directory ({filteredMembers.length} records)
+                </span>
                 <div className="relative w-full sm:w-72">
+                  <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#C59A52]" />
                   <input
                     type="text"
-                    placeholder="Filter by name, ID, phone, city..."
                     value={memberSearchQuery}
                     onChange={(e) => setMemberSearchQuery(e.target.value)}
-                    className="w-full rounded-lg border border-[#C59A52]/40 bg-[#FFF9ED]/30 px-3.5 py-1.5 text-xs text-[#39251D] placeholder-[#39251D]/50 focus:border-[#971515] focus:outline-none"
+                    placeholder="Search by name, ID, phone, city..."
+                    className="w-full rounded-lg border border-[#C59A52]/30 py-2 pl-9 pr-3 text-xs focus:border-[#971515] focus:outline-none"
                   />
-                  <Search size={14} className="absolute right-3 top-2 text-[#C59A52]" />
                 </div>
               </div>
 
-              {/* Table */}
-              <div className="mt-4 overflow-x-auto">
-                <table className="w-full text-left text-xs border border-[#C59A52]/20">
-                  <thead className="bg-[#FFF9ED] text-[#78372B] uppercase text-[10px] tracking-wider border-b border-[#C59A52]/30">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-[#FFF9ED] text-[#78372B] uppercase font-bold tracking-wider">
                     <tr>
-                      <th className="p-3 w-8">
+                      <th className="p-3 w-10 text-center">
                         <input
                           type="checkbox"
                           checked={selectedMemberIds.length === members.length && members.length > 0}
                           onChange={handleSelectAllMembers}
-                          className="accent-[#971515]"
                         />
                       </th>
                       <th className="p-3">ID</th>
                       <th className="p-3">Name</th>
-                      <th className="p-3">Address 1 & 2</th>
-                      <th className="p-3">Town / City</th>
-                      <th className="p-3">District</th>
-                      <th className="p-3">State</th>
-                      <th className="p-3">PIN Code</th>
-                      <th className="p-3">Mobile 1</th>
-                      <th className="p-3">Mobile 2</th>
-                      <th className="p-3 text-right">Quick Action</th>
+                      <th className="p-3">Address - 1 & 2</th>
+                      <th className="p-3">City / Post Office</th>
+                      <th className="p-3">District & State</th>
+                      <th className="p-3">PIN</th>
+                      <th className="p-3">Mobile - 1 & 2</th>
+                      <th className="p-3 text-right">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[#C59A52]/20">
                     {filteredMembers.map((m) => {
                       const isSelected = selectedMemberIds.includes(m.id);
                       return (
-                        <tr
-                          key={m.id}
-                          className={`transition ${isSelected ? "bg-amber-50" : "hover:bg-[#FFF9ED]/40"}`}
-                        >
-                          <td className="p-3">
+                        <tr key={m.id} className={isSelected ? "bg-[#FFF9ED]/80" : "hover:bg-[#FFF9ED]/20"}>
+                          <td className="p-3 text-center">
                             <input
                               type="checkbox"
                               checked={isSelected}
@@ -1297,27 +1780,31 @@ export default function AdminPanel() {
                                   setSelectedMemberIds([...selectedMemberIds, m.id]);
                                 }
                               }}
-                              className="accent-[#971515]"
                             />
                           </td>
-                          <td className="p-3 font-bold text-[#971515]">{m.id}</td>
-                          <td className="p-3 font-semibold text-[#39251D]">{m.name}</td>
+                          <td className="p-3 font-mono font-bold text-[#971515]">{m.id}</td>
+                          <td className="p-3 font-bold text-[#39251D]">{m.name}</td>
                           <td className="p-3 text-[#39251D]/80">
-                            {m.address1} {m.address2 ? `• ${m.address2}` : ""}
+                            {m.address1} {m.address2 && `• ${m.address2}`}
                           </td>
-                          <td className="p-3">{m.city}</td>
-                          <td className="p-3">{m.district}</td>
-                          <td className="p-3">{m.state}</td>
-                          <td className="p-3">{m.pincode}</td>
-                          <td className="p-3 font-semibold text-emerald-800">{m.mobile1}</td>
-                          <td className="p-3 text-[#39251D]/70">{m.mobile2 || "—"}</td>
+                          <td className="p-3 text-[#39251D]/80">
+                            {m.city} {m.postOffice && `(PO: ${m.postOffice})`}
+                          </td>
+                          <td className="p-3 text-[#39251D]/80">
+                            {m.district}, {m.state}
+                          </td>
+                          <td className="p-3 font-mono">{m.pincode}</td>
+                          <td className="p-3 font-mono">
+                            <div>{m.mobile1}</div>
+                            {m.mobile2 && <div className="text-[10px] text-[#39251D]/60">{m.mobile2}</div>}
+                          </td>
                           <td className="p-3 text-right">
                             <button
                               onClick={() => {
                                 handleSelectMemberForReceipt(m);
                                 setActiveTab("receipt");
                               }}
-                              className="rounded bg-[#971515]/10 px-2.5 py-1 text-[11px] font-bold text-[#971515] hover:bg-[#971515] hover:text-white transition"
+                              className="rounded-lg bg-[#971515] px-2.5 py-1 text-[11px] font-bold text-white shadow hover:bg-[#78372B] transition"
                             >
                               New Receipt
                             </button>
@@ -1331,8 +1818,608 @@ export default function AdminPanel() {
             </div>
           </div>
         )}
+
+        {/* ==============================================================
+            TAB 4: FIELD COLLECTION AGENTS (Doorstep Collectors)
+        ============================================================== */}
+        {activeTab === "agents" && (
+          <div className="space-y-8">
+            <div className="flex flex-col justify-between gap-4 rounded-2xl border border-[#C59A52]/40 bg-white p-6 shadow-sm sm:flex-row sm:items-center">
+              <div>
+                <h2 className="font-serif text-2xl font-bold text-[#78372B]" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+                  Field Collection Representatives
+                </h2>
+                <p className="mt-0.5 text-xs text-[#39251D]/70">
+                  Manage doorstep donation collectors, track assigned areas, and settle collection batches with central office.
+                </p>
+              </div>
+            </div>
+
+            <div className="grid gap-8 lg:grid-cols-12">
+              {/* Left 4 Cols: Register New Agent */}
+              <div className="rounded-2xl border border-[#C59A52]/40 bg-white p-6 shadow-sm lg:col-span-4">
+                <h3 className="font-serif text-lg font-bold text-[#78372B] border-b border-[#C59A52]/20 pb-3">
+                  Register Field Agent
+                </h3>
+                <form onSubmit={handleAddAgent} className="mt-4 space-y-4">
+                  <div>
+                    <label className="block text-xs font-bold text-[#78372B]">Agent Code</label>
+                    <input
+                      type="text"
+                      value={newAgent.agentCode}
+                      onChange={(e) => setNewAgent({ ...newAgent, agentCode: e.target.value })}
+                      placeholder="e.g. AGT-004 (Auto if blank)"
+                      className="mt-1 w-full rounded-xl border border-[#C59A52]/40 p-2.5 text-xs font-mono focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-[#78372B]">Full Name *</label>
+                    <input
+                      type="text"
+                      required
+                      value={newAgent.name}
+                      onChange={(e) => setNewAgent({ ...newAgent, name: e.target.value })}
+                      placeholder="Representative Name"
+                      className="mt-1 w-full rounded-xl border border-[#C59A52]/40 p-2.5 text-xs font-semibold focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-[#78372B]">Phone Number *</label>
+                    <input
+                      type="tel"
+                      required
+                      value={newAgent.phone}
+                      onChange={(e) => setNewAgent({ ...newAgent, phone: e.target.value })}
+                      placeholder="Primary contact"
+                      className="mt-1 w-full rounded-xl border border-[#C59A52]/40 p-2.5 text-xs font-mono focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-[#78372B]">Assigned Territory</label>
+                    <input
+                      type="text"
+                      value={newAgent.assignedArea}
+                      onChange={(e) => setNewAgent({ ...newAgent, assignedArea: e.target.value })}
+                      placeholder="e.g. Nabadwip Ghats & Market"
+                      className="mt-1 w-full rounded-xl border border-[#C59A52]/40 p-2.5 text-xs focus:outline-none"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    className="w-full rounded-xl bg-[#971515] py-2.5 text-xs font-bold uppercase tracking-wider text-white shadow hover:bg-[#78372B] transition"
+                  >
+                    Add Representative
+                  </button>
+                </form>
+              </div>
+
+              {/* Right 8 Cols: Agents Table with Settle Action */}
+              <div className="rounded-2xl border border-[#C59A52]/40 bg-white p-6 shadow-sm lg:col-span-8">
+                <h3 className="font-serif text-lg font-bold text-[#78372B] border-b border-[#C59A52]/20 pb-3">
+                  Active Collectors & Office Settlement Status
+                </h3>
+                <div className="mt-4 overflow-x-auto">
+                  <table className="w-full text-left text-xs">
+                    <thead className="bg-[#FFF9ED] text-[#78372B] uppercase font-bold tracking-wider">
+                      <tr>
+                        <th className="p-3">Agent Code</th>
+                        <th className="p-3">Name & Phone</th>
+                        <th className="p-3">Assigned Area</th>
+                        <th className="p-3 text-right">Total Collected</th>
+                        <th className="p-3 text-right">Pending Deposit</th>
+                        <th className="p-3 text-center">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-[#C59A52]/20">
+                      {agents.map((ag) => (
+                        <tr key={ag.agentCode} className="hover:bg-[#FFF9ED]/30">
+                          <td className="p-3 font-mono font-bold text-[#971515]">{ag.agentCode}</td>
+                          <td className="p-3">
+                            <div className="font-bold text-[#39251D]">{ag.name}</div>
+                            <div className="text-[10px] text-[#39251D]/60 font-mono">{ag.phone}</div>
+                          </td>
+                          <td className="p-3 text-[#39251D]/80">{ag.assignedArea}</td>
+                          <td className="p-3 text-right font-bold text-[#78372B]">
+                            ₹{ag.totalCollected.toLocaleString("en-IN")}
+                          </td>
+                          <td className="p-3 text-right font-bold text-rose-700">
+                            ₹{ag.pendingSettlement.toLocaleString("en-IN")}
+                          </td>
+                          <td className="p-3 text-center">
+                            {ag.pendingSettlement > 0 ? (
+                              <button
+                                onClick={() => handleSettleAgent(ag)}
+                                className="rounded-lg bg-emerald-700 px-3 py-1 text-[11px] font-bold text-white shadow hover:bg-emerald-800 transition"
+                              >
+                                Settle Deposit
+                              </button>
+                            ) : (
+                              <span className="text-[11px] font-semibold text-emerald-600">✓ Settled</span>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ==============================================================
+            TAB 5: EVENTS & UTSAVS CMS (Syncs with /events)
+        ============================================================== */}
+        {activeTab === "events" && (
+          <div className="space-y-8">
+            <div className="flex flex-col justify-between gap-4 rounded-2xl border border-[#C59A52]/40 bg-white p-6 shadow-sm sm:flex-row sm:items-center">
+              <div>
+                <h2 className="font-serif text-2xl font-bold text-[#78372B]" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+                  Upcoming Events & Utsavs CMS
+                </h2>
+                <p className="mt-0.5 text-xs text-[#39251D]/70">
+                  Control festivals and special seva days displayed on the website's public Events page.
+                </p>
+              </div>
+            </div>
+
+            <div className="grid gap-8 lg:grid-cols-12">
+              {/* Left 5 Cols: Add Event */}
+              <div className="rounded-2xl border border-[#C59A52]/40 bg-white p-6 shadow-sm lg:col-span-5">
+                <h3 className="font-serif text-lg font-bold text-[#78372B] border-b border-[#C59A52]/20 pb-3">
+                  Post New Festival / Seva
+                </h3>
+                <form onSubmit={handleAddEvent} className="mt-4 space-y-4">
+                  <div>
+                    <label className="block text-xs font-bold text-[#78372B]">Title *</label>
+                    <input
+                      type="text"
+                      required
+                      value={newEvent.title}
+                      onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })}
+                      placeholder="e.g. Sri Radhashtami Mahotsav"
+                      className="mt-1 w-full rounded-xl border border-[#C59A52]/40 p-2.5 text-xs font-semibold focus:outline-none"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-bold text-[#78372B]">Bengali Script</label>
+                      <input
+                        type="text"
+                        value={newEvent.bengali}
+                        onChange={(e) => setNewEvent({ ...newEvent, bengali: e.target.value })}
+                        placeholder="শ্রী রাধাষ্টমী উৎসব"
+                        className="mt-1 w-full rounded-xl border border-[#C59A52]/40 p-2.5 text-xs focus:outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-[#78372B]">Category</label>
+                      <select
+                        value={newEvent.category}
+                        onChange={(e) => setNewEvent({ ...newEvent, category: e.target.value })}
+                        className="mt-1 w-full rounded-xl border border-[#C59A52]/40 p-2.5 text-xs focus:outline-none"
+                      >
+                        <option>Major Utsav</option>
+                        <option>Pariwar Seva</option>
+                        <option>Monthly Celebration</option>
+                        <option>Special Seva</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-bold text-[#78372B]">Season / Tithi</label>
+                      <input
+                        type="text"
+                        value={newEvent.season}
+                        onChange={(e) => setNewEvent({ ...newEvent, season: e.target.value })}
+                        placeholder="e.g. Bhadra Shukla Ashtami"
+                        className="mt-1 w-full rounded-xl border border-[#C59A52]/40 p-2.5 text-xs focus:outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-[#78372B]">Timing</label>
+                      <input
+                        type="text"
+                        value={newEvent.time}
+                        onChange={(e) => setNewEvent({ ...newEvent, time: e.target.value })}
+                        placeholder="e.g. 12:00 PM Midday Abhishek"
+                        className="mt-1 w-full rounded-xl border border-[#C59A52]/40 p-2.5 text-xs focus:outline-none"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-[#78372B]">Seva Sponsorship Focus</label>
+                    <input
+                      type="text"
+                      value={newEvent.seva}
+                      onChange={(e) => setNewEvent({ ...newEvent, seva: e.target.value })}
+                      placeholder="e.g. Anna Daan & Pushpa Abhishek"
+                      className="mt-1 w-full rounded-xl border border-[#C59A52]/40 p-2.5 text-xs focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-[#78372B]">Description *</label>
+                    <textarea
+                      rows="3"
+                      required
+                      value={newEvent.desc}
+                      onChange={(e) => setNewEvent({ ...newEvent, desc: e.target.value })}
+                      placeholder="Details of rituals, parikrama, kirtan, prasadam distribution..."
+                      className="mt-1 w-full rounded-xl border border-[#C59A52]/40 p-2.5 text-xs focus:outline-none"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    className="w-full rounded-xl bg-[#971515] py-2.5 text-xs font-bold uppercase tracking-wider text-white shadow hover:bg-[#78372B] transition"
+                  >
+                    Publish to Website Events
+                  </button>
+                </form>
+              </div>
+
+              {/* Right 7 Cols: Existing Events List */}
+              <div className="space-y-4 lg:col-span-7">
+                <h3 className="font-serif text-lg font-bold text-[#78372B]">Scheduled Festivals ({events.length})</h3>
+                <div className="space-y-3">
+                  {events.map((ev) => (
+                    <div key={ev._id || ev.title} className="flex items-start justify-between rounded-xl border border-[#C59A52]/30 bg-white p-4 shadow-sm">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <span className="font-serif text-base font-bold text-[#78372B]">{ev.title}</span>
+                          {ev.bengali && <span className="text-xs text-[#971515] font-serif">{ev.bengali}</span>}
+                        </div>
+                        <div className="text-xs text-[#39251D]/70">
+                          {ev.season} • {ev.time}
+                        </div>
+                        <p className="text-xs text-[#39251D]/80 line-clamp-2 max-w-lg mt-1">{ev.desc}</p>
+                        <div className="mt-2 inline-block rounded-md bg-[#FFF9ED] px-2 py-0.5 text-[10px] font-bold text-[#78372B] border border-[#C59A52]/30">
+                          Seva: {ev.seva}
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => handleDeleteEvent(ev._id)}
+                        className="rounded-lg p-2 text-rose-600 hover:bg-rose-50 transition"
+                        title="Delete event"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ==============================================================
+            TAB 6: BLOGS & KATHA CMS (Syncs with /blog)
+        ============================================================== */}
+        {activeTab === "blogs" && (
+          <div className="space-y-8">
+            <div className="flex flex-col justify-between gap-4 rounded-2xl border border-[#C59A52]/40 bg-white p-6 shadow-sm sm:flex-row sm:items-center">
+              <div>
+                <h2 className="font-serif text-2xl font-bold text-[#78372B]" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+                  Spiritual Katha & Blog CMS
+                </h2>
+                <p className="mt-0.5 text-xs text-[#39251D]/70">
+                  Publish philosophical discourses, history of Sri Chintamoni Kunja, and Gaudiya Vaishnav katha.
+                </p>
+              </div>
+            </div>
+
+            <div className="grid gap-8 lg:grid-cols-12">
+              {/* Left 6 Cols: Publish New Blog */}
+              <div className="rounded-2xl border border-[#C59A52]/40 bg-white p-6 shadow-sm lg:col-span-6">
+                <h3 className="font-serif text-lg font-bold text-[#78372B] border-b border-[#C59A52]/20 pb-3">
+                  Write Spiritual Article
+                </h3>
+                <form onSubmit={handleAddBlog} className="mt-4 space-y-4">
+                  <div>
+                    <label className="block text-xs font-bold text-[#78372B]">Title *</label>
+                    <input
+                      type="text"
+                      required
+                      value={newBlog.title}
+                      onChange={(e) => setNewBlog({ ...newBlog, title: e.target.value })}
+                      placeholder="Title of discourse or article"
+                      className="mt-1 w-full rounded-xl border border-[#C59A52]/40 p-2.5 text-xs font-semibold focus:outline-none"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-bold text-[#78372B]">Bengali Sub-title</label>
+                      <input
+                        type="text"
+                        value={newBlog.bengali}
+                        onChange={(e) => setNewBlog({ ...newBlog, bengali: e.target.value })}
+                        placeholder="বাংলায় শিরোনাম"
+                        className="mt-1 w-full rounded-xl border border-[#C59A52]/40 p-2.5 text-xs focus:outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-[#78372B]">Category</label>
+                      <select
+                        value={newBlog.category}
+                        onChange={(e) => setNewBlog({ ...newBlog, category: e.target.value })}
+                        className="mt-1 w-full rounded-xl border border-[#C59A52]/40 p-2.5 text-xs focus:outline-none"
+                      >
+                        <option>Katha & Philosophy</option>
+                        <option>Heritage & History</option>
+                        <option>Festivals & Utsavs</option>
+                        <option>Seva & Humanitarian</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-[#78372B]">Excerpt / Summary</label>
+                    <textarea
+                      rows="2"
+                      value={newBlog.excerpt}
+                      onChange={(e) => setNewBlog({ ...newBlog, excerpt: e.target.value })}
+                      placeholder="Short synopsis shown on the blog cards..."
+                      className="mt-1 w-full rounded-xl border border-[#C59A52]/40 p-2.5 text-xs focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-[#78372B]">Full Content *</label>
+                    <textarea
+                      rows="6"
+                      required
+                      value={newBlog.content}
+                      onChange={(e) => setNewBlog({ ...newBlog, content: e.target.value })}
+                      placeholder="Spiritual text, verses, commentary, historical citations..."
+                      className="mt-1 w-full rounded-xl border border-[#C59A52]/40 p-2.5 text-xs focus:outline-none"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    className="w-full rounded-xl bg-[#971515] py-2.5 text-xs font-bold uppercase tracking-wider text-white shadow hover:bg-[#78372B] transition"
+                  >
+                    Publish Article to Website
+                  </button>
+                </form>
+              </div>
+
+              {/* Right 6 Cols: Published Articles List */}
+              <div className="space-y-4 lg:col-span-6">
+                <h3 className="font-serif text-lg font-bold text-[#78372B]">Published Articles ({blogs.length})</h3>
+                <div className="space-y-3">
+                  {blogs.map((b) => (
+                    <div key={b._id || b.title} className="rounded-xl border border-[#C59A52]/30 bg-white p-4 shadow-sm">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <span className="rounded bg-[#FFF9ED] px-2 py-0.5 text-[10px] font-bold text-[#78372B] border border-[#C59A52]/30">
+                            {b.category}
+                          </span>
+                          <h4 className="font-serif text-base font-bold text-[#78372B] mt-1">{b.title}</h4>
+                          <div className="text-[11px] text-[#39251D]/60 mt-0.5">
+                            By {b.author || "Sri Sri Chintamoni Kunja"} • {b.readTime || "5 min read"}
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => handleDeleteBlog(b._id)}
+                          className="rounded-lg p-2 text-rose-600 hover:bg-rose-50 transition"
+                          title="Delete article"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                      <p className="mt-2 text-xs text-[#39251D]/80 line-clamp-2">{b.excerpt || b.content}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ==============================================================
+            TAB 7: GALLERY MEDIA MANAGER
+        ============================================================== */}
+        {activeTab === "gallery" && (
+          <div className="space-y-8">
+            <div className="flex flex-col justify-between gap-4 rounded-2xl border border-[#C59A52]/40 bg-white p-6 shadow-sm sm:flex-row sm:items-center">
+              <div>
+                <h2 className="font-serif text-2xl font-bold text-[#78372B]" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+                  Gallery Media Manager
+                </h2>
+                <p className="mt-0.5 text-xs text-[#39251D]/70">
+                  Manage photographs and sacred visuals across temple sanctum, altar, festivals, and seva.
+                </p>
+              </div>
+            </div>
+
+            <div className="grid gap-8 lg:grid-cols-12">
+              {/* Left 4 Cols: Add Media Form */}
+              <div className="rounded-2xl border border-[#C59A52]/40 bg-white p-6 shadow-sm lg:col-span-4">
+                <h3 className="font-serif text-lg font-bold text-[#78372B] border-b border-[#C59A52]/20 pb-3">
+                  Add Photo to Gallery
+                </h3>
+                <form onSubmit={handleAddGallery} className="mt-4 space-y-4">
+                  <div>
+                    <label className="block text-xs font-bold text-[#78372B]">Title *</label>
+                    <input
+                      type="text"
+                      required
+                      value={newGallery.title}
+                      onChange={(e) => setNewGallery({ ...newGallery, title: e.target.value })}
+                      placeholder="e.g. Gaura Purnima Aarti"
+                      className="mt-1 w-full rounded-xl border border-[#C59A52]/40 p-2.5 text-xs font-semibold focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-[#78372B]">Category</label>
+                    <select
+                      value={newGallery.category}
+                      onChange={(e) => setNewGallery({ ...newGallery, category: e.target.value })}
+                      className="mt-1 w-full rounded-xl border border-[#C59A52]/40 p-2.5 text-xs focus:outline-none"
+                    >
+                      <option>Temple & Altar</option>
+                      <option>Festivals & Utsavs</option>
+                      <option>Anna Daan Seva</option>
+                      <option>River Ghats & Dham</option>
+                      <option>Devotees & Kirtan</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-[#78372B]">Image Path / URL *</label>
+                    <input
+                      type="text"
+                      required
+                      value={newGallery.image}
+                      onChange={(e) => setNewGallery({ ...newGallery, image: e.target.value })}
+                      placeholder="/assets/image.png or https://..."
+                      className="mt-1 w-full rounded-xl border border-[#C59A52]/40 p-2.5 text-xs font-mono focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-[#78372B]">Caption / Notes</label>
+                    <input
+                      type="text"
+                      value={newGallery.caption}
+                      onChange={(e) => setNewGallery({ ...newGallery, caption: e.target.value })}
+                      placeholder="Devotees chanting Harinam..."
+                      className="mt-1 w-full rounded-xl border border-[#C59A52]/40 p-2.5 text-xs focus:outline-none"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    className="w-full rounded-xl bg-[#971515] py-2.5 text-xs font-bold uppercase tracking-wider text-white shadow hover:bg-[#78372B] transition"
+                  >
+                    Add Photo
+                  </button>
+                </form>
+              </div>
+
+              {/* Right 8 Cols: Gallery Grid */}
+              <div className="rounded-2xl border border-[#C59A52]/40 bg-white p-6 shadow-sm lg:col-span-8">
+                <h3 className="font-serif text-lg font-bold text-[#78372B] border-b border-[#C59A52]/20 pb-3">
+                  Gallery Visuals ({gallery.length})
+                </h3>
+                <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {gallery.map((g) => (
+                    <div key={g._id || g.title} className="group relative overflow-hidden rounded-xl border border-[#C59A52]/30 bg-[#FFF9ED]">
+                      <img
+                        src={g.image}
+                        alt={g.title}
+                        className="h-44 w-full object-cover transition duration-300 group-hover:scale-105"
+                      />
+                      <div className="p-3">
+                        <div className="flex items-center justify-between">
+                          <span className="font-bold text-xs text-[#78372B]">{g.title}</span>
+                          <button
+                            onClick={() => handleDeleteGallery(g._id)}
+                            className="rounded p-1 text-rose-600 hover:bg-rose-100 transition"
+                            title="Remove"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                        <div className="mt-0.5 text-[10px] text-[#39251D]/60 font-semibold">{g.category}</div>
+                        {g.caption && <p className="mt-1 text-[11px] text-[#39251D]/70 line-clamp-1">{g.caption}</p>}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ==============================================================
+            TAB 8: DEVOTEE INQUIRIES & CONTACT SUBMISSIONS
+        ============================================================== */}
+        {activeTab === "inquiries" && (
+          <div className="space-y-6">
+            <div className="flex flex-col justify-between gap-4 rounded-2xl border border-[#C59A52]/40 bg-white p-6 shadow-sm sm:flex-row sm:items-center">
+              <div>
+                <h2 className="font-serif text-2xl font-bold text-[#78372B]" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+                  Devotee Contact & Seva Inquiries ({contacts.length})
+                </h2>
+                <p className="mt-0.5 text-xs text-[#39251D]/70">
+                  Messages submitted through the public Contact Us form (/contact) saved directly to the database.
+                </p>
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-[#C59A52]/40 bg-white shadow-sm overflow-hidden">
+              {contacts.length > 0 ? (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs">
+                    <thead className="bg-[#FFF9ED] text-[#78372B] uppercase font-bold tracking-wider">
+                      <tr>
+                        <th className="p-3.5">Name</th>
+                        <th className="p-3.5">Email & Phone</th>
+                        <th className="p-3.5">Address</th>
+                        <th className="p-3.5">Purpose</th>
+                        <th className="p-3.5">Message / Prayer</th>
+                        <th className="p-3.5">Status</th>
+                        <th className="p-3.5 text-center">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-[#C59A52]/20">
+                      {contacts.map((c) => (
+                        <tr key={c._id} className="hover:bg-[#FFF9ED]/30">
+                          <td className="p-3.5 font-bold text-[#39251D]">{c.name}</td>
+                          <td className="p-3.5">
+                            <div>{c.email}</div>
+                            {c.phone && <div className="text-[10px] text-[#39251D]/60 font-mono">{c.phone}</div>}
+                          </td>
+                          <td className="p-3.5 text-[#39251D]/80">{c.address || "—"}</td>
+                          <td className="p-3.5">
+                            <span className="rounded bg-[#FFF9ED] px-2 py-0.5 text-[10px] font-bold text-[#78372B] border border-[#C59A52]/30">
+                              {c.purpose || "General Inquiry"}
+                            </span>
+                          </td>
+                          <td className="p-3.5 text-[#39251D]/80 max-w-xs">{c.message}</td>
+                          <td className="p-3.5">
+                            <span className={`rounded px-2 py-0.5 text-[10px] font-bold ${
+                              c.status === "Responded"
+                                ? "bg-emerald-100 text-emerald-800"
+                                : c.status === "Archived"
+                                ? "bg-gray-100 text-gray-700"
+                                : "bg-amber-100 text-amber-800"
+                            }`}>
+                              {c.status || "New"}
+                            </span>
+                          </td>
+                          <td className="p-3.5 text-center">
+                            <select
+                              value={c.status || "New"}
+                              onChange={(e) => handleUpdateContactStatus(c._id, e.target.value)}
+                              className="rounded border border-[#C59A52]/40 bg-white p-1 text-[10px] font-bold text-[#78372B] focus:outline-none"
+                            >
+                              <option value="New">New</option>
+                              <option value="In Progress">In Progress</option>
+                              <option value="Responded">Responded</option>
+                              <option value="Archived">Archived</option>
+                            </select>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <div className="p-12 text-center text-xs text-[#39251D]/60">
+                  No devotee inquiries received yet. Inquiries submitted via Contact Us form will appear here in real-time.
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
 }
 
+// Icon helper
+function BookOpenIcon(props) {
+  return (
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+      <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+    </svg>
+  );
+}

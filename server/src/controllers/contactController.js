@@ -53,8 +53,28 @@ const getContacts = async (req, res) => {
   }
 };
 
+// @desc    Update contact inquiry status or reply notes
+// @route   PATCH /api/contact/:id
+const updateContactStatus = async (req, res) => {
+  try {
+    const { status, replyNotes } = req.body;
+    const contact = await Contact.findByIdAndUpdate(
+      req.params.id,
+      { $set: { ...(status && { status }), ...(replyNotes !== undefined && { replyNotes }) } },
+      { new: true }
+    );
+    if (!contact) {
+      return res.status(404).json({ success: false, message: 'Inquiry not found' });
+    }
+    res.status(200).json({ success: true, data: contact, message: 'Inquiry updated' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 module.exports = {
   createContact,
   getContacts,
+  updateContactStatus,
 };
 
