@@ -1,8 +1,9 @@
-import React, { Suspense, lazy } from 'react'
+import React, { Suspense, lazy, useEffect, useRef } from 'react'
 import { Routes, Route, useLocation } from 'react-router-dom'
 import Navbar from './components/Navbar.jsx'
 import Footer from './components/Footer.jsx'
 import ScrollToTop from './components/ScrollToTop.jsx'
+import { recordPageStay } from './services/analyticsTracker.js'
 
 // Static initial route for maximum First Contentful Paint speed
 import Home from './pages/Home.jsx'
@@ -44,6 +45,34 @@ function PageLoader() {
 function App() {
   const location = useLocation()
   const isAdmin = location.pathname.startsWith('/admin')
+
+  // Real-time user page stay & connectivity tracker
+  const startTimeRef = useRef(Date.now())
+  const prevPathRef = useRef(location.pathname)
+
+  useEffect(() => {
+    const prevPath = prevPathRef.current
+    const duration = (Date.now() - startTimeRef.current) / 1000
+
+    if (prevPath && duration > 0.5) {
+      recordPageStay(prevPath, duration, location.pathname)
+    }
+
+    startTimeRef.current = Date.now()
+    prevPathRef.current = location.pathname
+
+    const handleBeforeUnload = () => {
+      const exitDuration = (Date.now() - startTimeRef.current) / 1000
+      if (exitDuration > 0.5) {
+        recordPageStay(location.pathname, exitDuration)
+      }
+    }
+
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload)
+    }
+  }, [location.pathname])
 
   return (
     <div className={`flex flex-col min-h-screen ${isAdmin ? 'bg-[#0E0A09] text-[#FFF9ED]' : 'bg-[#FFF9ED]'}`}>

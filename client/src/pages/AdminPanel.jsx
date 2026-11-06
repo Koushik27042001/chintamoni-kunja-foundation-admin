@@ -41,7 +41,42 @@ import {
   Lock,
   Key,
   Shield,
+  Activity,
+  BarChart3,
+  PieChart as PieChartIcon,
+  Kanban as KanbanIcon,
+  Timer,
+  Eye,
+  ArrowRight,
+  Smartphone,
+  Monitor,
+  Tablet,
+  ChevronRight,
+  ChevronLeft,
+  SlidersHorizontal,
 } from "lucide-react";
+import {
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+  BarChart,
+  Bar,
+  PieChart,
+  Pie,
+  Cell,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip as RechartsTooltip,
+  Legend as RechartsLegend,
+} from "recharts";
+import {
+  getPageEngagementStats,
+  formatDuration,
+  resetEngagementAnalytics,
+  HOURLY_TRAFFIC_DATA,
+  DEVICE_DISTRIBUTION,
+} from "../services/analyticsTracker";
 import {
   checkServerStatus,
   loginAdminAPI,
@@ -160,8 +195,142 @@ function exportToCSV(filename, rows) {
   document.body.removeChild(link);
 }
 
+// Donation Analytics Trends (Monthly & Historical)
+const DONATION_TRENDS_DATA = [
+  { month: "May", walkIn: 64000, field: 42000, online: 28000, total: 134000 },
+  { month: "Jun", walkIn: 78000, field: 51000, online: 35000, total: 164000 },
+  { month: "Jul", walkIn: 92000, field: 63000, online: 48000, total: 203000 },
+  { month: "Aug", walkIn: 115000, field: 78000, online: 64000, total: 257000 },
+  { month: "Sep", walkIn: 142000, field: 96000, online: 88000, total: 326000 },
+  { month: "Oct", walkIn: 185000, field: 124000, online: 112000, total: 421000 },
+  { month: "Nov (MTD)", walkIn: 210000, field: 145000, online: 135000, total: 490000 },
+];
+
+const PURPOSE_DONUT_DATA = [
+  { name: "Daily Anna Daan Seva", value: 38, amount: 284000, color: "#971515" },
+  { name: "Temple Renovation", value: 26, amount: 194000, color: "#C59A52" },
+  { name: "Festivals & Utsavs", value: 20, amount: 149000, color: "#E8B94F" },
+  { name: "Vedic Education & Go Seva", value: 16, amount: 119000, color: "#22C55E" },
+];
+
+const KANBAN_COLUMNS = [
+  { id: "scheduled", label: "Scheduled & Follow-up", badgeColor: "border-blue-500/40 bg-blue-950/60 text-blue-300", accent: "#3B82F6" },
+  { id: "collected", label: "Collected (Agent Holding)", badgeColor: "border-amber-500/40 bg-amber-950/60 text-amber-300", accent: "#F59E0B" },
+  { id: "under_verification", label: "Audit & Verification", badgeColor: "border-purple-500/40 bg-purple-950/60 text-purple-300", accent: "#A855F7" },
+  { id: "settled", label: "Settled & Bank Credited", badgeColor: "border-emerald-500/40 bg-emerald-950/60 text-emerald-300", accent: "#10B981" },
+];
+
+const INITIAL_KANBAN_CARDS = [
+  {
+    id: "KB-101",
+    donorName: "Radha Raman Das",
+    memberId: "CKF-M-003",
+    amount: 5100,
+    purpose: "Daily Anna Daan Seva",
+    agentName: "Subrata Mondal",
+    agentPhone: "+91 98321 44556",
+    area: "Nabadwip Mayapur Ghat",
+    status: "scheduled",
+    paymentMode: "Cash",
+    notes: "Doorstep collection arranged for Sunday evening",
+    date: "06 Nov 2026",
+  },
+  {
+    id: "KB-102",
+    donorName: "Gopal Chandra Dey",
+    memberId: "CKF-M-008",
+    amount: 11000,
+    purpose: "Temple Renovation Seva",
+    agentName: "Amitabha Roy",
+    agentPhone: "+91 94340 77889",
+    area: "Krishnanagar Road",
+    status: "collected",
+    paymentMode: "UPI / QR",
+    notes: "UPI payment received, slip verified by agent",
+    date: "06 Nov 2026",
+  },
+  {
+    id: "KB-103",
+    donorName: "Bishnu Priya Dasi",
+    memberId: "CKF-M-014",
+    amount: 3500,
+    purpose: "Gaura Purnima Festival",
+    agentName: "Subrata Mondal",
+    agentPhone: "+91 98321 44556",
+    area: "Prachin Mayapur",
+    status: "collected",
+    paymentMode: "Cash",
+    notes: "Cash in agent custody, awaiting evening office deposit",
+    date: "06 Nov 2026",
+  },
+  {
+    id: "KB-104",
+    donorName: "Ananda Mohan Goswami",
+    memberId: "CKF-M-002",
+    amount: 25000,
+    purpose: "Vedic Education & Gurukula",
+    agentName: "Krishnendu Chakraborty",
+    agentPhone: "+91 98765 43210",
+    area: "Nabadwip Central Dham",
+    status: "under_verification",
+    paymentMode: "Cheque / Draft",
+    notes: "Cheque #402199 submitted to accounts desk for clearing",
+    date: "05 Nov 2026",
+  },
+  {
+    id: "KB-105",
+    donorName: "Debashis Mukherjee",
+    memberId: "CKF-M-005",
+    amount: 15000,
+    purpose: "Daily Anna Daan Seva",
+    agentName: "Amitabha Roy",
+    agentPhone: "+91 94340 77889",
+    area: "Shantipur Ghat",
+    status: "settled",
+    paymentMode: "Cash",
+    notes: "Audited by office, banked in SBI #4412 with official 80G",
+    date: "04 Nov 2026",
+  },
+  {
+    id: "KB-106",
+    donorName: "Shanti Lata Dasi",
+    memberId: "CKF-M-022",
+    amount: 2100,
+    purpose: "Go Seva & Fodder Fund",
+    agentName: "Subrata Mondal",
+    agentPhone: "+91 98321 44556",
+    area: "Swarupganj",
+    status: "scheduled",
+    paymentMode: "Cash",
+    notes: "Requested monthly recurring receipt",
+    date: "07 Nov 2026",
+  },
+];
+
+// Custom High-Contrast Sacred Dark Tooltip for Recharts
+function CustomSacredTooltip({ active, payload, label }) {
+  if (active && payload && payload.length) {
+    return (
+      <div className="rounded-xl border border-[#C59A52]/50 bg-[#160E0C]/95 p-3 text-xs shadow-2xl backdrop-blur-md">
+        <p className="font-bold text-[#E8B94F] mb-1.5 border-b border-[#C59A52]/20 pb-1">{label}</p>
+        {payload.map((entry, index) => (
+          <div key={`tip-${index}`} className="flex items-center justify-between gap-4 py-0.5 text-xs font-semibold" style={{ color: entry.color || "#FFF9ED" }}>
+            <span>{entry.name}:</span>
+            <span className="font-mono font-bold">
+              {typeof entry.value === "number" && entry.value >= 100
+                ? `₹${entry.value.toLocaleString("en-IN")}`
+                : entry.value}
+            </span>
+          </div>
+        ))}
+      </div>
+    );
+  }
+  return null;
+}
+
 export default function AdminPanel() {
-  const [activeTab, setActiveTab] = useState("dashboard"); // dashboard, receipt, history, members, agents, events, blogs, gallery, inquiries
+  const [activeTab, setActiveTab] = useState("dashboard"); // dashboard, engagement, kanban, receipt, history, members, agents, events, blogs, gallery, inquiries
   const [serverState, setServerState] = useState({ online: false, database: "checking" });
   const [loading, setLoading] = useState(false);
   const [alertMsg, setAlertMsg] = useState("");
@@ -183,6 +352,92 @@ export default function AdminPanel() {
   const [blogs, setBlogs] = useState(INITIAL_BLOGS);
   const [gallery, setGallery] = useState(INITIAL_GALLERY);
   const [contacts, setContacts] = useState([]);
+
+  // Field Collections & Devotee Pipeline Kanban States
+  const [kanbanCards, setKanbanCards] = useState(INITIAL_KANBAN_CARDS);
+  const [kanbanSearch, setKanbanSearch] = useState("");
+  const [kanbanFilterAgent, setKanbanFilterAgent] = useState("All");
+  const [newKanbanModal, setNewKanbanModal] = useState(false);
+  const [newKanbanForm, setNewKanbanForm] = useState({
+    donorName: "",
+    memberId: "",
+    amount: "2100",
+    purpose: "Daily Anna Daan Seva",
+    agentName: "Subrata Mondal",
+    agentPhone: "+91 98321 44556",
+    area: "Nabadwip Dham",
+    status: "scheduled",
+    paymentMode: "Cash",
+    notes: "",
+  });
+
+  // Website & Devotee Page Engagement Analytics States
+  const [pageEngagementData, setPageEngagementData] = useState(() => getPageEngagementStats());
+  const [engagementSortBy, setEngagementSortBy] = useState("avgTime");
+  const [analyticsPeriod, setAnalyticsPeriod] = useState("monthly");
+
+  // Kanban Movement & Management Handlers
+  const handleMoveKanban = (cardId, direction) => {
+    const stages = ["scheduled", "collected", "under_verification", "settled"];
+    setKanbanCards((prev) =>
+      prev.map((c) => {
+        if (c.id === cardId) {
+          const curIdx = stages.indexOf(c.status);
+          const nextIdx = direction === "next" ? Math.min(stages.length - 1, curIdx + 1) : Math.max(0, curIdx - 1);
+          return { ...c, status: stages[nextIdx] };
+        }
+        return c;
+      })
+    );
+  };
+
+  const handleAddKanbanCard = (e) => {
+    e.preventDefault();
+    if (!newKanbanForm.donorName || !newKanbanForm.amount) {
+      alert("Please provide donor name and collection amount.");
+      return;
+    }
+    const newCard = {
+      ...newKanbanForm,
+      id: `KB-${Date.now().toString().slice(-4)}`,
+      amount: Number(newKanbanForm.amount) || 1001,
+      date: new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }),
+    };
+    setKanbanCards((prev) => [newCard, ...prev]);
+    setNewKanbanModal(false);
+    setNewKanbanForm({
+      donorName: "",
+      memberId: "",
+      amount: "2100",
+      purpose: "Daily Anna Daan Seva",
+      agentName: "Subrata Mondal",
+      agentPhone: "+91 98321 44556",
+      area: "Nabadwip Dham",
+      status: "scheduled",
+      paymentMode: "Cash",
+      notes: "",
+    });
+    setAlertMsg("✨ New collection assignment created in Kanban pipeline!");
+  };
+
+  const handleDeleteKanbanCard = (cardId) => {
+    if (window.confirm("Remove this collection task from the Kanban pipeline?")) {
+      setKanbanCards((prev) => prev.filter((c) => c.id !== cardId));
+    }
+  };
+
+  const handleRefreshEngagement = () => {
+    setPageEngagementData(getPageEngagementStats());
+    setAlertMsg("🔄 Real-time page engagement metrics refreshed!");
+  };
+
+  const handleResetEngagement = () => {
+    if (window.confirm("Reset engagement data to foundation default baselines?")) {
+      const reset = resetEngagementAnalytics();
+      setPageEngagementData(reset);
+      setAlertMsg("✨ Engagement metrics reset to standard baseline.");
+    }
+  };
 
   // Selections & filters
   const [selectedMemberIds, setSelectedMemberIds] = useState([]);
@@ -899,6 +1154,8 @@ export default function AdminPanel() {
           <div className="no-print mb-8 flex flex-wrap gap-2 border-b border-[#C59A52]/25 pb-4">
             {[
               { id: "dashboard", label: "Dashboard & Analytics", icon: LayoutDashboard },
+              { id: "engagement", label: "Page Engagement & Dwell Time", icon: Activity },
+              { id: "kanban", label: `Field Pipeline Kanban (${kanbanCards.length})`, icon: KanbanIcon },
               { id: "receipt", label: "New Fund Receipt", icon: Receipt },
               { id: "history", label: "Office Copy / Receipts History", icon: FileText },
               { id: "members", label: "Members Database", icon: Users },
@@ -1018,9 +1275,338 @@ export default function AdminPanel() {
                 </div>
               </div>
 
+              {/* Monthly Seva Target Progress Bar */}
+              <div className="rounded-2xl border border-[#C59A52]/30 bg-[#16100E]/90 p-6 shadow-xl backdrop-blur-md">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <span className="text-xs font-bold uppercase tracking-wider text-[#E8B94F]">
+                      Monthly Seva Fund Target
+                    </span>
+                    <h3 className="font-serif text-xl font-bold text-[#FFF9ED]">
+                      ₹7,48,500 <span className="text-sm font-normal text-[#EDE0C9]/60">collected of ₹10,00,000 target</span>
+                    </h3>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="rounded-full border border-emerald-500/40 bg-emerald-950/60 px-3 py-1 font-mono text-xs font-bold text-emerald-300">
+                      74.85% Achieved
+                    </span>
+                    <span className="text-xs text-[#EDE0C9]/60">23 Days Remaining</span>
+                  </div>
+                </div>
+
+                {/* Main Progress Bar */}
+                <div className="mt-4 h-3.5 w-full overflow-hidden rounded-full bg-[#201512] p-0.5 border border-[#C59A52]/20">
+                  <div
+                    className="h-full rounded-full bg-gradient-to-r from-[#971515] via-[#C59A52] to-[#E8B94F] shadow-lg shadow-[#E8B94F]/30 transition-all duration-1000"
+                    style={{ width: "74.85%" }}
+                  />
+                </div>
+
+                {/* Sub-breakdown badges */}
+                <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-[#EDE0C9]/70">
+                  <div className="flex items-center gap-2">
+                    <span className="h-2 w-2 rounded-full bg-[#971515]" />
+                    <span>Office Walk-in: <strong>₹2,10,000</strong></span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="h-2 w-2 rounded-full bg-[#C59A52]" />
+                    <span>Field Agents: <strong>₹1,45,000</strong></span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                    <span>Online Portal: <strong>₹1,35,000</strong></span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="h-2 w-2 rounded-full bg-amber-400" />
+                    <span>Target Balance: <strong>₹2,51,500</strong></span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Recharts Analytics Row 1: Donation Trends & Purpose Distribution */}
+              <div className="grid gap-8 lg:grid-cols-12">
+                {/* Left 8 Cols: Donation Growth Trend Area Chart */}
+                <div className="rounded-2xl border border-[#C59A52]/30 bg-[#16100E]/90 p-6 shadow-xl backdrop-blur-md lg:col-span-8">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-b border-[#C59A52]/20 pb-4">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <TrendingUp size={18} className="text-[#E8B94F]" />
+                        <h3 className="font-serif text-lg font-bold text-[#E8B94F]">
+                          Seva Donation Volume & Growth Trajectory
+                        </h3>
+                      </div>
+                      <p className="mt-0.5 text-xs text-[#EDE0C9]/60">
+                        Monthly aggregated collections across Walk-in, Field, and Online gateways
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="rounded-lg border border-[#C59A52]/30 bg-[#251A16] px-2.5 py-1 text-[11px] font-bold text-[#E8B94F]">
+                        May – Nov 2026
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="mt-5 h-72 w-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <AreaChart data={DONATION_TRENDS_DATA} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+                        <defs>
+                          <linearGradient id="goldGradient" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#E8B94F" stopOpacity={0.4} />
+                            <stop offset="95%" stopColor="#E8B94F" stopOpacity={0.0} />
+                          </linearGradient>
+                          <linearGradient id="maroonGradient" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#971515" stopOpacity={0.4} />
+                            <stop offset="95%" stopColor="#971515" stopOpacity={0.0} />
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(197, 154, 82, 0.15)" />
+                        <XAxis dataKey="month" stroke="#B89F82" fontSize={11} tickLine={false} />
+                        <YAxis
+                          stroke="#B89F82"
+                          fontSize={11}
+                          tickLine={false}
+                          tickFormatter={(val) => `₹${val / 1000}k`}
+                        />
+                        <RechartsTooltip content={<CustomSacredTooltip />} />
+                        <Area
+                          type="monotone"
+                          dataKey="total"
+                          name="Total Fund"
+                          stroke="#E8B94F"
+                          strokeWidth={2.5}
+                          fillOpacity={1}
+                          fill="url(#goldGradient)"
+                        />
+                        <Area
+                          type="monotone"
+                          dataKey="walkIn"
+                          name="Office Walk-in"
+                          stroke="#C59A52"
+                          strokeWidth={1.5}
+                          fillOpacity={0.3}
+                          fill="#C59A52"
+                        />
+                        <Area
+                          type="monotone"
+                          dataKey="field"
+                          name="Field Agents"
+                          stroke="#971515"
+                          strokeWidth={1.5}
+                          fillOpacity={1}
+                          fill="url(#maroonGradient)"
+                        />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  </div>
+
+                  {/* Chart Legend */}
+                  <div className="mt-3 flex flex-wrap items-center justify-center gap-6 border-t border-[#C59A52]/15 pt-3 text-xs text-[#EDE0C9]/70">
+                    <div className="flex items-center gap-2">
+                      <span className="h-3 w-3 rounded-full bg-[#E8B94F]" />
+                      <span>Total Seva Volume</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="h-3 w-3 rounded-full bg-[#C59A52]" />
+                      <span>Walk-in Counter</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="h-3 w-3 rounded-full bg-[#971515]" />
+                      <span>Field Doorstep</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right 4 Cols: Seva Purpose Pie/Donut Chart */}
+                <div className="rounded-2xl border border-[#C59A52]/30 bg-[#16100E]/90 p-6 shadow-xl backdrop-blur-md lg:col-span-4 flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center gap-2 border-b border-[#C59A52]/20 pb-4">
+                      <PieChartIcon size={18} className="text-[#E8B94F]" />
+                      <h3 className="font-serif text-lg font-bold text-[#E8B94F]">Seva Purpose Share</h3>
+                    </div>
+                    <p className="mt-1 text-xs text-[#EDE0C9]/60">
+                      Breakdown of devotee offerings across Vedic causes
+                    </p>
+
+                    <div className="relative mt-4 h-56 w-full flex items-center justify-center">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie
+                            data={PURPOSE_DONUT_DATA}
+                            cx="50%"
+                            cy="50%"
+                            innerRadius={55}
+                            outerRadius={80}
+                            paddingAngle={5}
+                            dataKey="value"
+                          >
+                            {PURPOSE_DONUT_DATA.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={entry.color} stroke="#16100E" strokeWidth={2} />
+                            ))}
+                          </Pie>
+                          <RechartsTooltip content={<CustomSacredTooltip />} />
+                        </PieChart>
+                      </ResponsiveContainer>
+                      <div className="pointer-events-none absolute text-center">
+                        <span className="font-serif text-xl font-bold text-[#E8B94F]">₹7.48L</span>
+                        <span className="block text-[10px] text-[#EDE0C9]/60">Total Raised</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Custom Donut Legend with Values */}
+                  <div className="mt-3 space-y-2 border-t border-[#C59A52]/15 pt-3">
+                    {PURPOSE_DONUT_DATA.map((p) => (
+                      <div key={p.name} className="flex items-center justify-between text-xs">
+                        <div className="flex items-center gap-2">
+                          <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: p.color }} />
+                          <span className="text-[#EDE0C9]">{p.name}</span>
+                        </div>
+                        <div className="flex items-center gap-2 font-mono">
+                          <span className="text-[#EDE0C9]/60">₹{(p.amount / 1000).toFixed(0)}k</span>
+                          <span className="font-bold text-[#E8B94F]">{p.value}%</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Recharts Analytics Row 2: Channels Bar Chart & Operational Statistics */}
+              <div className="grid gap-8 lg:grid-cols-12">
+                {/* Left 7 Cols: Collection Channel Side-by-Side Bar Chart */}
+                <div className="rounded-2xl border border-[#C59A52]/30 bg-[#16100E]/90 p-6 shadow-xl backdrop-blur-md lg:col-span-7">
+                  <div className="flex items-center justify-between border-b border-[#C59A52]/20 pb-4">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <BarChart3 size={18} className="text-[#E8B94F]" />
+                        <h3 className="font-serif text-lg font-bold text-[#E8B94F]">
+                          Collection Channel Performance
+                        </h3>
+                      </div>
+                      <p className="mt-0.5 text-xs text-[#EDE0C9]/60">
+                        Monthly comparison between Walk-in, Field Agents, and Online
+                      </p>
+                    </div>
+                    <span className="rounded-lg border border-[#C59A52]/30 bg-[#251A16] px-2.5 py-1 text-[11px] font-bold text-[#E8B94F]">
+                      Channel Comparison
+                    </span>
+                  </div>
+
+                  <div className="mt-5 h-64 w-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={DONATION_TRENDS_DATA} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(197, 154, 82, 0.15)" />
+                        <XAxis dataKey="month" stroke="#B89F82" fontSize={11} tickLine={false} />
+                        <YAxis
+                          stroke="#B89F82"
+                          fontSize={11}
+                          tickLine={false}
+                          tickFormatter={(val) => `₹${val / 1000}k`}
+                        />
+                        <RechartsTooltip content={<CustomSacredTooltip />} />
+                        <Bar dataKey="walkIn" name="Walk-in Counter" fill="#C59A52" radius={[4, 4, 0, 0]} />
+                        <Bar dataKey="field" name="Field Doorstep" fill="#971515" radius={[4, 4, 0, 0]} />
+                        <Bar dataKey="online" name="Online Portal" fill="#22C55E" radius={[4, 4, 0, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+
+                  <div className="mt-3 flex flex-wrap items-center justify-center gap-6 border-t border-[#C59A52]/15 pt-3 text-xs text-[#EDE0C9]/70">
+                    <div className="flex items-center gap-2">
+                      <span className="h-3 w-3 rounded-sm bg-[#C59A52]" />
+                      <span>Walk-in Counter</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="h-3 w-3 rounded-sm bg-[#971515]" />
+                      <span>Field Collection</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="h-3 w-3 rounded-sm bg-[#22C55E]" />
+                      <span>Online Gateway</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right 5 Cols: Operational Efficiency Statistics Progress Bars */}
+                <div className="rounded-2xl border border-[#C59A52]/30 bg-[#16100E]/90 p-6 shadow-xl backdrop-blur-md lg:col-span-5 flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center gap-2 border-b border-[#C59A52]/20 pb-4">
+                      <SlidersHorizontal size={18} className="text-[#E8B94F]" />
+                      <h3 className="font-serif text-lg font-bold text-[#E8B94F]">
+                        Operational Health & Progress
+                      </h3>
+                    </div>
+                    <p className="mt-1 text-xs text-[#EDE0C9]/60">
+                      Key administrative efficiency and settlement ratios
+                    </p>
+
+                    <div className="mt-5 space-y-4">
+                      {/* Metric 1 */}
+                      <div>
+                        <div className="flex justify-between text-xs font-semibold">
+                          <span className="text-[#EDE0C9]">Field Agent Settlement Efficiency</span>
+                          <span className="font-bold text-emerald-400">94.2%</span>
+                        </div>
+                        <div className="mt-1.5 h-2.5 w-full overflow-hidden rounded-full bg-[#201512]">
+                          <div className="h-full rounded-full bg-emerald-500" style={{ width: "94.2%" }} />
+                        </div>
+                        <p className="mt-1 text-[11px] text-[#EDE0C9]/50">Target: &gt;90% daily clearance</p>
+                      </div>
+
+                      {/* Metric 2 */}
+                      <div>
+                        <div className="flex justify-between text-xs font-semibold">
+                          <span className="text-[#EDE0C9]">Digital vs Physical Handover Ratio</span>
+                          <span className="font-bold text-[#E8B94F]">48% Digital / 52% Cash</span>
+                        </div>
+                        <div className="mt-1.5 flex h-2.5 w-full overflow-hidden rounded-full bg-[#201512]">
+                          <div className="h-full bg-[#E8B94F]" style={{ width: "48%" }} />
+                          <div className="h-full bg-[#971515]" style={{ width: "52%" }} />
+                        </div>
+                        <p className="mt-1 text-[11px] text-[#EDE0C9]/50">Gold: UPI/Online • Maroon: Cash</p>
+                      </div>
+
+                      {/* Metric 3 */}
+                      <div>
+                        <div className="flex justify-between text-xs font-semibold">
+                          <span className="text-[#EDE0C9]">Devotee Retention & Returning Donors</span>
+                          <span className="font-bold text-amber-400">82.6%</span>
+                        </div>
+                        <div className="mt-1.5 h-2.5 w-full overflow-hidden rounded-full bg-[#201512]">
+                          <div className="h-full rounded-full bg-amber-500" style={{ width: "82.6%" }} />
+                        </div>
+                        <p className="mt-1 text-[11px] text-[#EDE0C9]/50">342 active recurring life patrons</p>
+                      </div>
+
+                      {/* Metric 4 */}
+                      <div>
+                        <div className="flex justify-between text-xs font-semibold">
+                          <span className="text-[#EDE0C9]">80G Tax Compliance Verification</span>
+                          <span className="font-bold text-emerald-400">100% Verified</span>
+                        </div>
+                        <div className="mt-1.5 h-2.5 w-full overflow-hidden rounded-full bg-[#201512]">
+                          <div className="h-full rounded-full bg-emerald-400" style={{ width: "100%" }} />
+                        </div>
+                        <p className="mt-1 text-[11px] text-[#EDE0C9]/50">All receipts stamped with IT 80G code</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 rounded-xl border border-[#C59A52]/20 bg-[#221613] p-3 text-xs text-[#EDE0C9]/70 flex items-center justify-between">
+                    <span>Field Collection Pipeline:</span>
+                    <button
+                      onClick={() => setActiveTab("kanban")}
+                      className="font-bold text-[#E8B94F] hover:underline"
+                    >
+                      Open Kanban Board ({kanbanCards.length} tasks) →
+                    </button>
+                  </div>
+                </div>
+              </div>
+
               {/* Quick Action Buttons */}
               <div className="rounded-2xl border border-[#C59A52]/30 bg-[#18110F]/80 p-6 shadow-xl backdrop-blur-md">
-                <h3 className="font-serif text-lg font-bold text-[#E8B94F]">Quick Seva Actions</h3>
+                <h3 className="font-serif text-lg font-bold text-[#E8B94F]">Quick Administrative Actions</h3>
                 <div className="mt-4 flex flex-wrap gap-3">
                   <button
                     onClick={() => setActiveTab("receipt")}
@@ -1028,6 +1614,20 @@ export default function AdminPanel() {
                   >
                     <Plus size={15} />
                     <span>Issue New Receipt (Dual Print)</span>
+                  </button>
+                  <button
+                    onClick={() => setActiveTab("kanban")}
+                    className="flex items-center gap-2 rounded-xl border border-[#C59A52]/30 bg-[#221613] px-4 py-2.5 text-xs font-bold text-[#E8B94F] transition hover:bg-[#2D1D19] hover:text-white"
+                  >
+                    <KanbanIcon size={15} />
+                    <span>View Field Pipeline Kanban</span>
+                  </button>
+                  <button
+                    onClick={() => setActiveTab("engagement")}
+                    className="flex items-center gap-2 rounded-xl border border-[#C59A52]/30 bg-[#221613] px-4 py-2.5 text-xs font-bold text-[#E8B94F] transition hover:bg-[#2D1D19] hover:text-white"
+                  >
+                    <Activity size={15} />
+                    <span>Page Engagement & Stay Time</span>
                   </button>
                   <button
                     onClick={() => setActiveTab("members")}
@@ -1053,79 +1653,911 @@ export default function AdminPanel() {
                 </div>
               </div>
 
-              {/* Recent Collections Table & Purpose Breakdown */}
-              <div className="grid gap-8 lg:grid-cols-12">
-                <div className="rounded-2xl border border-[#C59A52]/30 bg-[#16100E]/90 p-6 shadow-xl lg:col-span-8">
-                  <div className="flex items-center justify-between border-b border-[#C59A52]/20 pb-3">
-                    <h3 className="font-serif text-lg font-bold text-[#E8B94F]">Recent Official Receipts</h3>
-                    <button onClick={() => setActiveTab("history")} className="text-xs font-bold text-[#E8B94F] hover:underline">
-                      View All ({receipts.length}) →
-                    </button>
-                  </div>
-                  <div className="mt-4 overflow-x-auto">
-                    <table className="w-full text-left text-xs">
-                      <thead className="border-b border-[#C59A52]/25 bg-[#201512] text-[#E8B94F] uppercase font-bold tracking-wider">
-                        <tr>
-                          <th className="p-3">Receipt No</th>
-                          <th className="p-3">Donor Name</th>
-                          <th className="p-3">Channel</th>
-                          <th className="p-3">Mode</th>
-                          <th className="p-3 text-right">Amount</th>
+              {/* Recent Collections Table */}
+              <div className="rounded-2xl border border-[#C59A52]/30 bg-[#16100E]/90 p-6 shadow-xl">
+                <div className="flex items-center justify-between border-b border-[#C59A52]/20 pb-3">
+                  <h3 className="font-serif text-lg font-bold text-[#E8B94F]">Recent Official Receipts</h3>
+                  <button onClick={() => setActiveTab("history")} className="text-xs font-bold text-[#E8B94F] hover:underline">
+                    View All ({receipts.length}) →
+                  </button>
+                </div>
+                <div className="mt-4 overflow-x-auto">
+                  <table className="w-full text-left text-xs">
+                    <thead className="border-b border-[#C59A52]/25 bg-[#201512] text-[#E8B94F] uppercase font-bold tracking-wider">
+                      <tr>
+                        <th className="p-3">Receipt No</th>
+                        <th className="p-3">Donor Name</th>
+                        <th className="p-3">Channel</th>
+                        <th className="p-3">Mode</th>
+                        <th className="p-3 text-right">Amount</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-[#C59A52]/15">
+                      {receipts.slice(0, 5).map((r) => (
+                        <tr key={r.receiptNo} className="transition hover:bg-[#221613]/60">
+                          <td className="p-3 font-mono font-bold text-[#E8B94F]">{r.receiptNo}</td>
+                          <td className="p-3 font-semibold text-[#FFF9ED]">{r.donorName}</td>
+                          <td className="p-3">
+                            <span
+                              className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${r.channel === "Online Donation"
+                                ? "bg-emerald-950 text-emerald-300 border border-emerald-500/40"
+                                : r.channel === "Field Collection"
+                                  ? "bg-amber-950 text-amber-300 border border-amber-500/40"
+                                  : "bg-blue-950 text-blue-300 border border-blue-500/40"
+                                }`}
+                            >
+                              {r.channel}
+                            </span>
+                          </td>
+                          <td className="p-3 text-[#EDE0C9]/60">{r.paymentMode}</td>
+                          <td className="p-3 text-right font-bold text-[#E8B94F]">
+                            ₹{Number(r.amount).toLocaleString("en-IN")}
+                          </td>
                         </tr>
-                      </thead>
-                      <tbody className="divide-y divide-[#C59A52]/15">
-                        {receipts.slice(0, 5).map((r) => (
-                          <tr key={r.receiptNo} className="transition hover:bg-[#221613]/60">
-                            <td className="p-3 font-mono font-bold text-[#E8B94F]">{r.receiptNo}</td>
-                            <td className="p-3 font-semibold text-[#FFF9ED]">{r.donorName}</td>
-                            <td className="p-3">
-                              <span
-                                className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${r.channel === "Online Donation"
-                                  ? "bg-emerald-950 text-emerald-300 border border-emerald-500/40"
-                                  : r.channel === "Field Collection"
-                                    ? "bg-amber-950 text-amber-300 border border-amber-500/40"
-                                    : "bg-blue-950 text-blue-300 border border-blue-500/40"
-                                  }`}
-                              >
-                                {r.channel}
-                              </span>
-                            </td>
-                            <td className="p-3 text-[#EDE0C9]/60">{r.paymentMode}</td>
-                            <td className="p-3 text-right font-bold text-[#E8B94F]">
-                              ₹{Number(r.amount).toLocaleString("en-IN")}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ==============================================================
+              TAB: DEVOTEE PAGE ENGAGEMENT & DWELL TIME ANALYTICS
+          ============================================================== */}
+          {activeTab === "engagement" && (
+            <div className="space-y-8">
+              {/* Header & Controls */}
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-[#C59A52]/20 pb-4">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <Activity size={24} className="text-[#E8B94F]" />
+                    <h2
+                      className="font-serif text-2xl font-bold text-[#E8B94F]"
+                      style={{ fontFamily: "'Cormorant Garamond', serif" }}
+                    >
+                      Website & Devotee Page Engagement Analytics
+                    </h2>
+                  </div>
+                  <p className="mt-1 text-xs text-[#EDE0C9]/60">
+                    Real-time metrics on which pages devotees stay longer, dwell duration, and page transition connectivity.
+                  </p>
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    onClick={handleRefreshEngagement}
+                    className="flex items-center gap-1.5 rounded-xl border border-[#C59A52]/40 bg-[#221613] px-3.5 py-2 text-xs font-bold text-[#E8B94F] transition hover:bg-[#2D1D19] hover:text-white"
+                  >
+                    <RefreshCw size={14} />
+                    <span>Refresh Live Data</span>
+                  </button>
+                  <button
+                    onClick={handleResetEngagement}
+                    className="rounded-xl border border-rose-500/30 bg-[#22110F] px-3.5 py-2 text-xs font-bold text-rose-300 transition hover:bg-rose-950 hover:text-white"
+                  >
+                    Reset Baseline
+                  </button>
+                </div>
+              </div>
+
+              {/* Engagement Metric Cards */}
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                <div className="rounded-2xl border border-[#C59A52]/30 bg-[#16100E]/90 p-5 shadow-xl backdrop-blur-md">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold uppercase tracking-wider text-[#E8B94F]/80">
+                      Total Devotee Visits
+                    </span>
+                    <div className="rounded-xl border border-[#C59A52]/30 bg-[#251B17] p-2.5 text-[#E8B94F]">
+                      <Eye size={20} />
+                    </div>
+                  </div>
+                  <div className="mt-4 flex items-baseline gap-2">
+                    <span className="font-serif text-3xl font-bold text-[#FFF9ED]">45,860</span>
+                    <span className="text-xs font-semibold text-emerald-400">+18.4% MoM</span>
+                  </div>
+                  <p className="mt-1 text-xs text-[#EDE0C9]/50">Across all public foundation pages</p>
+                </div>
+
+                <div className="rounded-2xl border border-[#C59A52]/30 bg-[#16100E]/90 p-5 shadow-xl backdrop-blur-md">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold uppercase tracking-wider text-[#E8B94F]/80">
+                      Unique Devotee Sessions
+                    </span>
+                    <div className="rounded-xl border border-[#C59A52]/30 bg-[#251B17] p-2.5 text-[#E8B94F]">
+                      <Users size={20} />
+                    </div>
+                  </div>
+                  <div className="mt-4 flex items-baseline gap-2">
+                    <span className="font-serif text-3xl font-bold text-[#E8B94F]">28,940</span>
+                    <span className="text-xs font-semibold text-emerald-400">63% Direct</span>
+                  </div>
+                  <p className="mt-1 text-xs text-[#EDE0C9]/50">Unique spiritual seekers & donors</p>
+                </div>
+
+                <div className="rounded-2xl border border-emerald-500/30 bg-[#16100E]/90 p-5 shadow-xl backdrop-blur-md">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold uppercase tracking-wider text-emerald-300">
+                      Average Dwell Duration
+                    </span>
+                    <div className="rounded-xl border border-emerald-500/30 bg-emerald-950/60 p-2.5 text-emerald-400">
+                      <Timer size={20} />
+                    </div>
+                  </div>
+                  <div className="mt-4 flex items-baseline gap-2">
+                    <span className="font-serif text-3xl font-bold text-emerald-300">4m 38s</span>
+                    <span className="text-xs font-semibold text-emerald-400">High Retention</span>
+                  </div>
+                  <p className="mt-1 text-xs text-[#EDE0C9]/50">Global average time per session</p>
+                </div>
+
+                <div className="rounded-2xl border border-amber-500/30 bg-[#1A120E]/90 p-5 shadow-xl backdrop-blur-md">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold uppercase tracking-wider text-amber-300">
+                      Most Engaging Page
+                    </span>
+                    <div className="rounded-xl border border-amber-500/30 bg-amber-950/60 p-2.5 text-amber-400">
+                      <Sparkles size={20} />
+                    </div>
+                  </div>
+                  <div className="mt-4">
+                    <span className="font-serif text-xl font-bold text-[#E8B94F]">Sri Guru Pranali</span>
+                    <span className="block text-xs font-semibold text-emerald-400 mt-0.5">6m 12s average stay</span>
+                  </div>
+                  <p className="mt-1 text-xs text-[#EDE0C9]/50">Followed closely by /diksha (5m 24s)</p>
+                </div>
+              </div>
+
+              {/* Engagement Row 1: Bar Chart of Average Stay Time per Page & Device Distribution */}
+              <div className="grid gap-8 lg:grid-cols-12">
+                {/* Left 8 Cols: Recharts Bar Chart of Average Stay Time per Page */}
+                <div className="rounded-2xl border border-[#C59A52]/30 bg-[#16100E]/90 p-6 shadow-xl backdrop-blur-md lg:col-span-8">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-b border-[#C59A52]/20 pb-4">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <Timer size={18} className="text-[#E8B94F]" />
+                        <h3 className="font-serif text-lg font-bold text-[#E8B94F]">
+                          Which Pages Devotees Stay On The Longest (Average Dwell Time)
+                        </h3>
+                      </div>
+                      <p className="mt-0.5 text-xs text-[#EDE0C9]/60">
+                        Ranked duration in seconds/minutes showing user interest and content engagement
+                      </p>
+                    </div>
+                    <span className="rounded-lg border border-[#C59A52]/30 bg-[#251A16] px-2.5 py-1 text-[11px] font-bold text-emerald-400">
+                      Top Retention Pages
+                    </span>
+                  </div>
+
+                  <div className="mt-5 h-72 w-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart
+                        data={[...pageEngagementData].sort((a, b) => b.avgTimeSec - a.avgTimeSec)}
+                        layout="vertical"
+                        margin={{ top: 5, right: 30, left: 40, bottom: 5 }}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(197, 154, 82, 0.15)" horizontal={false} />
+                        <XAxis
+                          type="number"
+                          stroke="#B89F82"
+                          fontSize={11}
+                          tickLine={false}
+                          tickFormatter={(val) => `${Math.floor(val / 60)}m ${val % 60 ? `${val % 60}s` : ""}`}
+                        />
+                        <YAxis
+                          type="category"
+                          dataKey="title"
+                          stroke="#E8B94F"
+                          fontSize={11}
+                          tickLine={false}
+                          width={110}
+                        />
+                        <RechartsTooltip
+                          formatter={(value) => [formatDuration(value), "Avg Stay Duration"]}
+                          content={<CustomSacredTooltip />}
+                        />
+                        <Bar
+                          dataKey="avgTimeSec"
+                          name="Average Stay Duration"
+                          fill="#C59A52"
+                          radius={[0, 6, 6, 0]}
+                        >
+                          {pageEngagementData.map((entry, index) => (
+                            <Cell
+                              key={`cell-bar-${index}`}
+                              fill={entry.avgTimeSec > 300 ? "#E8B94F" : entry.avgTimeSec > 200 ? "#C59A52" : "#971515"}
+                            />
+                          ))}
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+
+                  {/* Summary legend */}
+                  <div className="mt-3 flex flex-wrap items-center justify-center gap-6 border-t border-[#C59A52]/15 pt-3 text-xs text-[#EDE0C9]/70">
+                    <div className="flex items-center gap-2">
+                      <span className="h-3 w-3 rounded-sm bg-[#E8B94F]" />
+                      <span>Deep Immersion (&gt;5 Mins)</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="h-3 w-3 rounded-sm bg-[#C59A52]" />
+                      <span>Active Engagement (3–5 Mins)</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="h-3 w-3 rounded-sm bg-[#971515]" />
+                      <span>Fast Browsing (&lt;3 Mins)</span>
+                    </div>
                   </div>
                 </div>
 
-                {/* Purpose Distribution */}
-                <div className="rounded-2xl border border-[#C59A52]/30 bg-[#16100E]/90 p-6 shadow-xl lg:col-span-4">
-                  <h3 className="font-serif text-lg font-bold text-[#E8B94F] border-b border-[#C59A52]/20 pb-3">
-                    Seva Distribution
-                  </h3>
-                  <div className="mt-4 space-y-3">
-                    {[
-                      { label: "Daily Anna Daan Seva", pct: "38%", color: "bg-[#971515]" },
-                      { label: "Temple Renovation Seva", pct: "26%", color: "bg-[#C59A52]" },
-                      { label: "Festivals & Utsavs Seva", pct: "20%", color: "bg-emerald-600" },
-                      { label: "Vedic Education & Go Seva", pct: "16%", color: "bg-amber-600" },
-                    ].map((item) => (
-                      <div key={item.label}>
-                        <div className="flex justify-between text-xs font-semibold">
-                          <span className="text-[#EDE0C9]">{item.label}</span>
-                          <span className="font-bold text-[#E8B94F]">{item.pct}</span>
-                        </div>
-                        <div className="mt-1 h-2 w-full overflow-hidden rounded-full bg-[#201512]">
-                          <div className={`h-full rounded-full ${item.color}`} style={{ width: item.pct }} />
-                        </div>
+                {/* Right 4 Cols: Device & Visitor Distribution */}
+                <div className="rounded-2xl border border-[#C59A52]/30 bg-[#16100E]/90 p-6 shadow-xl backdrop-blur-md lg:col-span-4 flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center gap-2 border-b border-[#C59A52]/20 pb-4">
+                      <PieChartIcon size={18} className="text-[#E8B94F]" />
+                      <h3 className="font-serif text-lg font-bold text-[#E8B94F]">Device Distribution</h3>
+                    </div>
+                    <p className="mt-1 text-xs text-[#EDE0C9]/60">
+                      Devotee client devices accessing the portal
+                    </p>
+
+                    <div className="relative mt-4 h-52 w-full flex items-center justify-center">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie
+                            data={DEVICE_DISTRIBUTION}
+                            cx="50%"
+                            cy="50%"
+                            innerRadius={50}
+                            outerRadius={75}
+                            paddingAngle={5}
+                            dataKey="value"
+                          >
+                            {DEVICE_DISTRIBUTION.map((entry, index) => (
+                              <Cell key={`dev-${index}`} fill={entry.color} stroke="#16100E" strokeWidth={2} />
+                            ))}
+                          </Pie>
+                          <RechartsTooltip content={<CustomSacredTooltip />} />
+                        </PieChart>
+                      </ResponsiveContainer>
+                      <div className="pointer-events-none absolute text-center">
+                        <span className="font-serif text-xl font-bold text-[#E8B94F]">64%</span>
+                        <span className="block text-[10px] text-[#EDE0C9]/60">Mobile Web</span>
                       </div>
-                    ))}
+                    </div>
+                  </div>
+
+                  <div className="mt-2 space-y-2 border-t border-[#C59A52]/15 pt-3">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="flex items-center gap-2 text-[#EDE0C9]">
+                        <Smartphone size={14} className="text-[#E8B94F]" />
+                        <span>Mobile Phones</span>
+                      </span>
+                      <span className="font-bold text-[#E8B94F]">64% (29,350)</span>
+                    </div>
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="flex items-center gap-2 text-[#EDE0C9]">
+                        <Monitor size={14} className="text-[#C59A52]" />
+                        <span>Desktop / Laptop</span>
+                      </span>
+                      <span className="font-bold text-[#C59A52]">27% (12,380)</span>
+                    </div>
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="flex items-center gap-2 text-[#EDE0C9]">
+                        <Tablet size={14} className="text-[#971515]" />
+                        <span>Tablets & iPads</span>
+                      </span>
+                      <span className="font-bold text-rose-300">9% (4,130)</span>
+                    </div>
                   </div>
                 </div>
               </div>
+
+              {/* Engagement Row 2: 24-Hour Traffic Area Chart & Page Connectivity Flow */}
+              <div className="grid gap-8 lg:grid-cols-12">
+                {/* Left 7 Cols: 24-Hour Devotee Traffic Patterns (Aarti & Darshan peaks) */}
+                <div className="rounded-2xl border border-[#C59A52]/30 bg-[#16100E]/90 p-6 shadow-xl backdrop-blur-md lg:col-span-7">
+                  <div className="flex items-center justify-between border-b border-[#C59A52]/20 pb-4">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <Clock size={18} className="text-[#E8B94F]" />
+                        <h3 className="font-serif text-lg font-bold text-[#E8B94F]">
+                          24-Hour Devotee Traffic & Aarti Rhythm
+                        </h3>
+                      </div>
+                      <p className="mt-0.5 text-xs text-[#EDE0C9]/60">
+                        Peak hours coincide with Sandhya Aarti (18:00) and Morning Darshan (08:00)
+                      </p>
+                    </div>
+                    <span className="rounded-lg border border-[#C59A52]/30 bg-[#251A16] px-2.5 py-1 text-[11px] font-bold text-[#E8B94F]">
+                      IST Timezone
+                    </span>
+                  </div>
+
+                  <div className="mt-5 h-64 w-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <AreaChart data={HOURLY_TRAFFIC_DATA} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+                        <defs>
+                          <linearGradient id="hourlyGrad" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#C59A52" stopOpacity={0.4} />
+                            <stop offset="95%" stopColor="#C59A52" stopOpacity={0.0} />
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(197, 154, 82, 0.15)" />
+                        <XAxis dataKey="hour" stroke="#B89F82" fontSize={11} tickLine={false} />
+                        <YAxis stroke="#B89F82" fontSize={11} tickLine={false} />
+                        <RechartsTooltip content={<CustomSacredTooltip />} />
+                        <Area
+                          type="monotone"
+                          dataKey="visitors"
+                          name="Devotee Visitors"
+                          stroke="#E8B94F"
+                          strokeWidth={2}
+                          fillOpacity={1}
+                          fill="url(#hourlyGrad)"
+                        />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  </div>
+
+                  <div className="mt-3 flex items-center justify-between border-t border-[#C59A52]/15 pt-3 text-xs text-[#EDE0C9]/70">
+                    <span>Peak 1: <strong>Morning Darshan (08:00)</strong> — 1,120 active/hr</span>
+                    <span>Peak 2: <strong>Sandhya Aarti (18:00)</strong> — 1,640 active/hr</span>
+                  </div>
+                </div>
+
+                {/* Right 5 Cols: Page Connectivity & Devotee Navigation Matrix */}
+                <div className="rounded-2xl border border-[#C59A52]/30 bg-[#16100E]/90 p-6 shadow-xl backdrop-blur-md lg:col-span-5 flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center gap-2 border-b border-[#C59A52]/20 pb-4">
+                      <Sparkles size={18} className="text-[#E8B94F]" />
+                      <h3 className="font-serif text-lg font-bold text-[#E8B94F]">
+                        Page Connectivity & Journey Paths
+                      </h3>
+                    </div>
+                    <p className="mt-1 text-xs text-[#EDE0C9]/60">
+                      Most frequent devotee transition pathways from page to page
+                    </p>
+
+                    <div className="mt-4 space-y-3">
+                      {/* Flow Path 1 */}
+                      <div className="rounded-xl border border-[#C59A52]/20 bg-[#221613] p-3 text-xs">
+                        <div className="flex items-center justify-between font-bold text-[#E8B94F]">
+                          <span>Initiation & Seva Journey</span>
+                          <span className="rounded bg-emerald-950 px-2 py-0.5 text-[10px] text-emerald-300">
+                            38% of Visitors
+                          </span>
+                        </div>
+                        <div className="mt-2 flex items-center gap-1.5 text-[11px] font-medium text-[#FFF9ED] flex-wrap">
+                          <span className="rounded bg-[#2D1E1A] px-2 py-1">Home (/)</span>
+                          <ArrowRight size={12} className="text-[#C59A52]" />
+                          <span className="rounded bg-[#2D1E1A] px-2 py-1">/diksha</span>
+                          <ArrowRight size={12} className="text-[#C59A52]" />
+                          <span className="rounded bg-[#2D1E1A] px-2 py-1">/guru-pranali</span>
+                          <ArrowRight size={12} className="text-[#C59A52]" />
+                          <span className="rounded bg-emerald-900/60 px-2 py-1 text-emerald-200">/donate</span>
+                        </div>
+                      </div>
+
+                      {/* Flow Path 2 */}
+                      <div className="rounded-xl border border-[#C59A52]/20 bg-[#221613] p-3 text-xs">
+                        <div className="flex items-center justify-between font-bold text-[#E8B94F]">
+                          <span>Festival Offering Pathway</span>
+                          <span className="rounded bg-emerald-950 px-2 py-0.5 text-[10px] text-emerald-300">
+                            44% Conversion
+                          </span>
+                        </div>
+                        <div className="mt-2 flex items-center gap-1.5 text-[11px] font-medium text-[#FFF9ED] flex-wrap">
+                          <span className="rounded bg-[#2D1E1A] px-2 py-1">/events</span>
+                          <ArrowRight size={12} className="text-[#C59A52]" />
+                          <span className="rounded bg-emerald-900/60 px-2 py-1 text-emerald-200">/donate</span>
+                        </div>
+                      </div>
+
+                      {/* Flow Path 3 */}
+                      <div className="rounded-xl border border-[#C59A52]/20 bg-[#221613] p-3 text-xs">
+                        <div className="flex items-center justify-between font-bold text-[#E8B94F]">
+                          <span>Spiritual Katha Reader Journey</span>
+                          <span className="rounded bg-amber-950 px-2 py-0.5 text-[10px] text-amber-300">
+                            29% Offering
+                          </span>
+                        </div>
+                        <div className="mt-2 flex items-center gap-1.5 text-[11px] font-medium text-[#FFF9ED] flex-wrap">
+                          <span className="rounded bg-[#2D1E1A] px-2 py-1">/blog</span>
+                          <ArrowRight size={12} className="text-[#C59A52]" />
+                          <span className="rounded bg-[#2D1E1A] px-2 py-1">/guru-pranali</span>
+                          <ArrowRight size={12} className="text-[#C59A52]" />
+                          <span className="rounded bg-emerald-900/60 px-2 py-1 text-emerald-200">/donate</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <p className="mt-3 text-[11px] text-[#EDE0C9]/50 italic text-center">
+                    High connectivity between Guru Pranali &amp; Seva Fund signifies strong spiritual trust
+                  </p>
+                </div>
+              </div>
+
+              {/* Complete Page Dwell Time & Retention Leaderboard Table */}
+              <div className="rounded-2xl border border-[#C59A52]/30 bg-[#16100E]/90 p-6 shadow-xl backdrop-blur-md">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-b border-[#C59A52]/20 pb-4">
+                  <div>
+                    <h3 className="font-serif text-lg font-bold text-[#E8B94F]">
+                      Page Dwell &amp; Retention Leaderboard
+                    </h3>
+                    <p className="mt-0.5 text-xs text-[#EDE0C9]/60">
+                      Complete directory of foundation pages sorted by average devotee stay duration
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-[#EDE0C9]/70">Sorted by:</span>
+                    <button
+                      onClick={() => setEngagementSortBy(engagementSortBy === "avgTime" ? "views" : "avgTime")}
+                      className="rounded-lg border border-[#C59A52]/40 bg-[#251A16] px-3 py-1.5 text-xs font-bold text-[#E8B94F]"
+                    >
+                      {engagementSortBy === "avgTime" ? "⏱️ Stay Time (Highest First)" : "👁️ Total Views"}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="mt-4 overflow-x-auto">
+                  <table className="w-full text-left text-xs">
+                    <thead className="border-b border-[#C59A52]/25 bg-[#201512] text-[#E8B94F] uppercase font-bold tracking-wider">
+                      <tr>
+                        <th className="p-3">Rank</th>
+                        <th className="p-3">Page Route</th>
+                        <th className="p-3">Category</th>
+                        <th className="p-3 text-right">Total Views</th>
+                        <th className="p-3 text-right">Unique Devotees</th>
+                        <th className="p-3 text-right">Average Stay Duration</th>
+                        <th className="p-3 text-center">Bounce Rate</th>
+                        <th className="p-3 text-center">Exit Rate</th>
+                        <th className="p-3">Top Next Page (Connectivity)</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-[#C59A52]/15">
+                      {[...pageEngagementData]
+                        .sort((a, b) =>
+                          engagementSortBy === "avgTime" ? b.avgTimeSec - a.avgTimeSec : b.views - a.views
+                        )
+                        .map((page, idx) => (
+                          <tr key={page.path} className="transition hover:bg-[#221613]/60">
+                            <td className="p-3 font-mono font-bold text-[#C59A52]">#{idx + 1}</td>
+                            <td className="p-3 font-semibold text-[#FFF9ED]">
+                              <div className="font-bold text-[#FFF9ED]">{page.title}</div>
+                              <div className="font-mono text-[11px] text-[#EDE0C9]/50">{page.path}</div>
+                            </td>
+                            <td className="p-3">
+                              <span className="rounded-full border border-[#C59A52]/30 bg-[#251B17] px-2.5 py-0.5 text-[10px] font-bold text-[#E8B94F]">
+                                {page.category}
+                              </span>
+                            </td>
+                            <td className="p-3 text-right font-mono font-semibold text-[#FFF9ED]">
+                              {page.views?.toLocaleString("en-IN")}
+                            </td>
+                            <td className="p-3 text-right font-mono text-[#EDE0C9]/70">
+                              {page.uniqueVisitors?.toLocaleString("en-IN")}
+                            </td>
+                            <td className="p-3 text-right font-mono font-bold">
+                              <span
+                                className={`rounded px-2 py-1 text-xs ${
+                                  page.avgTimeSec > 300
+                                    ? "bg-emerald-950 text-emerald-300 border border-emerald-500/40"
+                                    : page.avgTimeSec > 200
+                                    ? "bg-amber-950 text-amber-300 border border-amber-500/40"
+                                    : "bg-stone-900 text-[#EDE0C9] border border-stone-700"
+                                }`}
+                              >
+                                {formatDuration(page.avgTimeSec)}
+                              </span>
+                            </td>
+                            <td className="p-3 text-center font-mono text-[#EDE0C9]/70">{page.bounceRate}</td>
+                            <td className="p-3 text-center font-mono text-[#EDE0C9]/70">{page.exitRate}</td>
+                            <td className="p-3">
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                {page.nextPages && page.nextPages.length > 0 ? (
+                                  page.nextPages.map((np) => (
+                                    <span
+                                      key={np.path}
+                                      className="rounded bg-[#291B17] px-2 py-0.5 text-[10px] text-[#E8B94F] border border-[#C59A52]/20"
+                                    >
+                                      {np.path} ({np.share})
+                                    </span>
+                                  ))
+                                ) : (
+                                  <span className="text-[10px] text-[#EDE0C9]/40">—</span>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ==============================================================
+              TAB: FIELD COLLECTIONS & DEVOTEE PIPELINE KANBAN
+          ============================================================== */}
+          {activeTab === "kanban" && (
+            <div className="space-y-8">
+              {/* Header & Controls */}
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-[#C59A52]/20 pb-4">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <KanbanIcon size={24} className="text-[#E8B94F]" />
+                    <h2
+                      className="font-serif text-2xl font-bold text-[#E8B94F]"
+                      style={{ fontFamily: "'Cormorant Garamond', serif" }}
+                    >
+                      Field Collections &amp; Devotee Pipeline Kanban
+                    </h2>
+                  </div>
+                  <p className="mt-1 text-xs text-[#EDE0C9]/60">
+                    Track field agent doorstep collections, cash handover custody, office audits, and bank settlements.
+                  </p>
+                </div>
+                <div className="flex flex-wrap items-center gap-3">
+                  <button
+                    onClick={() => setNewKanbanModal(true)}
+                    className="flex items-center gap-2 rounded-xl border border-[#E8B94F]/40 bg-gradient-to-r from-[#971515] to-[#78372B] px-4 py-2 text-xs font-bold text-white shadow-lg transition hover:from-[#B01818] hover:to-[#971515]"
+                  >
+                    <Plus size={15} />
+                    <span>New Field Assignment</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Pipeline Value Statistics Bar */}
+              <div className="rounded-2xl border border-[#C59A52]/30 bg-[#16100E]/90 p-5 shadow-xl backdrop-blur-md">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <span className="text-xs font-bold uppercase tracking-wider text-[#E8B94F]">
+                      Active Pipeline Value
+                    </span>
+                    <div className="flex items-baseline gap-2 mt-0.5">
+                      <span className="font-serif text-2xl font-bold text-[#FFF9ED]">
+                        ₹{kanbanCards.reduce((acc, c) => acc + (Number(c.amount) || 0), 0).toLocaleString("en-IN")}
+                      </span>
+                      <span className="text-xs text-[#EDE0C9]/60">across {kanbanCards.length} tasks</span>
+                    </div>
+                  </div>
+
+                  {/* Stage Counters */}
+                  <div className="flex flex-wrap gap-2 text-xs">
+                    {KANBAN_COLUMNS.map((col) => {
+                      const colCards = kanbanCards.filter((c) => c.status === col.id);
+                      const colTotal = colCards.reduce((acc, c) => acc + (Number(c.amount) || 0), 0);
+                      return (
+                        <div
+                          key={col.id}
+                          className={`rounded-xl border px-3 py-1.5 ${col.badgeColor} flex items-center gap-2`}
+                        >
+                          <span className="font-bold">{col.label.split(" ")[0]}:</span>
+                          <span className="font-mono font-bold">₹{(colTotal / 1000).toFixed(1)}k</span>
+                          <span className="rounded-full bg-black/40 px-1.5 py-0.2 text-[10px]">
+                            {colCards.length}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Segmented Pipeline Progress Bar */}
+                <div className="mt-4 flex h-3 w-full overflow-hidden rounded-full bg-[#201512] border border-[#C59A52]/20">
+                  {KANBAN_COLUMNS.map((col) => {
+                    const colTotal = kanbanCards
+                      .filter((c) => c.status === col.id)
+                      .reduce((acc, c) => acc + (Number(c.amount) || 0), 0);
+                    const totalVal = kanbanCards.reduce((acc, c) => acc + (Number(c.amount) || 0), 0) || 1;
+                    const pct = Math.max(5, Math.round((colTotal / totalVal) * 100));
+                    return (
+                      <div
+                        key={`bar-${col.id}`}
+                        style={{ width: `${pct}%`, backgroundColor: col.accent }}
+                        className="h-full transition-all duration-500"
+                        title={`${col.label}: ₹${colTotal}`}
+                      />
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Filters Row */}
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                {/* Search */}
+                <div className="relative w-full sm:w-72">
+                  <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#C59A52]" />
+                  <input
+                    type="text"
+                    value={kanbanSearch}
+                    onChange={(e) => setKanbanSearch(e.target.value)}
+                    placeholder="Search by donor or task ID..."
+                    className="w-full rounded-xl border border-[#C59A52]/30 bg-[#0E0A09] py-2 pl-9 pr-3 text-xs font-medium text-[#FFF9ED] placeholder-[#EDE0C9]/40 focus:border-[#E8B94F] focus:outline-none"
+                  />
+                </div>
+
+                {/* Filter by Agent */}
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-[#EDE0C9]/70">Filter Agent:</span>
+                  <select
+                    value={kanbanFilterAgent}
+                    onChange={(e) => setKanbanFilterAgent(e.target.value)}
+                    className="rounded-xl border border-[#C59A52]/30 bg-[#16100E] p-2 text-xs font-semibold text-[#E8B94F] focus:outline-none"
+                  >
+                    <option value="All">All Field Collectors</option>
+                    <option value="Subrata Mondal">Subrata Mondal</option>
+                    <option value="Amitabha Roy">Amitabha Roy</option>
+                    <option value="Krishnendu Chakraborty">Krishnendu Chakraborty</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Kanban 4-Column Board */}
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                {KANBAN_COLUMNS.map((col) => {
+                  const filteredCards = kanbanCards
+                    .filter((c) => c.status === col.id)
+                    .filter((c) =>
+                      kanbanSearch
+                        ? c.donorName.toLowerCase().includes(kanbanSearch.toLowerCase()) ||
+                          c.id.toLowerCase().includes(kanbanSearch.toLowerCase()) ||
+                          (c.memberId && c.memberId.toLowerCase().includes(kanbanSearch.toLowerCase()))
+                        : true
+                    )
+                    .filter((c) =>
+                      kanbanFilterAgent === "All" ? true : c.agentName === kanbanFilterAgent
+                    );
+
+                  const stageTotal = filteredCards.reduce((acc, c) => acc + (Number(c.amount) || 0), 0);
+
+                  return (
+                    <div
+                      key={col.id}
+                      className="flex flex-col rounded-2xl border border-[#C59A52]/25 bg-[#150F0D]/90 p-4 shadow-xl backdrop-blur-md"
+                    >
+                      {/* Column Header */}
+                      <div className="flex items-center justify-between border-b border-[#C59A52]/20 pb-3">
+                        <div className="flex items-center gap-2">
+                          <span
+                            className="h-2.5 w-2.5 rounded-full"
+                            style={{ backgroundColor: col.accent }}
+                          />
+                          <h4 className="font-serif text-sm font-bold text-[#E8B94F]">{col.label}</h4>
+                        </div>
+                        <span className="rounded-full bg-[#241714] px-2 py-0.5 font-mono text-xs font-bold text-[#EDE0C9]">
+                          {filteredCards.length}
+                        </span>
+                      </div>
+
+                      {/* Sub-header with column value */}
+                      <div className="mt-2 text-[11px] text-[#EDE0C9]/60 flex justify-between">
+                        <span>Total in stage:</span>
+                        <span className="font-mono font-bold text-[#FFF9ED]">
+                          ₹{stageTotal.toLocaleString("en-IN")}
+                        </span>
+                      </div>
+
+                      {/* Cards Container */}
+                      <div className="mt-3 flex-1 space-y-3 overflow-y-auto max-h-[600px] pr-1">
+                        {filteredCards.length === 0 ? (
+                          <div className="rounded-xl border border-dashed border-[#C59A52]/20 p-6 text-center text-xs text-[#EDE0C9]/40">
+                            No assignments in this stage
+                          </div>
+                        ) : (
+                          filteredCards.map((card) => (
+                            <div
+                              key={card.id}
+                              className="group rounded-xl border border-[#C59A52]/30 bg-[#1D1411] p-3.5 shadow-md transition hover:border-[#E8B94F]/60 hover:bg-[#251A16]"
+                            >
+                              {/* Card Top: ID & Date */}
+                              <div className="flex items-center justify-between text-[11px]">
+                                <span className="font-mono font-bold text-[#C59A52]">{card.id}</span>
+                                <span className="text-[#EDE0C9]/50">{card.date}</span>
+                              </div>
+
+                              {/* Donor & Member */}
+                              <div className="mt-1.5">
+                                <h5 className="font-bold text-[#FFF9ED] text-sm">{card.donorName}</h5>
+                                {card.memberId && (
+                                  <span className="inline-block mt-0.5 rounded bg-[#2D1E1A] px-1.5 py-0.2 font-mono text-[10px] text-[#E8B94F]">
+                                    {card.memberId}
+                                  </span>
+                                )}
+                              </div>
+
+                              {/* Amount & Mode */}
+                              <div className="mt-2 flex items-baseline justify-between border-t border-[#C59A52]/15 pt-2">
+                                <span className="font-serif text-lg font-bold text-[#E8B94F]">
+                                  ₹{Number(card.amount).toLocaleString("en-IN")}
+                                </span>
+                                <span className="rounded bg-black/40 px-2 py-0.5 text-[10px] font-bold text-[#EDE0C9]">
+                                  {card.paymentMode}
+                                </span>
+                              </div>
+
+                              {/* Purpose & Area */}
+                              <div className="mt-1 text-[11px] text-[#EDE0C9]/70">
+                                <div><strong>Seva:</strong> {card.purpose}</div>
+                                <div><strong>Area:</strong> {card.area}</div>
+                                <div><strong>Agent:</strong> {card.agentName}</div>
+                              </div>
+
+                              {/* Notes */}
+                              {card.notes && (
+                                <p className="mt-1.5 rounded bg-[#160E0C] p-1.5 text-[10px] italic text-[#EDE0C9]/60 border border-[#C59A52]/10">
+                                  "{card.notes}"
+                                </p>
+                              )}
+
+                              {/* Interactive Progression Buttons */}
+                              <div className="mt-3 flex items-center justify-between border-t border-[#C59A52]/15 pt-2 text-xs">
+                                <button
+                                  onClick={() => handleMoveKanban(card.id, "prev")}
+                                  disabled={card.status === "scheduled"}
+                                  className="flex items-center gap-1 rounded bg-[#2A1B17] px-2 py-1 text-[11px] font-bold text-[#EDE0C9] transition hover:bg-[#38231E] hover:text-white disabled:opacity-30 disabled:pointer-events-none"
+                                >
+                                  <ChevronLeft size={13} />
+                                  <span>Prev</span>
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteKanbanCard(card.id)}
+                                  className="text-[10px] text-rose-400 hover:underline"
+                                >
+                                  Remove
+                                </button>
+                                <button
+                                  onClick={() => handleMoveKanban(card.id, "next")}
+                                  disabled={card.status === "settled"}
+                                  className="flex items-center gap-1 rounded bg-[#971515] px-2 py-1 text-[11px] font-bold text-white transition hover:bg-[#B01818] disabled:opacity-30 disabled:pointer-events-none"
+                                >
+                                  <span>Advance</span>
+                                  <ChevronRight size={13} />
+                                </button>
+                              </div>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Add New Kanban Task Modal */}
+              {newKanbanModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
+                  <div className="relative w-full max-w-md rounded-3xl border border-[#C59A52]/40 bg-[#16100E] p-6 shadow-2xl">
+                    <h3 className="font-serif text-xl font-bold text-[#E8B94F]">
+                      New Field Collection Assignment
+                    </h3>
+                    <p className="mt-0.5 text-xs text-[#EDE0C9]/60">
+                      Assign doorstep seva collection or follow-up to a verified field collector.
+                    </p>
+
+                    <form onSubmit={handleAddKanbanCard} className="mt-4 space-y-3">
+                      <div>
+                        <label className="block text-xs font-bold text-[#E8B94F]">Donor Name *</label>
+                        <input
+                          type="text"
+                          required
+                          value={newKanbanForm.donorName}
+                          onChange={(e) => setNewKanbanForm({ ...newKanbanForm, donorName: e.target.value })}
+                          placeholder="e.g. Radhamadhav Das"
+                          className="mt-1 w-full rounded-xl border border-[#C59A52]/30 bg-[#0E0A09] p-2.5 text-xs text-[#FFF9ED] focus:outline-none"
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-xs font-bold text-[#E8B94F]">Member ID (Optional)</label>
+                          <input
+                            type="text"
+                            value={newKanbanForm.memberId}
+                            onChange={(e) => setNewKanbanForm({ ...newKanbanForm, memberId: e.target.value })}
+                            placeholder="e.g. CKF-M-003"
+                            className="mt-1 w-full rounded-xl border border-[#C59A52]/30 bg-[#0E0A09] p-2.5 text-xs font-mono text-[#E8B94F] focus:outline-none"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-[#E8B94F]">Amount (INR ₹) *</label>
+                          <input
+                            type="number"
+                            required
+                            min="1"
+                            value={newKanbanForm.amount}
+                            onChange={(e) => setNewKanbanForm({ ...newKanbanForm, amount: e.target.value })}
+                            className="mt-1 w-full rounded-xl border border-[#C59A52]/30 bg-[#0E0A09] p-2.5 text-xs font-bold text-[#E8B94F] focus:outline-none"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-[#E8B94F]">Seva Purpose</label>
+                        <select
+                          value={newKanbanForm.purpose}
+                          onChange={(e) => setNewKanbanForm({ ...newKanbanForm, purpose: e.target.value })}
+                          className="mt-1 w-full rounded-xl border border-[#C59A52]/30 bg-[#0E0A09] p-2.5 text-xs text-[#FFF9ED] focus:outline-none"
+                        >
+                          <option value="Daily Anna Daan Seva">Daily Anna Daan Seva</option>
+                          <option value="Temple Renovation Seva">Temple Renovation Seva</option>
+                          <option value="Gaura Purnima Festival">Gaura Purnima Festival</option>
+                          <option value="Vedic Education & Gurukula">Vedic Education &amp; Gurukula</option>
+                          <option value="Go Seva & Fodder Fund">Go Seva &amp; Fodder Fund</option>
+                        </select>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-xs font-bold text-[#E8B94F]">Assign Collector</label>
+                          <select
+                            value={newKanbanForm.agentName}
+                            onChange={(e) => setNewKanbanForm({ ...newKanbanForm, agentName: e.target.value })}
+                            className="mt-1 w-full rounded-xl border border-[#C59A52]/30 bg-[#0E0A09] p-2.5 text-xs text-[#FFF9ED] focus:outline-none"
+                          >
+                            <option value="Subrata Mondal">Subrata Mondal</option>
+                            <option value="Amitabha Roy">Amitabha Roy</option>
+                            <option value="Krishnendu Chakraborty">Krishnendu Chakraborty</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-[#E8B94F]">Payment Mode</label>
+                          <select
+                            value={newKanbanForm.paymentMode}
+                            onChange={(e) => setNewKanbanForm({ ...newKanbanForm, paymentMode: e.target.value })}
+                            className="mt-1 w-full rounded-xl border border-[#C59A52]/30 bg-[#0E0A09] p-2.5 text-xs text-[#FFF9ED] focus:outline-none"
+                          >
+                            <option value="Cash">Cash</option>
+                            <option value="UPI / QR">UPI / QR</option>
+                            <option value="Cheque / Draft">Cheque / Draft</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-[#E8B94F]">Area / Territory</label>
+                        <input
+                          type="text"
+                          value={newKanbanForm.area}
+                          onChange={(e) => setNewKanbanForm({ ...newKanbanForm, area: e.target.value })}
+                          placeholder="e.g. Nabadwip Mayapur Ghat"
+                          className="mt-1 w-full rounded-xl border border-[#C59A52]/30 bg-[#0E0A09] p-2.5 text-xs text-[#FFF9ED] focus:outline-none"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-[#E8B94F]">Notes / Remarks</label>
+                        <input
+                          type="text"
+                          value={newKanbanForm.notes}
+                          onChange={(e) => setNewKanbanForm({ ...newKanbanForm, notes: e.target.value })}
+                          placeholder="e.g. Call before arrival"
+                          className="mt-1 w-full rounded-xl border border-[#C59A52]/30 bg-[#0E0A09] p-2.5 text-xs text-[#FFF9ED] focus:outline-none"
+                        />
+                      </div>
+
+                      <div className="mt-5 flex items-center justify-end gap-3 pt-2">
+                        <button
+                          type="button"
+                          onClick={() => setNewKanbanModal(false)}
+                          className="rounded-xl border border-[#C59A52]/30 bg-[#221613] px-4 py-2 text-xs font-bold text-[#EDE0C9] hover:bg-[#2D1D19]"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="submit"
+                          className="rounded-xl border border-[#E8B94F]/40 bg-gradient-to-r from-[#971515] to-[#78372B] px-5 py-2 text-xs font-bold text-white shadow-lg hover:from-[#B01818]"
+                        >
+                          Create Assignment
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
