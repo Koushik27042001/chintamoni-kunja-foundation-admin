@@ -301,13 +301,13 @@ export default function Blog() {
           </div>
 
           {/* Featured Article Banner */}
-          {activeCategory === "All Articles" && searchQuery === "" && ARTICLES.length > 0 && (
+          {activeCategory === "All Articles" && searchQuery === "" && articleList.length > 0 && (
             <Reveal className="mt-12">
               <div className="grid overflow-hidden rounded-3xl border-2 border-[#C59A52]/50 bg-white shadow-md lg:grid-cols-12 transition-all hover:border-[#971515] hover:shadow-xl">
                 <div className="lg:col-span-6 relative aspect-[16/10] lg:aspect-auto">
                   <img
-                    src={ARTICLES[0].image}
-                    alt={ARTICLES[0].title}
+                    src={articleList[0].image}
+                    alt={articleList[0].title}
                     className="h-full w-full object-cover"
                   />
                   <span className="absolute left-4 top-4 rounded-full bg-[#971515] px-3.5 py-1 text-xs font-bold text-white shadow-md">
@@ -317,21 +317,21 @@ export default function Blog() {
                 <div className="lg:col-span-6 flex flex-col justify-between p-8 sm:p-12">
                   <div>
                     <div className="flex items-center gap-3 text-xs text-[#C59A52] font-semibold">
-                      <span>{ARTICLES[0].category}</span>
+                      <span>{articleList[0].category}</span>
                       <span>•</span>
-                      <span className="flex items-center gap-1"><Clock size={12} /> {ARTICLES[0].readTime}</span>
+                      <span className="flex items-center gap-1"><Clock size={12} /> {articleList[0].readTime}</span>
                     </div>
-                    <h3 className="mt-3 font-serif text-3xl font-bold text-[#78372B] hover:text-[#971515] cursor-pointer" style={serif} onClick={() => setSelectedArticle(ARTICLES[0])}>
-                      {ARTICLES[0].title}
+                    <h3 className="mt-3 font-serif text-3xl font-bold text-[#78372B] hover:text-[#971515] cursor-pointer" style={serif} onClick={() => setSelectedArticle(articleList[0])}>
+                      {articleList[0].title}
                     </h3>
                     <p className="mt-3 text-sm leading-relaxed text-[#39251D]/85">
-                      {ARTICLES[0].summary}
+                      {articleList[0].summary}
                     </p>
                   </div>
                   <div className="mt-6 pt-4 border-t border-[#C59A52]/20 flex items-center justify-between">
-                    <span className="text-xs text-[#39251D]/70">{ARTICLES[0].date}</span>
+                    <span className="text-xs text-[#39251D]/70">{articleList[0].date}</span>
                     <button
-                      onClick={() => setSelectedArticle(ARTICLES[0])}
+                      onClick={() => setSelectedArticle(articleList[0])}
                       className="inline-flex items-center gap-2 font-bold text-sm text-[#971515] hover:text-[#C59A52]"
                     >
                       <span>Read Full Article</span>

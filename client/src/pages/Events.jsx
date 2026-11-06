@@ -166,10 +166,10 @@ export default function Events() {
           // Merge dynamic events with initial festivals, avoiding duplicates
           const existingIds = new Set(FESTIVALS.map((f) => f.id || f.title));
           const newOnes = dynamicEvents.filter(
-            (ev) => !existingIds.has(ev.id) && !existingIds.has(ev.title)
+            (ev) => !existingIds.has(ev._id) && !existingIds.has(ev.id) && !existingIds.has(ev.title)
           );
           if (newOnes.length > 0) {
-            setFestivalList([...FESTIVALS, ...newOnes]);
+            setFestivalList([...newOnes, ...FESTIVALS]);
           }
         }
       } catch (e) { }

@@ -1,4 +1,5 @@
 const Blog = require('../models/Blog');
+const cloudinary = require('cloudinary').v2;
 
 // @desc    Get all blogs
 // @route   GET /api/blogs
@@ -28,13 +29,36 @@ const getBlogById = async (req, res) => {
   }
 };
 
-// @desc    Create blog
+// @desc    Create blog (with Cloudinary cloud storage & MongoDB persistence)
 // @route   POST /api/blogs
 const createBlog = async (req, res) => {
   try {
     const { title, bengali, category, excerpt, content, author, readTime, image, status } = req.body;
     if (!title || !content) {
       return res.status(400).json({ success: false, message: 'Title and content are required' });
+    }
+
+    let finalImageUrl = image || '/assets/Opulent Gaura-Nitai and Madan Mohan Altar.png';
+    let publicId = '';
+    let storageProvider = finalImageUrl.startsWith('data:image/') ? 'database' : 'local_asset';
+
+    // If image is a base64 Data URL and Cloudinary is configured, upload to Cloudinary CDN
+    if (finalImageUrl.startsWith('data:image/') && process.env.CLOUDINARY_URL) {
+      try {
+        const uploadResult = await cloudinary.uploader.upload(finalImageUrl, {
+          folder: 'chintamoni_kunja/blogs',
+          resource_type: 'image',
+          transformation: [{ quality: 'auto', fetch_format: 'auto' }],
+        });
+
+        if (uploadResult && uploadResult.secure_url) {
+          finalImageUrl = uploadResult.secure_url;
+          publicId = uploadResult.public_id;
+          storageProvider = 'cloudinary';
+        }
+      } catch (cloudErr) {
+        console.warn('Cloudinary upload warning for blog (falling back to database storage):', cloudErr.message);
+      }
     }
 
     const blog = await Blog.create({
@@ -45,7 +69,7 @@ const createBlog = async (req, res) => {
       content,
       author: author || 'Sri Sri Chintamoni Kunja Foundation',
       readTime: readTime || '5 min read',
-      image: image || '/assets/Opulent Gaura-Nitai and Madan Mohan Altar.png',
+      image: finalImageUrl,
       status: status || 'published',
     });
 

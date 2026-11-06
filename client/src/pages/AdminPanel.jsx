@@ -531,6 +531,15 @@ export default function AdminPanel() {
   const [galleryDarshanModal, setGalleryDarshanModal] = useState(null);
   const galleryFileInputRef = useRef(null);
 
+  // Event & Blog Media Upload States
+  const [eventFilePreview, setEventFilePreview] = useState(null);
+  const [eventFileInfo, setEventFileInfo] = useState(null);
+  const eventFileInputRef = useRef(null);
+
+  const [blogFilePreview, setBlogFilePreview] = useState(null);
+  const [blogFileInfo, setBlogFileInfo] = useState(null);
+  const blogFileInputRef = useRef(null);
+
   // Listen for session expiry custom events
   useEffect(() => {
     const handleAuthExpired = (e) => {
@@ -826,6 +835,62 @@ export default function AdminPanel() {
   /* ---------------------------------------------------------------
      CMS Handlers
   --------------------------------------------------------------- */
+  const handleEventImageUpload = (file) => {
+    if (!file || !file.type.startsWith("image/")) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const dataUrl = e.target.result;
+      const img = new Image();
+      img.onload = () => {
+        const MAX_W = 1600;
+        const MAX_H = 1600;
+        let w = img.width, h = img.height;
+        if (w > MAX_W || h > MAX_H) {
+          if (w > h) { h = Math.round((h * MAX_W) / w); w = MAX_W; }
+          else { w = Math.round((w * MAX_H) / h); h = MAX_H; }
+        }
+        const canvas = document.createElement("canvas");
+        canvas.width = w; canvas.height = h;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, w, h);
+        const optUrl = canvas.toDataURL("image/jpeg", 0.88);
+        setNewEvent((prev) => ({ ...prev, image: optUrl }));
+        setEventFilePreview(optUrl);
+        setEventFileInfo({ name: file.name, size: `${(file.size / 1024).toFixed(1)} KB` });
+      };
+      img.src = dataUrl;
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleBlogImageUpload = (file) => {
+    if (!file || !file.type.startsWith("image/")) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const dataUrl = e.target.result;
+      const img = new Image();
+      img.onload = () => {
+        const MAX_W = 1600;
+        const MAX_H = 1600;
+        let w = img.width, h = img.height;
+        if (w > MAX_W || h > MAX_H) {
+          if (w > h) { h = Math.round((h * MAX_W) / w); w = MAX_W; }
+          else { w = Math.round((w * MAX_H) / h); h = MAX_H; }
+        }
+        const canvas = document.createElement("canvas");
+        canvas.width = w; canvas.height = h;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, w, h);
+        const optUrl = canvas.toDataURL("image/jpeg", 0.88);
+        setNewBlog((prev) => ({ ...prev, image: optUrl }));
+        setBlogFilePreview(optUrl);
+        setBlogFileInfo({ name: file.name, size: `${(file.size / 1024).toFixed(1)} KB` });
+      };
+      img.src = dataUrl;
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handleAddEvent = async (e) => {
     e.preventDefault();
     if (!newEvent.title || !newEvent.desc) {
@@ -845,6 +910,9 @@ export default function AdminPanel() {
       image: "/assets/Krishna’s Golden Riverside Devotion.png",
       featured: true,
     });
+    setEventFilePreview(null);
+    setEventFileInfo(null);
+    if (eventFileInputRef.current) eventFileInputRef.current.value = "";
     showAlert(`Event "${newEvent.title}" published!`);
   };
 
@@ -874,6 +942,9 @@ export default function AdminPanel() {
       image: "/assets/Opulent Gaura-Nitai and Madan Mohan Altar.png",
       status: "published",
     });
+    setBlogFilePreview(null);
+    setBlogFileInfo(null);
+    if (blogFileInputRef.current) blogFileInputRef.current.value = "";
     showAlert(`Article "${newBlog.title}" published!`);
   };
 
@@ -3764,6 +3835,48 @@ export default function AdminPanel() {
                         className="mt-1 w-full rounded-xl border border-[#C59A52]/30 bg-[#0E0A09] p-2.5 text-xs text-[#FFF9ED] focus:outline-none"
                       />
                     </div>
+                    {/* Event Banner Media Upload */}
+                    <div>
+                      <label className="block text-xs font-bold text-[#E8B94F]">Event Banner / Photo</label>
+                      <input
+                        ref={eventFileInputRef}
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => {
+                          if (e.target.files?.[0]) handleEventImageUpload(e.target.files[0]);
+                        }}
+                      />
+                      {eventFilePreview ? (
+                        <div className="mt-1 relative overflow-hidden rounded-xl border border-[#C59A52]/40 bg-[#0E0A09] p-2">
+                          <img src={eventFilePreview} alt="Event Preview" className="h-28 w-full rounded-lg object-cover" />
+                          <div className="mt-2 flex items-center justify-between text-[11px] text-[#EDE0C9]/80">
+                            <span className="truncate max-w-[200px]">{eventFileInfo?.name}</span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setEventFilePreview(null);
+                                setEventFileInfo(null);
+                                setNewEvent((p) => ({ ...p, image: "/assets/Krishna’s Golden Riverside Devotion.png" }));
+                                if (eventFileInputRef.current) eventFileInputRef.current.value = "";
+                              }}
+                              className="text-rose-400 hover:underline"
+                            >
+                              Remove
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => eventFileInputRef.current?.click()}
+                          className="mt-1 flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-[#C59A52]/40 bg-[#0E0A09]/60 py-3 text-xs font-semibold text-[#E8B94F] transition hover:border-[#E8B94F] hover:bg-[#0E0A09]"
+                        >
+                          <Upload size={14} />
+                          Upload Banner from Device
+                        </button>
+                      )}
+                    </div>
                     <button
                       type="submit"
                       className="w-full rounded-xl border border-[#C59A52]/50 bg-gradient-to-r from-[#971515] to-[#78372B] py-2.5 text-xs font-bold uppercase tracking-wider text-white shadow hover:from-[#B01818] hover:to-[#971515]"
@@ -3890,6 +4003,48 @@ export default function AdminPanel() {
                         placeholder="Spiritual text, verses, commentary, historical citations..."
                         className="mt-1 w-full rounded-xl border border-[#C59A52]/30 bg-[#0E0A09] p-2.5 text-xs text-[#FFF9ED] focus:outline-none"
                       />
+                    </div>
+                    {/* Blog Cover Media Upload */}
+                    <div>
+                      <label className="block text-xs font-bold text-[#E8B94F]">Article Cover Image</label>
+                      <input
+                        ref={blogFileInputRef}
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => {
+                          if (e.target.files?.[0]) handleBlogImageUpload(e.target.files[0]);
+                        }}
+                      />
+                      {blogFilePreview ? (
+                        <div className="mt-1 relative overflow-hidden rounded-xl border border-[#C59A52]/40 bg-[#0E0A09] p-2">
+                          <img src={blogFilePreview} alt="Blog Cover Preview" className="h-28 w-full rounded-lg object-cover" />
+                          <div className="mt-2 flex items-center justify-between text-[11px] text-[#EDE0C9]/80">
+                            <span className="truncate max-w-[200px]">{blogFileInfo?.name}</span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setBlogFilePreview(null);
+                                setBlogFileInfo(null);
+                                setNewBlog((p) => ({ ...p, image: "/assets/Opulent Gaura-Nitai and Madan Mohan Altar.png" }));
+                                if (blogFileInputRef.current) blogFileInputRef.current.value = "";
+                              }}
+                              className="text-rose-400 hover:underline"
+                            >
+                              Remove
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => blogFileInputRef.current?.click()}
+                          className="mt-1 flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-[#C59A52]/40 bg-[#0E0A09]/60 py-3 text-xs font-semibold text-[#E8B94F] transition hover:border-[#E8B94F] hover:bg-[#0E0A09]"
+                        >
+                          <Upload size={14} />
+                          Upload Cover from Device
+                        </button>
+                      )}
                     </div>
                     <button
                       type="submit"
