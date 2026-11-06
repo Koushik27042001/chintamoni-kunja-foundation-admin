@@ -646,13 +646,15 @@ export async function createGalleryAPI(item) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(item),
-      signal: AbortSignal.timeout(12000),
+      signal: AbortSignal.timeout(25000),
     });
     if (res.ok) {
       const json = await res.json();
       return json.data;
     }
-  } catch (e) {}
+  } catch (e) {
+    console.warn("Server gallery create error, falling back locally:", e.message);
+  }
   return { ...item, _id: `gal-${Date.now()}` };
 }
 

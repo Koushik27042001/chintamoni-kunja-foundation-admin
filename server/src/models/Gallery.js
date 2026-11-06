@@ -16,6 +16,14 @@ const gallerySchema = new mongoose.Schema(
       type: String,
       required: [true, 'Please provide image path or URL'],
     },
+    public_id: {
+      type: String,
+      default: '',
+    },
+    storageProvider: {
+      type: String,
+      default: 'database',
+    },
     caption: {
       type: String,
       default: '',
