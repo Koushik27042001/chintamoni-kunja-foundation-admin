@@ -151,7 +151,7 @@ export default function Gallery() {
       const combined = sortGalleryItemsLatestFirst(deduplicateGalleryItems([...normalized, ...missingInitial]));
       setMediaList(combined);
     } catch (err) {
-      console.warn("Failed to load dynamic gallery items:", err);
+      // Fallback silently without exposing server error in client console
     } finally {
       setLoading(false);
     }

@@ -191,9 +191,7 @@ export function getPageEngagementStats() {
     if (Array.isArray(parsed) && parsed.length > 0) {
       return parsed;
     }
-  } catch (err) {
-    console.warn("Error reading engagement analytics from localStorage:", err);
-  }
+  } catch (err) {}
   return DEFAULT_PAGE_ENGAGEMENT;
 }
 
@@ -252,9 +250,7 @@ export function recordPageStay(pathname, durationSeconds, fromPath = "") {
     }
 
     localStorage.setItem(STORAGE_KEY, JSON.stringify(stats));
-  } catch (err) {
-    console.error("Failed to record page stay:", err);
-  }
+  } catch (err) {}
 }
 
 /**

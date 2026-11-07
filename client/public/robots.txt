@@ -4,7 +4,6 @@ Disallow: /admin
 Disallow: /admin/
 Disallow: /admin-panel
 Disallow: /admin-panel/
-Disallow: /ckf-portal-seva-control-2026/
 Disallow: /api/
 Allow: /
 Sitemap: https://chintamonikunja.org/sitemap.xml

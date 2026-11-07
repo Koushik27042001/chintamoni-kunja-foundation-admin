@@ -846,7 +846,7 @@ export async function getGalleryAPI() {
       }
     }
   } catch (e) {
-    console.warn("Gallery API probe failed, falling back to local store:", e.message);
+    // Resilient fallback without client console pollution
   }
 
   // Combine server items with local storage
@@ -882,7 +882,7 @@ export async function createGalleryAPI(item) {
       created = json.data;
     }
   } catch (e) {
-    console.warn("Server gallery create error, saving locally:", e.message);
+    // Resilient fallback without client console pollution
   }
 
   if (!created) {
@@ -912,7 +912,7 @@ export async function deleteGalleryAPI(id, title = "", src = "") {
   try {
     await fetch(`${API_BASE}/gallery/${encodeURIComponent(id)}`, { method: 'DELETE', signal: AbortSignal.timeout(12000) });
   } catch (e) {
-    console.warn("Server gallery delete error:", e.message);
+    // Resilient fallback without client console pollution
   }
 
   try {

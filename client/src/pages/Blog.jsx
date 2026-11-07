@@ -182,7 +182,7 @@ export default function Blog() {
         setArticleList(dynamicBlogs.map(formatBlog));
       }
     } catch (e) {
-      console.warn("Failed to load blogs from server:", e);
+      // Fallback silently without exposing server error in client console
     }
   };
 

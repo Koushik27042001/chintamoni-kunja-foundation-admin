@@ -56,3 +56,4 @@ const authRateLimiter = (req, res, next) => {
 };
 
 module.exports = { authRateLimiter };
+
