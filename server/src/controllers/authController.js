@@ -135,10 +135,21 @@ const seedAdmin = async (req, res) => {
     }
 
     const { name, email, password } = req.body;
+
+    const adminEmail = (email || process.env.ADMIN_EMAIL || '').toLowerCase().trim();
+    const adminPassword = password || process.env.ADMIN_PASSWORD;
+
+    if (!adminEmail || !adminPassword) {
+      return res.status(400).json({
+        success: false,
+        message: 'Admin email and password are required',
+      });
+    }
+
     const admin = await User.create({
-      name: name || 'Sri Chintamoni Kunja Admin',
-      email: (email || 'admin@chintamonikunja.org').toLowerCase().trim(),
-      password: password || 'Chintamoni@2026',
+      name: name || process.env.ADMIN_NAME || 'Admin',
+      email: adminEmail,
+      password: adminPassword,
       role: 'admin',
     });
 
