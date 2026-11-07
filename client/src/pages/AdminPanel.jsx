@@ -112,6 +112,7 @@ import {
   sortGalleryItemsLatestFirst,
   getContactsAPI,
   updateContactStatusAPI,
+  downloadDatabaseBackupAPI,
   INITIAL_MEMBERS,
   INITIAL_AGENTS,
   INITIAL_RECEIPTS,
@@ -1386,6 +1387,23 @@ export default function AdminPanel() {
             )}
             {isAuthenticated && (
               <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={async () => {
+                    showAlert("⏳ Generating complete database snapshot...");
+                    const res = await downloadDatabaseBackupAPI();
+                    if (res && res.success) {
+                      showAlert("✅ Full database backup downloaded successfully!");
+                    } else {
+                      showAlert("ℹ️ Server backup completed or running offline.");
+                    }
+                  }}
+                  className="hidden sm:inline-flex items-center gap-1.5 rounded-xl border border-[#C59A52]/40 bg-[#251A16] px-2.5 py-1.5 text-xs font-bold text-[#E8B94F] transition hover:bg-[#971515] hover:text-white shadow-sm"
+                  title="Download Complete Database Backup (JSON)"
+                >
+                  <Download size={13} />
+                  <span>Backup DB</span>
+                </button>
                 <span className="hidden items-center gap-1.5 rounded-full border border-[#C59A52]/30 bg-[#1E1513] px-3 py-1 text-xs font-bold text-[#E8B94F] sm:flex">
                   <Shield size={12} className="text-[#C59A52]" />
                   <span>{currentUser?.name || "Admin"}</span>

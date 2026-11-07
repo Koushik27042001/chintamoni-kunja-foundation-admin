@@ -36,3 +36,9 @@ Thumbs.db
 .idea/
 node_modules
 node_modules
+
+# Database Backups
+backups/
+server/backups/
+*.dump
+

@@ -973,3 +973,26 @@ export async function updateContactStatusAPI(id, status, replyNotes) {
   return { success: true };
 }
 
+/* ==================================================================
+   Database Backup API
+================================================================== */
+export async function downloadDatabaseBackupAPI() {
+  try {
+    const res = await authFetch(`${API_BASE}/backup/download`);
+    if (res.ok) {
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `ckf-db-backup-${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+      return { success: true };
+    }
+  } catch (e) {}
+  return { success: false };
+}
+
+

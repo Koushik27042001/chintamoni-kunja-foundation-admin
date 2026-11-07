@@ -64,6 +64,10 @@ app.options('*', cors(corsOptions));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
+// NoSQL Injection Sanitizer Middleware (Strips $ operators and prohibited field paths)
+const { noSqlSanitizer } = require('./middleware/noSqlSanitizer');
+app.use(noSqlSanitizer);
+
 // URL Sanitizer Middleware (Eliminates accidental double slashes e.g. //donations -> /donations)
 app.use((req, res, next) => {
   if (req.url && req.url.includes('//')) {
@@ -98,6 +102,7 @@ const agentRoutes = require('./routes/agentRoutes');
 const eventRoutes = require('./routes/eventRoutes');
 const blogRoutes = require('./routes/blogRoutes');
 const galleryRoutes = require('./routes/galleryRoutes');
+const backupRoutes = require('./routes/backupRoutes');
 
 // Mount routes on BOTH `/api/*` and direct `/*` for bulletproof compatibility
 app.use('/api/auth', authRoutes);
@@ -126,6 +131,9 @@ app.use('/blogs', blogRoutes);
 
 app.use('/api/gallery', galleryRoutes);
 app.use('/gallery', galleryRoutes);
+
+app.use('/api/backup', backupRoutes);
+app.use('/backup', backupRoutes);
 
 // Welcome Root Route
 app.get('/', (req, res) => {
