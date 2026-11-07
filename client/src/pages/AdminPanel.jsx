@@ -54,6 +54,10 @@ import {
   ChevronRight,
   ChevronLeft,
   SlidersHorizontal,
+  PanelLeftClose,
+  PanelLeftOpen,
+  Menu,
+  X,
 } from "lucide-react";
 import {
   ResponsiveContainer,
@@ -539,6 +543,10 @@ export default function AdminPanel() {
   const [blogFilePreview, setBlogFilePreview] = useState(null);
   const [blogFileInfo, setBlogFileInfo] = useState(null);
   const blogFileInputRef = useRef(null);
+
+  // Left Sidebar Collapse & Mobile Drawer States
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   // Listen for session expiry custom events
   useEffect(() => {
@@ -1132,6 +1140,44 @@ export default function AdminPanel() {
     return matchChannel && matchQuery;
   });
 
+  const NAV_SECTIONS = [
+    {
+      group: "Core Intelligence",
+      items: [
+        { id: "dashboard", label: "Dashboard & KPIs", icon: LayoutDashboard },
+        { id: "engagement", label: "Page Dwell & Engagement", icon: Activity },
+        { id: "kanban", label: "Field Collection Kanban", icon: KanbanIcon, badge: kanbanCards.length },
+      ],
+    },
+    {
+      group: "Financial Seva",
+      items: [
+        { id: "receipt", label: "Issue New Receipt", icon: Receipt },
+        { id: "history", label: "Receipts & Records History", icon: FileText, badge: receipts.length },
+      ],
+    },
+    {
+      group: "Members & Network",
+      items: [
+        { id: "members", label: "Members Database", icon: Users, badge: members.length },
+        { id: "agents", label: "Field Collectors & Agents", icon: Briefcase, badge: agents.length },
+      ],
+    },
+    {
+      group: "Darshan & CMS",
+      items: [
+        { id: "events", label: "Events & Utsavs CMS", icon: Calendar, badge: events.length },
+        { id: "blogs", label: "Blogs & Katha CMS", icon: BookOpenIcon, badge: blogs.length },
+        { id: "gallery", label: "Gallery Media Manager", icon: ImageIcon, badge: gallery.length },
+        { id: "inquiries", label: "Devotee Inquiries", icon: Inbox, badge: contacts.length },
+      ],
+    },
+  ];
+
+  const currentTabObj = NAV_SECTIONS.flatMap((s) => s.items).find((item) => item.id === activeTab) || {
+    label: "Dashboard & KPIs",
+  };
+
   return (
     <div className="relative min-h-screen bg-[#0C0807] text-[#EDE0C9] font-[Inter] antialiased selection:bg-[#971515] selection:text-[#FFF9ED]">
       {/* Decorative Golden Mandala & Radial Ambiance */}
@@ -1167,40 +1213,74 @@ export default function AdminPanel() {
       `}</style>
 
       {/* Standalone Dark Top Navigation Bar */}
-      <header className="no-print sticky top-0 z-40 border-b border-[#C59A52]/25 bg-[#140E0C]/90 px-5 py-3.5 shadow-2xl backdrop-blur-xl">
-        <div className="mx-auto flex max-w-7xl items-center justify-between">
-          <div className="flex items-center gap-3">
+      <header className="no-print sticky top-0 z-50 border-b border-[#C59A52]/25 bg-[#140E0C]/95 px-4 sm:px-6 py-3 shadow-2xl backdrop-blur-xl">
+        <div className="mx-auto flex w-full items-center justify-between">
+          <div className="flex items-center gap-2.5 sm:gap-3">
+            {isAuthenticated && (
+              <>
+                {/* Mobile Drawer Hamburger */}
+                <button
+                  type="button"
+                  onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
+                  className="lg:hidden flex h-9 w-9 items-center justify-center rounded-xl border border-[#C59A52]/35 bg-[#1E1513] text-[#E8B94F] shadow-sm transition hover:bg-[#C59A52]/20"
+                  title="Toggle Navigation Menu"
+                >
+                  <Menu size={18} />
+                </button>
+
+                {/* Desktop Sidebar Collapse Toggle */}
+                <button
+                  type="button"
+                  onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+                  className="hidden lg:flex h-9 w-9 items-center justify-center rounded-xl border border-[#C59A52]/35 bg-[#1E1513] text-[#E8B94F] shadow-sm transition hover:bg-[#C59A52]/20 hover:text-white"
+                  title={sidebarCollapsed ? "Expand Left Sidebar" : "Collapse Left Sidebar"}
+                >
+                  {sidebarCollapsed ? <PanelLeftOpen size={18} /> : <PanelLeftClose size={18} />}
+                </button>
+              </>
+            )}
+
             <Link
               to="/"
               className="flex items-center gap-2 rounded-xl border border-[#C59A52]/30 bg-[#1E1513]/70 px-3 py-1.5 text-xs font-semibold text-[#E8B94F] shadow-sm transition hover:bg-[#C59A52]/20 hover:text-white"
             >
               <ArrowLeft size={14} />
-              <span>Back to Website</span>
+              <span className="hidden sm:inline">Back to Website</span>
+              <span className="sm:hidden">Website</span>
             </Link>
-            <div className="h-4 w-px bg-[#C59A52]/30" />
+            <div className="hidden sm:block h-4 w-px bg-[#C59A52]/30" />
             <div className="flex items-center gap-2">
               <span
-                className="font-serif text-lg font-bold text-[#E8B94F]"
+                className="font-serif text-base sm:text-lg font-bold text-[#E8B94F]"
                 style={{ fontFamily: "'Cormorant Garamond', serif" }}
               >
-                Sri Sri Chintamoni Kunja Foundation
+                Sri Sri Chintamoni Kunja
               </span>
               <span className="hidden rounded-full border border-[#971515]/60 bg-[#971515]/30 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#FFBABA] md:inline-block">
-                Central Seva Portal
+                Central Portal
               </span>
             </div>
+
+            {isAuthenticated && (
+              <div className="hidden xl:flex items-center gap-1.5 rounded-lg border border-[#C59A52]/20 bg-[#1A1210] px-2.5 py-1 text-xs text-[#EDE0C9]/70">
+                <span className="text-[11px] text-[#EDE0C9]/40">Active Section:</span>
+                <span className="font-bold text-[#E8B94F]">{currentTabObj.label}</span>
+              </div>
+            )}
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5 sm:gap-3">
             {serverState.online ? (
-              <span className="flex items-center gap-1.5 rounded-full border border-emerald-500/40 bg-emerald-950/70 px-3 py-1 text-xs font-bold text-emerald-300 shadow-sm">
+              <span className="flex items-center gap-1.5 rounded-full border border-emerald-500/40 bg-emerald-950/70 px-2.5 sm:px-3 py-1 text-[11px] sm:text-xs font-bold text-emerald-300 shadow-sm">
                 <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-400" />
-                <span>API: Connected ({serverState.database})</span>
+                <span className="hidden sm:inline">API: Connected ({serverState.database})</span>
+                <span className="sm:hidden">Connected</span>
               </span>
             ) : (
-              <span className="flex items-center gap-1.5 rounded-full border border-amber-500/40 bg-amber-950/70 px-3 py-1 text-xs font-bold text-amber-300 shadow-sm">
+              <span className="flex items-center gap-1.5 rounded-full border border-amber-500/40 bg-amber-950/70 px-2.5 sm:px-3 py-1 text-[11px] sm:text-xs font-bold text-amber-300 shadow-sm">
                 <WifiOff size={12} className="text-amber-400" />
-                <span>Offline Resilient Mode</span>
+                <span className="hidden sm:inline">Offline Resilient</span>
+                <span className="sm:hidden">Offline</span>
               </span>
             )}
             {isAuthenticated && (
@@ -1211,11 +1291,11 @@ export default function AdminPanel() {
                 </span>
                 <button
                   onClick={handleLogout}
-                  className="flex items-center gap-1.5 rounded-xl border border-rose-500/30 bg-rose-950/60 px-3 py-1 text-xs font-bold text-rose-300 transition hover:bg-rose-900/80"
+                  className="flex items-center gap-1.5 rounded-xl border border-rose-500/30 bg-rose-950/60 px-3 py-1.5 text-xs font-bold text-rose-300 transition hover:bg-rose-900/80 shadow-sm"
                   title="Sign out of Admin Portal"
                 >
                   <LogOut size={13} />
-                  <span>Logout</span>
+                  <span className="hidden sm:inline">Logout</span>
                 </button>
               </div>
             )}
@@ -1317,41 +1397,172 @@ export default function AdminPanel() {
         </div>
       ) : (
         /* ==============================================================
-            AUTHENTICATED VIEW: STANDALONE DARK ADMIN DASHBOARD
+            AUTHENTICATED VIEW: STANDALONE DARK ADMIN SUITE WITH LEFT SIDEBAR
         ============================================================== */
-        <div className="relative z-10 mx-auto max-w-7xl px-4 py-8">
-          {/* Navigation Tabs */}
-          <div className="no-print mb-8 flex flex-wrap gap-2 border-b border-[#C59A52]/25 pb-4">
-            {[
-              { id: "dashboard", label: "Dashboard & Analytics", icon: LayoutDashboard },
-              { id: "engagement", label: "Page Engagement & Dwell Time", icon: Activity },
-              { id: "kanban", label: `Field Pipeline Kanban (${kanbanCards.length})`, icon: KanbanIcon },
-              { id: "receipt", label: "New Fund Receipt", icon: Receipt },
-              { id: "history", label: "Office Copy / Receipts History", icon: FileText },
-              { id: "members", label: "Members Database", icon: Users },
-              { id: "agents", label: "Field Collectors / Agents", icon: Briefcase },
-              { id: "events", label: "Events & Utsavs CMS", icon: Calendar },
-              { id: "blogs", label: "Blogs & Katha CMS", icon: BookOpenIcon },
-              { id: "gallery", label: "Gallery Manager", icon: ImageIcon },
-              { id: "inquiries", label: `Devotee Inquiries (${contacts.length})`, icon: Inbox },
-            ].map((tab) => {
-              const Icon = tab.icon;
-              const active = activeTab === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-bold transition-all sm:text-sm ${active
-                    ? "border border-[#E8B94F]/60 bg-gradient-to-r from-[#971515] to-[#78372B] text-[#FFF9ED] shadow-lg shadow-[#971515]/30"
-                    : "border border-[#C59A52]/25 bg-[#16100E]/80 text-[#EDE0C9]/80 hover:bg-[#231815] hover:text-[#FFF9ED]"
-                    }`}
-                >
-                  <Icon size={15} />
-                  <span>{tab.label}</span>
-                </button>
-              );
-            })}
-          </div>
+        <div className="relative z-10 flex min-h-[calc(100vh-65px)]">
+          {/* Mobile Backdrop Overlay */}
+          {mobileSidebarOpen && (
+            <div
+              className="no-print fixed inset-0 z-40 bg-black/80 backdrop-blur-sm lg:hidden transition-opacity"
+              onClick={() => setMobileSidebarOpen(false)}
+            />
+          )}
+
+          {/* Collapsible Left Sidebar */}
+          <aside
+            className={`no-print fixed top-[61px] bottom-0 left-0 z-40 flex flex-col border-r border-[#C59A52]/25 bg-[#120B0A] shadow-2xl backdrop-blur-2xl transition-all duration-300 lg:sticky lg:top-[61px] lg:h-[calc(100vh-61px)] ${
+              mobileSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+            } ${sidebarCollapsed ? "w-[76px]" : "w-72"}`}
+          >
+            {/* Sidebar Top Header & Collapse Toggle */}
+            <div className="flex items-center justify-between border-b border-[#C59A52]/20 px-3.5 py-3.5 bg-[#160E0C]">
+              <div
+                className={`flex items-center gap-2.5 overflow-hidden transition-all ${
+                  sidebarCollapsed ? "justify-center w-full" : ""
+                }`}
+              >
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[#C59A52]/40 bg-gradient-to-br from-[#971515] to-[#40120C] text-[#E8B94F] shadow-md">
+                  <Shield size={18} />
+                </div>
+                {!sidebarCollapsed && (
+                  <div className="truncate">
+                    <h3 className="font-serif text-sm font-bold text-[#E8B94F] leading-tight">
+                      Chintamoni Kunja
+                    </h3>
+                    <p className="text-[10px] font-semibold text-[#EDE0C9]/60 uppercase tracking-widest">
+                      Admin Suite
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Desktop Toggle Button */}
+              <button
+                type="button"
+                onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+                className="hidden lg:flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-[#C59A52]/30 bg-[#1E1513] text-[#E8B94F] transition hover:bg-[#C59A52]/20 hover:text-white"
+                title={sidebarCollapsed ? "Expand Left Sidebar" : "Collapse Left Sidebar"}
+              >
+                {sidebarCollapsed ? <ChevronRight size={15} /> : <ChevronLeft size={15} />}
+              </button>
+
+              {/* Mobile Close Button */}
+              <button
+                type="button"
+                onClick={() => setMobileSidebarOpen(false)}
+                className="lg:hidden flex h-7 w-7 items-center justify-center rounded-lg border border-[#C59A52]/30 bg-[#1E1513] text-[#E8B94F]"
+                title="Close Navigation Menu"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            {/* Categorized Navigation Menu */}
+            <div className="flex-1 overflow-y-auto px-2.5 py-4 space-y-5">
+              {NAV_SECTIONS.map((sec) => (
+                <div key={sec.group} className="space-y-1">
+                  {!sidebarCollapsed ? (
+                    <div className="px-3 pb-1 text-[10px] font-bold uppercase tracking-wider text-[#C59A52]/70">
+                      {sec.group}
+                    </div>
+                  ) : (
+                    <div className="my-2 h-px bg-[#C59A52]/15 mx-2" />
+                  )}
+
+                  {sec.items.map((tab) => {
+                    const Icon = tab.icon;
+                    const active = activeTab === tab.id;
+                    return (
+                      <button
+                        key={tab.id}
+                        onClick={() => {
+                          setActiveTab(tab.id);
+                          setMobileSidebarOpen(false);
+                        }}
+                        title={sidebarCollapsed ? tab.label : undefined}
+                        className={`group relative flex w-full items-center gap-3 rounded-xl transition-all duration-200 ${
+                          sidebarCollapsed
+                            ? "justify-center p-3"
+                            : "px-3.5 py-2.5 text-xs font-semibold"
+                        } ${
+                          active
+                            ? "border border-[#E8B94F]/60 bg-gradient-to-r from-[#971515] to-[#78372B] text-[#FFF9ED] shadow-md shadow-[#971515]/25"
+                            : "text-[#EDE0C9]/75 hover:bg-[#1E1412] hover:text-[#FFF9ED]"
+                        }`}
+                      >
+                        <Icon
+                          size={18}
+                          className={`shrink-0 transition-transform group-hover:scale-110 ${
+                            active ? "text-[#E8B94F]" : "text-[#C59A52]/80"
+                          }`}
+                        />
+                        {!sidebarCollapsed && (
+                          <div className="flex flex-1 items-center justify-between overflow-hidden">
+                            <span className="truncate text-left">{tab.label}</span>
+                            {typeof tab.badge !== "undefined" && tab.badge > 0 && (
+                              <span
+                                className={`ml-2 rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                                  active
+                                    ? "bg-[#FFF9ED]/20 text-[#FFF9ED]"
+                                    : "bg-[#2A1C18] text-[#E8B94F] border border-[#C59A52]/30"
+                                }`}
+                              >
+                                {tab.badge}
+                              </span>
+                            )}
+                          </div>
+                        )}
+                        {sidebarCollapsed && typeof tab.badge !== "undefined" && tab.badge > 0 && (
+                          <span className="absolute top-1 right-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-[#971515] px-1 text-[9px] font-bold text-white shadow">
+                            {tab.badge}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              ))}
+            </div>
+
+            {/* Sidebar Bottom User & Collapse Action */}
+            <div className="border-t border-[#C59A52]/20 p-3 bg-[#0F0806]/90">
+              <div
+                className={`flex items-center gap-2.5 rounded-xl border border-[#C59A52]/20 bg-[#160E0C] p-2 ${
+                  sidebarCollapsed ? "justify-center" : "justify-between"
+                }`}
+              >
+                <div className="flex items-center gap-2.5 overflow-hidden">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#271815] text-[#E8B94F] border border-[#C59A52]/30">
+                    <UserCheck size={16} />
+                  </div>
+                  {!sidebarCollapsed && (
+                    <div className="truncate text-left">
+                      <p className="text-xs font-bold text-[#FFF9ED] truncate">
+                        {currentUser?.name || "Administrator"}
+                      </p>
+                      <p className="text-[10px] text-emerald-400 font-semibold flex items-center gap-1">
+                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                        Online &amp; Active
+                      </p>
+                    </div>
+                  )}
+                </div>
+                {!sidebarCollapsed && (
+                  <button
+                    onClick={handleLogout}
+                    className="rounded-lg p-1.5 text-rose-400 hover:bg-rose-950/60 transition"
+                    title="Log Out of Portal"
+                  >
+                    <LogOut size={15} />
+                  </button>
+                )}
+              </div>
+            </div>
+          </aside>
+
+          {/* Main Content Viewport */}
+          <main className="flex-1 min-w-0 p-4 sm:p-6 lg:p-8 transition-all duration-300">
+            <div className="mx-auto max-w-[1550px]">
 
           {/* ==============================================================
               TAB 0: DASHBOARD & ANALYTICS
@@ -4580,6 +4791,8 @@ export default function AdminPanel() {
               </div>
             </div>
           )}
+            </div>
+          </main>
         </div>
       )}
     </div>
