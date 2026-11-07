@@ -56,6 +56,37 @@ const blogSchema = new mongoose.Schema(
       default: 'published',
       index: true,
     },
+    // SEO & Meta Tag Fields
+    slug: {
+      type: String,
+      trim: true,
+      index: true,
+      default: '',
+    },
+    metaTitle: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    metaDescription: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    metaKeywords: {
+      type: [String],
+      default: [],
+    },
+    canonicalUrl: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    ogImage: {
+      type: String,
+      trim: true,
+      default: '',
+    },
   },
   {
     timestamps: true,

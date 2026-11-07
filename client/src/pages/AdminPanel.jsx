@@ -58,6 +58,9 @@ import {
   PanelLeftOpen,
   Menu,
   X,
+  Globe,
+  Tag,
+  Share2,
 } from "lucide-react";
 import {
   ResponsiveContainer,
@@ -507,7 +510,7 @@ export default function AdminPanel() {
     featured: true,
   });
 
-  // New Blog Form
+  // New Blog Form (with SEO Meta Tag Suite)
   const [newBlog, setNewBlog] = useState({
     title: "",
     bengali: "",
@@ -517,7 +520,16 @@ export default function AdminPanel() {
     content: "",
     image: "/assets/Opulent Gaura-Nitai and Madan Mohan Altar.png",
     status: "published",
+    // SEO Meta Tags & Search Friendliness
+    metaTitle: "",
+    metaDescription: "",
+    metaKeywords: "",
+    canonicalUrl: "",
+    slug: "",
+    ogImage: "",
   });
+  const [showBlogSeoSection, setShowBlogSeoSection] = useState(true);
+  const [viewingBlogSeoModal, setViewingBlogSeoModal] = useState(null);
 
   // New Gallery Item Form
   const [newGallery, setNewGallery] = useState({
@@ -933,13 +945,62 @@ export default function AdminPanel() {
     }
   };
 
+  const handleAutoGenerateBlogSEO = () => {
+    if (!newBlog.title) {
+      alert("Please provide an article title first to auto-generate SEO metadata.");
+      return;
+    }
+    const cleanSlug = newBlog.title
+      .toLowerCase()
+      .trim()
+      .replace(/[^\w\s-]/g, "")
+      .replace(/[\s_-]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+
+    const generatedTitle = `${newBlog.title} | Sri Sri Chintamoni Kunja`;
+    const generatedDesc = newBlog.excerpt
+      ? newBlog.excerpt.slice(0, 155)
+      : (newBlog.content ? newBlog.content.slice(0, 155).replace(/\n/g, " ") : "Spiritual discourse & Vaishnav heritage from Sri Sri Chintamoni Kunja Foundation, Nabadwip Dham.");
+
+    const catKeyword = newBlog.category || "Gaudiya Vaishnav";
+    const defaultKeywords = `${newBlog.title.slice(0, 25)}, ${catKeyword}, Nabadwip Dham, Sri Chintamoni Kunja, Spiritual Katha, Bengal Renaissance, Bhakti`;
+
+    setNewBlog((prev) => ({
+      ...prev,
+      slug: prev.slug || cleanSlug,
+      metaTitle: prev.metaTitle || generatedTitle,
+      metaDescription: prev.metaDescription || generatedDesc,
+      metaKeywords: prev.metaKeywords || defaultKeywords,
+      canonicalUrl: prev.canonicalUrl || `https://chintamonikunja.org/blog/${cleanSlug}`,
+    }));
+    showAlert("✨ SEO meta tags & SERP preview auto-generated successfully!");
+  };
+
   const handleAddBlog = async (e) => {
     e.preventDefault();
     if (!newBlog.title || !newBlog.content) {
       alert("Title and content are required.");
       return;
     }
-    const created = await createBlogAPI(newBlog);
+
+    // Auto-fill SEO metadata if left blank
+    const cleanSlug = (newBlog.slug || newBlog.title)
+      .toLowerCase()
+      .trim()
+      .replace(/[^\w\s-]/g, "")
+      .replace(/[\s_-]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+
+    const payload = {
+      ...newBlog,
+      slug: cleanSlug,
+      metaTitle: newBlog.metaTitle ? newBlog.metaTitle.trim() : `${newBlog.title} | Sri Sri Chintamoni Kunja`,
+      metaDescription: newBlog.metaDescription ? newBlog.metaDescription.trim() : (newBlog.excerpt || newBlog.content.slice(0, 155)),
+      metaKeywords: newBlog.metaKeywords ? newBlog.metaKeywords.trim() : `${newBlog.category}, Nabadwip Dham, Chintamoni Kunja, Katha`,
+      canonicalUrl: newBlog.canonicalUrl || `https://chintamonikunja.org/blog/${cleanSlug}`,
+    };
+
+    const created = await createBlogAPI(payload);
     setBlogs([created, ...blogs]);
     setNewBlog({
       title: "",
@@ -950,11 +1011,17 @@ export default function AdminPanel() {
       content: "",
       image: "/assets/Opulent Gaura-Nitai and Madan Mohan Altar.png",
       status: "published",
+      metaTitle: "",
+      metaDescription: "",
+      metaKeywords: "",
+      canonicalUrl: "",
+      slug: "",
+      ogImage: "",
     });
     setBlogFilePreview(null);
     setBlogFileInfo(null);
     if (blogFileInputRef.current) blogFileInputRef.current.value = "";
-    showAlert(`Article "${newBlog.title}" published!`);
+    showAlert(`✨ Article "${payload.title}" published with SEO meta tags!`);
   };
 
   const handleDeleteBlog = async (id) => {
@@ -4248,6 +4315,216 @@ export default function AdminPanel() {
                         className="mt-1 w-full rounded-xl border border-[#C59A52]/30 bg-[#0E0A09] p-2.5 text-xs text-[#FFF9ED] focus:outline-none"
                       />
                     </div>
+                    {/* SEO & Meta Tags Suite for Search Engine Friendliness */}
+                    <div className="rounded-2xl border border-[#C59A52]/40 bg-[#0E0A09]/90 p-4 shadow-inner">
+                      <div className="flex items-center justify-between border-b border-[#C59A52]/20 pb-2.5">
+                        <div className="flex items-center gap-2">
+                          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#971515]/80 text-[#E8B94F]">
+                            <Globe size={15} />
+                          </div>
+                          <div>
+                            <h4 className="text-xs font-bold text-[#FFF9ED]">SEO &amp; Meta Tags Configuration</h4>
+                            <p className="text-[10px] text-[#EDE0C9]/60">Google SERP snippet &amp; social card optimization</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={handleAutoGenerateBlogSEO}
+                            className="inline-flex items-center gap-1 rounded-lg border border-[#C59A52]/40 bg-[#251A16] px-2.5 py-1 text-[11px] font-bold text-[#E8B94F] transition hover:bg-[#971515] hover:text-white"
+                            title="Auto-generate SEO fields from Title and Excerpt"
+                          >
+                            <Sparkles size={12} />
+                            <span>Auto-Fill SEO</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setShowBlogSeoSection(!showBlogSeoSection)}
+                            className="text-xs font-bold text-[#EDE0C9]/70 hover:text-white"
+                          >
+                            {showBlogSeoSection ? "Collapse" : "Expand"}
+                          </button>
+                        </div>
+                      </div>
+
+                      {showBlogSeoSection && (
+                        <div className="mt-3.5 space-y-3.5">
+                          {/* Meta Title / SEO Title */}
+                          <div>
+                            <div className="flex items-center justify-between">
+                              <label className="text-xs font-bold text-[#E8B94F]">
+                                Meta Title (SEO Title)
+                              </label>
+                              <span
+                                className={`font-mono text-[10px] font-bold ${
+                                  (newBlog.metaTitle || "").length >= 35 && (newBlog.metaTitle || "").length <= 60
+                                    ? "text-emerald-400"
+                                    : (newBlog.metaTitle || "").length > 60
+                                    ? "text-amber-400"
+                                    : "text-[#EDE0C9]/50"
+                                }`}
+                              >
+                                {(newBlog.metaTitle || "").length}/60 chars (Optimal 50-60)
+                              </span>
+                            </div>
+                            <input
+                              type="text"
+                              value={newBlog.metaTitle}
+                              onChange={(e) => setNewBlog({ ...newBlog, metaTitle: e.target.value })}
+                              placeholder={newBlog.title ? `${newBlog.title} | Sri Sri Chintamoni Kunja` : "e.g. History of Sri Chintamoni Kunja | Gaudiya Vaishnav Heritage"}
+                              className="mt-1 w-full rounded-xl border border-[#C59A52]/30 bg-[#16100E] p-2.5 text-xs text-[#FFF9ED] placeholder-[#EDE0C9]/30 focus:border-[#E8B94F] focus:outline-none"
+                            />
+                            <p className="mt-1 text-[10px] text-[#EDE0C9]/50">
+                              Headline shown as the clickable title in Google search results and browser tab.
+                            </p>
+                          </div>
+
+                          {/* Meta Description */}
+                          <div>
+                            <div className="flex items-center justify-between">
+                              <label className="text-xs font-bold text-[#E8B94F]">
+                                Meta Description
+                              </label>
+                              <span
+                                className={`font-mono text-[10px] font-bold ${
+                                  (newBlog.metaDescription || "").length >= 100 && (newBlog.metaDescription || "").length <= 160
+                                    ? "text-emerald-400"
+                                    : (newBlog.metaDescription || "").length > 160
+                                    ? "text-amber-400"
+                                    : "text-[#EDE0C9]/50"
+                                }`}
+                              >
+                                {(newBlog.metaDescription || "").length}/160 chars (Optimal 120-160)
+                              </span>
+                            </div>
+                            <textarea
+                              rows="2"
+                              value={newBlog.metaDescription}
+                              onChange={(e) => setNewBlog({ ...newBlog, metaDescription: e.target.value })}
+                              placeholder={newBlog.excerpt || "e.g. Explore historical documents and Vaishnav philosophy dating back to 1809 at Sri Sri Chintamoni Kunja, holy Nabadwip Dham."}
+                              className="mt-1 w-full rounded-xl border border-[#C59A52]/30 bg-[#16100E] p-2.5 text-xs text-[#FFF9ED] placeholder-[#EDE0C9]/30 focus:border-[#E8B94F] focus:outline-none"
+                            />
+                            <p className="mt-1 text-[10px] text-[#EDE0C9]/50">
+                              Appears as the preview summary snippet below the title in search engines.
+                            </p>
+                          </div>
+
+                          {/* Meta Keywords & Search Tags */}
+                          <div>
+                            <div className="flex items-center justify-between">
+                              <label className="text-xs font-bold text-[#E8B94F]">
+                                Meta Keywords &amp; Topic Tags
+                              </label>
+                              <span className="text-[10px] text-[#EDE0C9]/50">Comma-separated</span>
+                            </div>
+                            <input
+                              type="text"
+                              value={newBlog.metaKeywords}
+                              onChange={(e) => setNewBlog({ ...newBlog, metaKeywords: e.target.value })}
+                              placeholder="e.g. Vaishnav Philosophy, Nabadwip Dham, Chaitanya Mahaprabhu, Bhakti, Seva"
+                              className="mt-1 w-full rounded-xl border border-[#C59A52]/30 bg-[#16100E] p-2.5 text-xs text-[#FFF9ED] placeholder-[#EDE0C9]/30 focus:border-[#E8B94F] focus:outline-none"
+                            />
+                            {/* Live Keyword Tag Chips */}
+                            {newBlog.metaKeywords && (
+                              <div className="mt-2 flex flex-wrap gap-1.5">
+                                {newBlog.metaKeywords
+                                  .split(",")
+                                  .map((k) => k.trim())
+                                  .filter(Boolean)
+                                  .map((tag, idx) => (
+                                    <span
+                                      key={idx}
+                                      className="inline-flex items-center gap-1 rounded-md border border-[#C59A52]/30 bg-[#251A16] px-2 py-0.5 text-[10px] font-semibold text-[#E8B94F]"
+                                    >
+                                      <Tag size={10} />
+                                      <span>{tag}</span>
+                                    </span>
+                                  ))}
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Slug / Permalink & Canonical URL */}
+                          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                            <div>
+                              <label className="block text-xs font-bold text-[#E8B94F]">URL Slug / Permalink</label>
+                              <div className="mt-1 flex items-center rounded-xl border border-[#C59A52]/30 bg-[#16100E] px-2.5 py-1.5 text-xs text-[#FFF9ED]">
+                                <span className="text-[10px] text-[#EDE0C9]/50">/blog/</span>
+                                <input
+                                  type="text"
+                                  value={newBlog.slug}
+                                  onChange={(e) =>
+                                    setNewBlog({
+                                      ...newBlog,
+                                      slug: e.target.value.toLowerCase().replace(/[^\w-]/g, "-"),
+                                    })
+                                  }
+                                  placeholder="custom-article-slug"
+                                  className="ml-1 w-full bg-transparent font-mono text-xs text-[#E8B94F] placeholder-[#EDE0C9]/30 focus:outline-none"
+                                />
+                              </div>
+                            </div>
+                            <div>
+                              <label className="block text-xs font-bold text-[#E8B94F]">Canonical URL (Optional)</label>
+                              <input
+                                type="url"
+                                value={newBlog.canonicalUrl}
+                                onChange={(e) => setNewBlog({ ...newBlog, canonicalUrl: e.target.value })}
+                                placeholder="https://chintamonikunja.org/blog/..."
+                                className="mt-1 w-full rounded-xl border border-[#C59A52]/30 bg-[#16100E] p-2.5 text-xs text-[#FFF9ED] placeholder-[#EDE0C9]/30 focus:border-[#E8B94F] focus:outline-none font-mono text-[11px]"
+                              />
+                            </div>
+                          </div>
+
+                          {/* Live Google Search Engine (SERP) Preview */}
+                          <div className="mt-3 rounded-xl border border-[#C59A52]/30 bg-[#140F0D] p-3.5 shadow-sm">
+                            <div className="flex items-center justify-between border-b border-[#C59A52]/20 pb-2">
+                              <span className="flex items-center gap-1.5 text-[11px] font-bold text-[#E8B94F]">
+                                <Search size={12} />
+                                <span>Google Search Result (SERP) Preview</span>
+                              </span>
+                              <span className="rounded-full bg-emerald-950 px-2 py-0.5 text-[9px] font-bold text-emerald-300 border border-emerald-500/30">
+                                Live Simulation
+                              </span>
+                            </div>
+                            <div className="mt-2.5 space-y-1">
+                              <div className="flex items-center gap-1.5 text-[11px] text-[#EDE0C9]/60">
+                                <span className="inline-block h-3.5 w-3.5 rounded-full bg-[#971515] text-center text-[9px] font-bold leading-3.5 text-white">
+                                  ॐ
+                                </span>
+                                <span className="text-[#EDE0C9]/80 truncate">
+                                  https://chintamonikunja.org › blog ›{" "}
+                                  <strong className="text-[#E8B94F]">
+                                    {newBlog.slug ||
+                                      (newBlog.title
+                                        ? newBlog.title
+                                            .toLowerCase()
+                                            .replace(/[^\w\s-]/g, "")
+                                            .replace(/\s+/g, "-")
+                                            .slice(0, 35)
+                                        : "article-slug")}
+                                  </strong>
+                                </span>
+                              </div>
+                              <h5 className="font-serif text-sm font-bold text-[#8AB4F8] hover:underline cursor-pointer truncate">
+                                {newBlog.metaTitle ||
+                                  (newBlog.title
+                                    ? `${newBlog.title} | Sri Sri Chintamoni Kunja`
+                                    : "Article Title Preview | Sri Sri Chintamoni Kunja")}
+                              </h5>
+                              <p className="line-clamp-2 text-[11px] leading-relaxed text-[#BDC1C6]">
+                                {newBlog.metaDescription ||
+                                  newBlog.excerpt ||
+                                  (newBlog.content
+                                    ? newBlog.content.slice(0, 155).replace(/\n/g, " ")
+                                    : "Spiritual discourse, Gaudiya Vaishnav philosophy, and heritage insights from Sri Sri Chintamoni Kunja Foundation in holy Nabadwip Dham...")}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
                     {/* Blog Cover Media Upload */}
                     <div>
                       <label className="block text-xs font-bold text-[#E8B94F]">Article Cover Image</label>
@@ -4300,37 +4577,209 @@ export default function AdminPanel() {
                 </div>
 
                 <div className="space-y-4 lg:col-span-6">
-                  <h3 className="font-serif text-lg font-bold text-[#E8B94F]">Published Articles ({blogs.length})</h3>
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-serif text-lg font-bold text-[#E8B94F]">Published Articles ({blogs.length})</h3>
+                    <span className="text-[11px] text-[#EDE0C9]/60">Live on /blog</span>
+                  </div>
                   <div className="space-y-3">
-                    {blogs.map((b) => (
-                      <div
-                        key={b._id || b.title}
-                        className="rounded-xl border border-[#C59A52]/30 bg-[#16100E]/90 p-4 shadow-xl"
-                      >
-                        <div className="flex items-start justify-between">
-                          <div>
-                            <span className="rounded border border-[#C59A52]/30 bg-[#251714] px-2 py-0.5 text-[10px] font-bold text-[#E8B94F]">
-                              {b.category}
-                            </span>
-                            <h4 className="mt-1 font-serif text-base font-bold text-[#FFF9ED]">{b.title}</h4>
-                            <div className="mt-0.5 text-[11px] text-[#EDE0C9]/50">
-                              By {b.author || "Sri Sri Chintamoni Kunja"} • {b.readTime || "5 min read"}
+                    {blogs.map((b) => {
+                      const keywordsList = Array.isArray(b.metaKeywords)
+                        ? b.metaKeywords
+                        : typeof b.metaKeywords === "string" && b.metaKeywords
+                        ? b.metaKeywords.split(",").map((k) => k.trim())
+                        : [];
+                      return (
+                        <div
+                          key={b._id || b.title}
+                          className="rounded-xl border border-[#C59A52]/30 bg-[#16100E]/90 p-4 shadow-xl transition hover:border-[#E8B94F]/50"
+                        >
+                          <div className="flex items-start justify-between gap-3">
+                            <div>
+                              <div className="flex items-center gap-1.5">
+                                <span className="rounded border border-[#C59A52]/30 bg-[#251714] px-2 py-0.5 text-[10px] font-bold text-[#E8B94F]">
+                                  {b.category}
+                                </span>
+                                <span className="inline-flex items-center gap-1 rounded bg-emerald-950/80 px-2 py-0.5 text-[9px] font-bold text-emerald-300 border border-emerald-500/30">
+                                  <Globe size={10} />
+                                  <span>SEO Ready</span>
+                                </span>
+                              </div>
+                              <h4 className="mt-1 font-serif text-base font-bold text-[#FFF9ED]">{b.title}</h4>
+                              <div className="mt-0.5 text-[11px] text-[#EDE0C9]/50">
+                                By {b.author || "Sri Sri Chintamoni Kunja"} • {b.readTime || "5 min read"}
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-1 shrink-0">
+                              <button
+                                onClick={() => setViewingBlogSeoModal(b)}
+                                className="rounded-lg p-1.5 text-[#E8B94F] transition hover:bg-[#251A16]"
+                                title="Inspect SEO Meta Tags & SERP"
+                              >
+                                <Globe size={15} />
+                              </button>
+                              <button
+                                onClick={() => handleDeleteBlog(b._id)}
+                                className="rounded-lg p-1.5 text-rose-400 transition hover:bg-rose-950/60"
+                                title="Delete article"
+                              >
+                                <Trash2 size={15} />
+                              </button>
                             </div>
                           </div>
-                          <button
-                            onClick={() => handleDeleteBlog(b._id)}
-                            className="rounded-lg p-2 text-rose-400 transition hover:bg-rose-950/60"
-                            title="Delete article"
-                          >
-                            <Trash2 size={16} />
-                          </button>
+                          <p className="mt-2 line-clamp-2 text-xs text-[#EDE0C9]/80">{b.excerpt || b.content}</p>
+                          {keywordsList.length > 0 && (
+                            <div className="mt-2.5 flex flex-wrap gap-1 border-t border-[#C59A52]/15 pt-2">
+                              {keywordsList.slice(0, 4).map((kw, i) => (
+                                <span
+                                  key={i}
+                                  className="rounded bg-[#251A16] px-1.5 py-0.5 text-[9px] font-semibold text-[#E8B94F]/90"
+                                >
+                                  #{kw}
+                                </span>
+                              ))}
+                              {keywordsList.length > 4 && (
+                                <span className="text-[9px] text-[#EDE0C9]/50 self-center">
+                                  +{keywordsList.length - 4} more tags
+                                </span>
+                              )}
+                            </div>
+                          )}
                         </div>
-                        <p className="mt-2 line-clamp-2 text-xs text-[#EDE0C9]/80">{b.excerpt || b.content}</p>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               </div>
+
+              {/* Inspect Article SEO Meta Tags Modal */}
+              {viewingBlogSeoModal && (
+                <div
+                  className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-md"
+                  onClick={() => setViewingBlogSeoModal(null)}
+                >
+                  <div
+                    className="relative max-w-2xl w-full rounded-3xl border border-[#C59A52]/50 bg-[#16100E] p-6 shadow-2xl"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <div className="flex items-center justify-between border-b border-[#C59A52]/20 pb-3">
+                      <div className="flex items-center gap-2">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#971515] text-[#E8B94F]">
+                          <Globe size={18} />
+                        </div>
+                        <div>
+                          <h3 className="font-serif text-lg font-bold text-[#E8B94F]">
+                            SEO &amp; Meta Tags Inspection
+                          </h3>
+                          <p className="text-xs text-[#EDE0C9]/60">{viewingBlogSeoModal.title}</p>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => setViewingBlogSeoModal(null)}
+                        className="rounded-xl border border-[#C59A52]/30 bg-[#251A16] p-1.5 text-[#EDE0C9]/80 hover:text-white"
+                      >
+                        <X size={16} />
+                      </button>
+                    </div>
+
+                    <div className="mt-4 space-y-4 text-xs">
+                      {/* Live SERP Simulation */}
+                      <div className="rounded-xl border border-[#C59A52]/30 bg-[#0E0A09] p-3.5">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-[#E8B94F]">
+                          Google Search Result Preview
+                        </span>
+                        <div className="mt-2 space-y-1">
+                          <div className="text-[11px] text-[#EDE0C9]/60 truncate">
+                            https://chintamonikunja.org › blog ›{" "}
+                            <span className="text-[#E8B94F]">
+                              {viewingBlogSeoModal.slug ||
+                                viewingBlogSeoModal.title
+                                  .toLowerCase()
+                                  .replace(/[^\w\s-]/g, "")
+                                  .replace(/\s+/g, "-")
+                                  .slice(0, 30)}
+                            </span>
+                          </div>
+                          <h5 className="font-serif text-sm font-bold text-[#8AB4F8] hover:underline cursor-pointer truncate">
+                            {viewingBlogSeoModal.metaTitle ||
+                              `${viewingBlogSeoModal.title} | Sri Sri Chintamoni Kunja`}
+                          </h5>
+                          <p className="line-clamp-2 text-[11px] text-[#BDC1C6]">
+                            {viewingBlogSeoModal.metaDescription ||
+                              viewingBlogSeoModal.excerpt ||
+                              viewingBlogSeoModal.content.slice(0, 150)}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Details Table */}
+                      <div className="grid grid-cols-1 gap-2.5 rounded-xl border border-[#C59A52]/20 bg-[#120B09] p-3.5">
+                        <div>
+                          <span className="font-bold text-[#E8B94F]">Meta Title: </span>
+                          <span className="text-[#FFF9ED]">
+                            {viewingBlogSeoModal.metaTitle ||
+                              `${viewingBlogSeoModal.title} | Sri Sri Chintamoni Kunja`}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="font-bold text-[#E8B94F]">Meta Description: </span>
+                          <span className="text-[#EDE0C9]/90">
+                            {viewingBlogSeoModal.metaDescription ||
+                              viewingBlogSeoModal.excerpt ||
+                              viewingBlogSeoModal.content.slice(0, 160)}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="font-bold text-[#E8B94F]">URL Slug: </span>
+                          <span className="font-mono text-[#E8B94F]">
+                            /blog/
+                            {viewingBlogSeoModal.slug ||
+                              viewingBlogSeoModal.title
+                                .toLowerCase()
+                                .replace(/[^\w\s-]/g, "")
+                                .replace(/\s+/g, "-")}
+                          </span>
+                        </div>
+                        {viewingBlogSeoModal.canonicalUrl && (
+                          <div>
+                            <span className="font-bold text-[#E8B94F]">Canonical URL: </span>
+                            <span className="font-mono text-[11px] text-[#EDE0C9]/70">
+                              {viewingBlogSeoModal.canonicalUrl}
+                            </span>
+                          </div>
+                        )}
+                        <div>
+                          <span className="font-bold text-[#E8B94F]">Keywords / Topic Tags: </span>
+                          <div className="mt-1.5 flex flex-wrap gap-1">
+                            {(Array.isArray(viewingBlogSeoModal.metaKeywords)
+                              ? viewingBlogSeoModal.metaKeywords
+                              : typeof viewingBlogSeoModal.metaKeywords === "string" &&
+                                viewingBlogSeoModal.metaKeywords
+                              ? viewingBlogSeoModal.metaKeywords.split(",")
+                              : [viewingBlogSeoModal.category, "Nabadwip Dham", "Vaishnavism"]
+                            ).map((k, i) => (
+                              <span
+                                key={i}
+                                className="rounded bg-[#251A16] px-2 py-0.5 text-[10px] font-semibold text-[#E8B94F] border border-[#C59A52]/30"
+                              >
+                                #{k.trim ? k.trim() : k}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="mt-5 flex justify-end">
+                      <button
+                        onClick={() => setViewingBlogSeoModal(null)}
+                        className="rounded-xl border border-[#C59A52]/40 bg-[#251A16] px-5 py-2 text-xs font-bold text-[#FFF9ED] transition hover:bg-[#971515]"
+                      >
+                        Close Inspection
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 

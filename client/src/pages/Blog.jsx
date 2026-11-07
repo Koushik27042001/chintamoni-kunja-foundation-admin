@@ -95,28 +95,85 @@ const CATEGORIES = [
   "Katha & Philosophy",
 ];
 
-const formatBlog = (b) => ({
-  id: b._id || b.id || b.title,
-  title: b.title,
-  bengali: b.bengali || "",
-  category: b.category || "Vaishnav Philosophy",
-  date: new Date(b.createdAt || Date.now()).toLocaleDateString("en-GB", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  }),
-  readTime: b.readTime || "5 min read",
-  author: b.author || "Sri Sri Chintamoni Kunja Foundation",
-  image: b.image || A.altar,
-  summary: b.excerpt || (b.content ? b.content.slice(0, 160) + "..." : ""),
-  content: b.content || "",
-});
+const formatBlog = (b) => {
+  const keywordsList = Array.isArray(b.metaKeywords)
+    ? b.metaKeywords
+    : typeof b.metaKeywords === "string" && b.metaKeywords
+    ? b.metaKeywords.split(",").map((k) => k.trim()).filter(Boolean)
+    : [];
+
+  return {
+    id: b._id || b.id || b.title,
+    title: b.title,
+    bengali: b.bengali || "",
+    category: b.category || "Vaishnav Philosophy",
+    date: new Date(b.createdAt || Date.now()).toLocaleDateString("en-GB", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    }),
+    readTime: b.readTime || "5 min read",
+    author: b.author || "Sri Sri Chintamoni Kunja Foundation",
+    image: b.image || A.altar,
+    summary: b.excerpt || (b.content ? b.content.slice(0, 160) + "..." : ""),
+    content: b.content || "",
+    slug: b.slug || "",
+    metaTitle: b.metaTitle || `${b.title} | Sri Sri Chintamoni Kunja`,
+    metaDescription: b.metaDescription || b.excerpt || (b.content ? b.content.slice(0, 160) : ""),
+    metaKeywords: keywordsList,
+    canonicalUrl: b.canonicalUrl || "",
+    ogImage: b.ogImage || b.image || A.altar,
+  };
+};
 
 export default function Blog() {
   const [activeCategory, setActiveCategory] = useState("All Articles");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedArticle, setSelectedArticle] = useState(null);
   const [articleList, setArticleList] = useState(() => INITIAL_BLOGS.map(formatBlog));
+
+  // Dynamic SEO Meta Tag management for Google search crawlers and social share previews
+  useEffect(() => {
+    const originalTitle = document.title;
+    let metaDesc = document.querySelector('meta[name="description"]');
+    const originalDesc = metaDesc ? metaDesc.getAttribute("content") : "";
+
+    let metaKeywords = document.querySelector('meta[name="keywords"]');
+    const originalKeywords = metaKeywords ? metaKeywords.getAttribute("content") : "";
+
+    let ogTitle = document.querySelector('meta[property="og:title"]');
+    let ogDesc = document.querySelector('meta[property="og:description"]');
+    let ogImg = document.querySelector('meta[property="og:image"]');
+
+    if (selectedArticle) {
+      document.title = selectedArticle.metaTitle || `${selectedArticle.title} | Sri Sri Chintamoni Kunja Foundation`;
+
+      const descText = selectedArticle.metaDescription || selectedArticle.summary || "";
+      if (metaDesc) metaDesc.setAttribute("content", descText);
+      if (ogDesc) ogDesc.setAttribute("content", descText);
+
+      const kwText = selectedArticle.metaKeywords?.length
+        ? selectedArticle.metaKeywords.join(", ")
+        : selectedArticle.category;
+      if (metaKeywords) metaKeywords.setAttribute("content", kwText);
+
+      if (ogTitle) ogTitle.setAttribute("content", selectedArticle.title);
+      if (ogImg && selectedArticle.ogImage) ogImg.setAttribute("content", selectedArticle.ogImage);
+    } else {
+      document.title = "Spiritual Articles & Blog | Sri Sri Chintamoni Kunja Foundation";
+      if (metaDesc)
+        metaDesc.setAttribute(
+          "content",
+          "Discourses, Vaishnav heritage chronicles, and philosophy from Sri Sri Chintamoni Kunja Foundation in holy Nabadwip Dham."
+        );
+    }
+
+    return () => {
+      document.title = originalTitle;
+      if (metaDesc && originalDesc) metaDesc.setAttribute("content", originalDesc);
+      if (metaKeywords && originalKeywords) metaKeywords.setAttribute("content", originalKeywords);
+    };
+  }, [selectedArticle]);
 
   const loadDynamicBlogs = async () => {
     try {
@@ -310,6 +367,19 @@ export default function Blog() {
                       <p className="mt-3 font-[Inter] text-xs leading-relaxed text-[#39251D]/80 line-clamp-3">
                         {art.summary}
                       </p>
+
+                      {art.metaKeywords && art.metaKeywords.length > 0 && (
+                        <div className="mt-3 flex flex-wrap gap-1">
+                          {art.metaKeywords.slice(0, 3).map((kw, i) => (
+                            <span
+                              key={i}
+                              className="rounded-full bg-[#E8B94F]/15 px-2 py-0.5 text-[10px] font-medium text-[#78372B]"
+                            >
+                              #{kw}
+                            </span>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -371,6 +441,20 @@ export default function Blog() {
                   <div className="mt-6 space-y-4 font-[Inter] text-sm leading-relaxed text-[#39251D]/90 whitespace-pre-line">
                     {selectedArticle.content}
                   </div>
+
+                  {selectedArticle.metaKeywords && selectedArticle.metaKeywords.length > 0 && (
+                    <div className="mt-6 flex flex-wrap items-center gap-1.5 border-t border-[#C59A52]/20 pt-4">
+                      <span className="text-xs font-bold text-[#78372B]">Topic Tags:</span>
+                      {selectedArticle.metaKeywords.map((kw, idx) => (
+                        <span
+                          key={idx}
+                          className="rounded-full bg-[#E8B94F]/20 px-2.5 py-0.5 text-xs font-medium text-[#78372B] border border-[#C59A52]/30"
+                        >
+                          #{kw}
+                        </span>
+                      ))}
+                    </div>
+                  )}
 
                   <div className="mt-8 flex items-center justify-between border-t border-[#C59A52]/30 pt-4">
                     <Link

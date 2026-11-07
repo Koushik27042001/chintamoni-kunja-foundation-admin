@@ -704,7 +704,27 @@ export async function createBlogAPI(blog) {
   } catch (e) {}
 
   if (!created) {
-    created = { ...blog, _id: `blg-${Date.now()}`, createdAt: new Date().toISOString() };
+    const cleanSlug = (blog.slug || blog.title || "")
+      .toLowerCase()
+      .trim()
+      .replace(/[^\w\s-]/g, '')
+      .replace(/[\s_-]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+    const keywords = Array.isArray(blog.metaKeywords)
+      ? blog.metaKeywords
+      : (typeof blog.metaKeywords === 'string' && blog.metaKeywords ? blog.metaKeywords.split(',').map((k) => k.trim()) : []);
+
+    created = {
+      ...blog,
+      _id: `blg-${Date.now()}`,
+      slug: cleanSlug,
+      metaTitle: blog.metaTitle || `${blog.title} | Sri Sri Chintamoni Kunja`,
+      metaDescription: blog.metaDescription || blog.excerpt || (blog.content || "").substring(0, 160),
+      metaKeywords: keywords,
+      canonicalUrl: blog.canonicalUrl || "",
+      ogImage: blog.ogImage || blog.image || "",
+      createdAt: new Date().toISOString(),
+    };
   }
 
   try {

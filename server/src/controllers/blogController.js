@@ -33,7 +33,24 @@ const getBlogById = async (req, res) => {
 // @route   POST /api/blogs
 const createBlog = async (req, res) => {
   try {
-    const { title, bengali, category, excerpt, content, author, readTime, image, status } = req.body;
+    const {
+      title,
+      bengali,
+      category,
+      excerpt,
+      content,
+      author,
+      readTime,
+      image,
+      status,
+      slug,
+      metaTitle,
+      metaDescription,
+      metaKeywords,
+      canonicalUrl,
+      ogImage,
+    } = req.body;
+
     if (!title || !content) {
       return res.status(400).json({ success: false, message: 'Title and content are required' });
     }
@@ -61,19 +78,49 @@ const createBlog = async (req, res) => {
       }
     }
 
+    // Auto-generate clean URL slug if not provided
+    const cleanSlug = (slug || title)
+      .toLowerCase()
+      .trim()
+      .replace(/[^\w\s-]/g, '')
+      .replace(/[\s_-]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+
+    // Parse keywords into array if provided as comma-separated string or array
+    let parsedKeywords = [];
+    if (Array.isArray(metaKeywords)) {
+      parsedKeywords = metaKeywords.map((k) => String(k).trim()).filter(Boolean);
+    } else if (typeof metaKeywords === 'string' && metaKeywords.trim()) {
+      parsedKeywords = metaKeywords.split(',').map((k) => k.trim()).filter(Boolean);
+    } else {
+      parsedKeywords = [category || 'Gaudiya Vaishnav', 'Nabadwip Dham', 'Chintamoni Kunja', 'Katha'];
+    }
+
+    const finalExcerpt = excerpt || content.substring(0, 160) + '...';
+    const finalMetaTitle = metaTitle ? metaTitle.trim() : `${title} | Sri Sri Chintamoni Kunja`;
+    const finalMetaDesc = metaDescription ? metaDescription.trim() : finalExcerpt;
+
     const blog = await Blog.create({
       title,
       bengali: bengali || '',
       category: category || 'Katha & Philosophy',
-      excerpt: excerpt || content.substring(0, 160) + '...',
+      excerpt: finalExcerpt,
       content,
       author: author || 'Sri Sri Chintamoni Kunja Foundation',
       readTime: readTime || '5 min read',
       image: finalImageUrl,
+      public_id: publicId,
+      storageProvider,
       status: status || 'published',
+      slug: cleanSlug,
+      metaTitle: finalMetaTitle,
+      metaDescription: finalMetaDesc,
+      metaKeywords: parsedKeywords,
+      canonicalUrl: canonicalUrl || '',
+      ogImage: ogImage || finalImageUrl,
     });
 
-    res.status(201).json({ success: true, data: blog, message: 'Article published successfully' });
+    res.status(201).json({ success: true, data: blog, message: 'Article published with SEO meta tags successfully' });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
