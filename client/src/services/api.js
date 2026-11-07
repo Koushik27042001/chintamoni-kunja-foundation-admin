@@ -769,6 +769,48 @@ export function deduplicateGalleryItems(items) {
   return result;
 }
 
+/**
+ * Strict sort: ensures any dynamically uploaded photo or video from admin
+ * is ALWAYS placed at the top of the rows, ordered newest upload first.
+ */
+export function sortGalleryItemsLatestFirst(items) {
+  if (!Array.isArray(items)) return [];
+  return [...items].sort((a, b) => {
+    // Check if item is dynamic / uploaded by admin (has DB ObjectId, dynamic flag, public_id or created timestamp)
+    const aIsAdmin = Boolean(
+      a.isDynamic ||
+      (a._id && a._id.length > 10) ||
+      (a.id && a.id.length > 10) ||
+      a.public_id ||
+      a.storageProvider === 'cloudinary' ||
+      a.storageProvider === 'database' ||
+      (a.createdAt && !a._id?.startsWith('gal-'))
+    );
+    const bIsAdmin = Boolean(
+      b.isDynamic ||
+      (b._id && b._id.length > 10) ||
+      (b.id && b.id.length > 10) ||
+      b.public_id ||
+      b.storageProvider === 'cloudinary' ||
+      b.storageProvider === 'database' ||
+      (b.createdAt && !b._id?.startsWith('gal-'))
+    );
+
+    if (aIsAdmin && !bIsAdmin) return -1; // Admin uploaded item comes first (top row)
+    if (!aIsAdmin && bIsAdmin) return 1;
+
+    // Between two admin uploads (or two baseline items), latest timestamp comes first
+    const timeA = a.createdAt
+      ? new Date(a.createdAt).getTime()
+      : (a._id?.startsWith('gal-') ? parseInt(a._id.slice(4)) || 0 : 0);
+    const timeB = b.createdAt
+      ? new Date(b.createdAt).getTime()
+      : (b._id?.startsWith('gal-') ? parseInt(b._id.slice(4)) || 0 : 0);
+
+    return timeB - timeA;
+  });
+}
+
 export async function getGalleryAPI() {
   // Read deleted tracking tombstone IDs so deleted items never resurrect
   const deletedSet = new Set(JSON.parse(localStorage.getItem("ckf_deleted_gallery_ids") || "[]"));
@@ -799,9 +841,9 @@ export async function getGalleryAPI() {
     return !deletedSet.has(id) && !deletedSet.has(title) && !deletedSet.has(src);
   });
 
-  const deduplicated = deduplicateGalleryItems(nonDeleted);
-  localStorage.setItem("ckf_gallery", JSON.stringify(deduplicated));
-  return deduplicated;
+  const sorted = sortGalleryItemsLatestFirst(deduplicateGalleryItems(nonDeleted));
+  localStorage.setItem("ckf_gallery", JSON.stringify(sorted));
+  return sorted;
 }
 
 export async function createGalleryAPI(item) {
@@ -824,7 +866,9 @@ export async function createGalleryAPI(item) {
   }
 
   if (!created) {
-    created = { ...item, _id: `gal-${Date.now()}` };
+    created = { ...item, _id: `gal-${Date.now()}`, createdAt: new Date().toISOString(), isDynamic: true };
+  } else {
+    created = { ...created, isDynamic: true, createdAt: created.createdAt || new Date().toISOString() };
   }
 
   try {
@@ -836,7 +880,7 @@ export async function createGalleryAPI(item) {
     localStorage.setItem("ckf_deleted_gallery_ids", JSON.stringify(newDeletedList));
 
     const existing = JSON.parse(localStorage.getItem("ckf_gallery") || "[]");
-    const updated = deduplicateGalleryItems([created, ...existing]);
+    const updated = sortGalleryItemsLatestFirst(deduplicateGalleryItems([created, ...existing]));
     localStorage.setItem("ckf_gallery", JSON.stringify(updated));
     window.dispatchEvent(new CustomEvent("ckf_gallery_updated", { detail: created }));
   } catch (err) {}

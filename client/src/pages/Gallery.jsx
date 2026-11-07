@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowLeft, Play, X, HeartHandshake, Sparkles, Filter } from 'lucide-react'
-import { getGalleryAPI, deduplicateGalleryItems } from '../services/api'
+import { getGalleryAPI, deduplicateGalleryItems, sortGalleryItemsLatestFirst } from '../services/api'
 
 // Foundation Baseline Heritage Media
 const INITIAL_ASSETS = [
@@ -93,8 +93,9 @@ const getInitialCleanAssets = () => {
         category: item.category || "Temple & Altar",
         type: item.type || ((item.image || item.src)?.endsWith(".mp4") ? "video" : "image"),
         isDynamic: Boolean(item.isDynamic || (item._id && item._id.length > 10) || item.public_id),
+        createdAt: item.createdAt || null,
       }));
-    return deduplicateGalleryItems(clean);
+    return sortGalleryItemsLatestFirst(deduplicateGalleryItems(clean));
   } catch (e) {
     return INITIAL_ASSETS;
   }
@@ -132,6 +133,7 @@ export default function Gallery() {
           category: item.category || "Temple & Altar",
           type: item.type || ((item.image || item.src)?.endsWith(".mp4") ? "video" : "image"),
           isDynamic: Boolean(item.isDynamic || (item._id && item._id.length > 10) || item.public_id),
+          createdAt: item.createdAt || null,
         }));
 
       // Also ensure baseline INITIAL_ASSETS fill any missing baseline photos that haven't been deleted
@@ -146,7 +148,7 @@ export default function Gallery() {
         })
         .map((init) => ({ ...init, isDynamic: false }));
 
-      const combined = deduplicateGalleryItems([...normalized, ...missingInitial]);
+      const combined = sortGalleryItemsLatestFirst(deduplicateGalleryItems([...normalized, ...missingInitial]));
       setMediaList(combined);
     } catch (err) {
       console.warn("Failed to load dynamic gallery items:", err);
@@ -175,7 +177,7 @@ export default function Gallery() {
   // Filter items by category
   const filteredItems = mediaList.filter((item) => {
     if (activeCategory === "All") return true;
-    if (activeCategory === "Videos") return item.type === "video";
+    if (activeCategory === "Videos") return item.type === "video" || item.category === "Videos";
     return item.category === activeCategory;
   });
 

@@ -9,8 +9,13 @@ const gallerySchema = new mongoose.Schema(
     },
     category: {
       type: String,
-      enum: ['Temple & Altar', 'Festivals & Utsavs', 'Anna Daan Seva', 'River Ghats & Dham', 'Devotees & Kirtan'],
       default: 'Temple & Altar',
+      trim: true,
+    },
+    type: {
+      type: String,
+      enum: ['image', 'video'],
+      default: 'image',
     },
     image: {
       type: String,

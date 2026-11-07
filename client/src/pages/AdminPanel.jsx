@@ -106,6 +106,7 @@ import {
   createGalleryAPI,
   deleteGalleryAPI,
   deduplicateGalleryItems,
+  sortGalleryItemsLatestFirst,
   getContactsAPI,
   updateContactStatusAPI,
   INITIAL_MEMBERS,
@@ -584,7 +585,7 @@ export default function AdminPanel() {
       if (a && a.length) setAgents(a);
       if (ev && ev.length) setEvents(ev);
       if (bl && bl.length) setBlogs(bl);
-      if (gal) setGallery(deduplicateGalleryItems(gal));
+      if (gal) setGallery(sortGalleryItemsLatestFirst(deduplicateGalleryItems(gal)));
       if (cnt && cnt.length) setContacts(cnt);
       setLoading(false);
     }
@@ -969,14 +970,40 @@ export default function AdminPanel() {
   --------------------------------------------------------------- */
   const handleGalleryImageUpload = (file) => {
     if (!file) return;
-    if (!file.type.startsWith("image/")) {
-      alert("Please select a valid image file (PNG, JPG, WEBP, AVIF, GIF).");
+    const isVideo = file.type.startsWith("video/");
+    const isImage = file.type.startsWith("image/");
+
+    if (!isImage && !isVideo) {
+      alert("Please select a valid image (PNG, JPG, WEBP, AVIF, GIF) or video (MP4, WEBM).");
       return;
     }
 
     const sizeKb = (file.size / 1024).toFixed(1);
     const sizeMb = (file.size / (1024 * 1024)).toFixed(2);
     const formattedSize = file.size > 1024 * 1024 ? `${sizeMb} MB` : `${sizeKb} KB`;
+
+    if (isVideo) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const videoDataUrl = e.target.result;
+        setNewGallery((prev) => ({
+          ...prev,
+          image: videoDataUrl,
+          type: "video",
+          category: prev.category === "Temple & Altar" ? "Videos" : prev.category,
+          title: prev.title || file.name.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " "),
+        }));
+        setGalleryFilePreview(videoDataUrl);
+        setGalleryFileInfo({
+          name: file.name,
+          size: formattedSize,
+          dimensions: `Video (${file.type || "MP4/WebM"})`,
+          isVideo: true,
+        });
+      };
+      reader.readAsDataURL(file);
+      return;
+    }
 
     const reader = new FileReader();
     reader.onload = (e) => {
@@ -1011,6 +1038,7 @@ export default function AdminPanel() {
         setNewGallery((prev) => ({
           ...prev,
           image: optimizedDataUrl,
+          type: "image",
           title: prev.title || file.name.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " "),
         }));
 
@@ -1019,6 +1047,7 @@ export default function AdminPanel() {
           name: file.name,
           size: formattedSize,
           dimensions: `${img.width} × ${img.height} px (Optimized to ${width} × ${height} px)`,
+          isVideo: false,
         });
       };
       img.src = dataUrl;
@@ -1042,12 +1071,13 @@ export default function AdminPanel() {
       return;
     }
     const created = await createGalleryAPI(newGallery);
-    setGallery((prev) => deduplicateGalleryItems([created, ...prev]));
+    setGallery((prev) => sortGalleryItemsLatestFirst(deduplicateGalleryItems([created, ...prev])));
     setNewGallery({
       title: "",
       category: "Temple & Altar",
       image: "",
       caption: "",
+      type: "image",
     });
     setGalleryFilePreview(null);
     setGalleryFileInfo(null);
@@ -4341,6 +4371,7 @@ export default function AdminPanel() {
                   "Anna Daan Seva",
                   "River Ghats & Dham",
                   "Devotees & Kirtan",
+                  "Videos",
                 ].map((cat) => (
                   <button
                     key={cat}
@@ -4360,15 +4391,15 @@ export default function AdminPanel() {
                 {/* Left 5 Cols: Add Photo Form with Local Device Upload Dropzone */}
                 <div className="rounded-2xl border border-[#C59A52]/30 bg-[#16100E]/90 p-6 shadow-xl lg:col-span-5">
                   <div className="flex items-center justify-between border-b border-[#C59A52]/20 pb-3">
-                    <h3 className="font-serif text-lg font-bold text-[#E8B94F]">Add Sacred Photograph</h3>
-                    <span className="text-[11px] font-semibold text-[#EDE0C9]/50">Direct Device Upload</span>
+                    <h3 className="font-serif text-lg font-bold text-[#E8B94F]">Add Sacred Media</h3>
+                    <span className="text-[11px] font-semibold text-[#EDE0C9]/50">Photo &amp; Video Upload</span>
                   </div>
 
                   <form onSubmit={handleAddGallery} className="mt-4 space-y-4">
                     {/* Title */}
                     <div>
                       <label className="block text-xs font-bold text-[#E8B94F]">
-                        Photograph Title <span className="text-rose-400">*</span>
+                        Media Title <span className="text-rose-400">*</span>
                       </label>
                       <input
                         type="text"
@@ -4393,6 +4424,7 @@ export default function AdminPanel() {
                         <option className="bg-[#16100E]">Anna Daan Seva</option>
                         <option className="bg-[#16100E]">River Ghats &amp; Dham</option>
                         <option className="bg-[#16100E]">Devotees &amp; Kirtan</option>
+                        <option className="bg-[#16100E]">Videos</option>
                       </select>
                     </div>
 
@@ -4436,7 +4468,7 @@ export default function AdminPanel() {
                         <input
                           type="file"
                           ref={galleryFileInputRef}
-                          accept="image/png, image/jpeg, image/jpg, image/webp, image/avif, image/gif"
+                          accept="image/png, image/jpeg, image/jpg, image/webp, image/avif, image/gif, video/mp4, video/webm, video/quicktime"
                           onChange={(e) => handleGalleryImageUpload(e.target.files?.[0])}
                           className="hidden"
                         />
@@ -4470,10 +4502,10 @@ export default function AdminPanel() {
                               Upload from your device or media
                             </h4>
                             <p className="mt-1 text-[11px] text-[#EDE0C9]/60">
-                              Drag &amp; drop file here, or click to browse photos
+                              Drag &amp; drop file here, or click to browse photos &amp; videos
                             </p>
                             <span className="mt-2 inline-block rounded-full bg-[#1F1411] px-2.5 py-0.5 text-[10px] font-medium text-[#C59A52] border border-[#C59A52]/20">
-                              PNG, JPG, WEBP, AVIF up to 10MB
+                              PNG, JPG, WEBP, MP4, WEBM up to 50MB
                             </span>
                             <div className="mt-3">
                               <button
@@ -4488,14 +4520,22 @@ export default function AdminPanel() {
                           /* Dropzone Preview State */
                           <div className="overflow-hidden rounded-2xl border border-[#C59A52]/40 bg-[#0E0A09] p-3 shadow-lg">
                             <div className="relative overflow-hidden rounded-xl border border-[#C59A52]/20">
-                              <img
-                                src={galleryFilePreview}
-                                alt="Local Media Preview"
-                                className="h-44 w-full object-cover"
-                              />
+                              {galleryFileInfo?.isVideo ? (
+                                <video
+                                  src={galleryFilePreview}
+                                  controls
+                                  className="h-44 w-full object-cover bg-black"
+                                />
+                              ) : (
+                                <img
+                                  src={galleryFilePreview}
+                                  alt="Local Media Preview"
+                                  className="h-44 w-full object-cover"
+                                />
+                              )}
                               <div className="absolute top-2 right-2 flex items-center gap-1.5">
                                 <span className="rounded-full bg-emerald-950/90 px-2.5 py-0.5 text-[10px] font-bold text-emerald-300 border border-emerald-500/40">
-                                  ✓ Image Ready
+                                  ✓ {galleryFileInfo?.isVideo ? "Video Ready" : "Image Ready"}
                                 </span>
                               </div>
                             </div>
@@ -4584,7 +4624,7 @@ export default function AdminPanel() {
                       disabled={!newGallery.image}
                       className="w-full rounded-xl border border-[#C59A52]/50 bg-gradient-to-r from-[#971515] to-[#78372B] py-3 text-xs font-bold uppercase tracking-wider text-white shadow-lg transition hover:from-[#B01818] hover:to-[#971515] disabled:opacity-40 disabled:pointer-events-none"
                     >
-                      Upload &amp; Add Photo To Gallery
+                      Upload &amp; Add To Top Of Gallery
                     </button>
                   </form>
                 </div>
@@ -4594,7 +4634,11 @@ export default function AdminPanel() {
                   <div className="flex items-center justify-between border-b border-[#C59A52]/20 pb-3">
                     <h3 className="font-serif text-lg font-bold text-[#E8B94F]">
                       Gallery Visuals ({
-                        gallery.filter((g) => galleryFilterCategory === "All" || g.category === galleryFilterCategory).length
+                        gallery.filter((g) => {
+                          if (galleryFilterCategory === "All") return true;
+                          if (galleryFilterCategory === "Videos") return g.type === "video" || g.category === "Videos" || g.image?.endsWith(".mp4");
+                          return g.category === galleryFilterCategory;
+                        }).length
                       })
                     </h3>
                     <span className="text-xs text-[#EDE0C9]/60">
@@ -4602,58 +4646,94 @@ export default function AdminPanel() {
                     </span>
                   </div>
 
-                  {gallery.filter((g) => galleryFilterCategory === "All" || g.category === galleryFilterCategory).length === 0 ? (
+                  {gallery.filter((g) => {
+                    if (galleryFilterCategory === "All") return true;
+                    if (galleryFilterCategory === "Videos") return g.type === "video" || g.category === "Videos" || g.image?.endsWith(".mp4");
+                    return g.category === galleryFilterCategory;
+                  }).length === 0 ? (
                     <div className="p-12 text-center text-xs text-[#EDE0C9]/50">
                       No visuals found under "{galleryFilterCategory}". Upload one from your media on the left.
                     </div>
                   ) : (
                     <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
                       {gallery
-                        .filter((g) => galleryFilterCategory === "All" || g.category === galleryFilterCategory)
-                        .map((g) => (
-                          <div
-                            key={g._id || g.title}
-                            className="group relative overflow-hidden rounded-xl border border-[#C59A52]/30 bg-[#1E1513] transition hover:border-[#E8B94F]/60 hover:shadow-xl"
-                          >
-                            <div className="relative overflow-hidden">
-                              <img
-                                src={g.image}
-                                alt={g.title}
-                                className="h-44 w-full object-cover transition duration-300 group-hover:scale-105 cursor-pointer"
-                                onClick={() => setGalleryDarshanModal(g)}
-                              />
-                              <div className="absolute top-2 left-2">
-                                <span className="rounded-full bg-black/70 px-2.5 py-0.5 text-[10px] font-bold text-[#E8B94F] border border-[#C59A52]/30 backdrop-blur-sm">
-                                  {g.category}
-                                </span>
-                              </div>
-                            </div>
-                            <div className="p-3">
-                              <div className="flex items-center justify-between">
-                                <span className="text-xs font-bold text-[#FFF9ED] truncate">{g.title}</span>
-                                <div className="flex items-center gap-1 shrink-0 ml-2">
-                                  <button
+                        .filter((g) => {
+                          if (galleryFilterCategory === "All") return true;
+                          if (galleryFilterCategory === "Videos") return g.type === "video" || g.category === "Videos" || g.image?.endsWith(".mp4");
+                          return g.category === galleryFilterCategory;
+                        })
+                        .map((g) => {
+                          const isVid = g.type === "video" || g.category === "Videos" || (typeof g.image === "string" && g.image.endsWith(".mp4"));
+                          const isDynamicUpload = Boolean(g.isDynamic || (g._id && g._id.length > 10) || g.public_id || (g.createdAt && !g._id?.startsWith('gal-')));
+                          return (
+                            <div
+                              key={g._id || g.title}
+                              className="group relative overflow-hidden rounded-xl border border-[#C59A52]/30 bg-[#1E1513] transition hover:border-[#E8B94F]/60 hover:shadow-xl"
+                            >
+                              <div className="relative overflow-hidden">
+                                {isVid ? (
+                                  <div
+                                    className="relative h-44 w-full bg-black cursor-pointer"
                                     onClick={() => setGalleryDarshanModal(g)}
-                                    className="rounded p-1 text-[#E8B94F] hover:bg-[#2A1C18]"
-                                    title="View Full Darshan"
                                   >
-                                    <Eye size={14} />
-                                  </button>
-                                  <button
-                                    onClick={() => handleDeleteGallery(g)}
-                                    className="rounded p-1 text-rose-400 transition hover:bg-rose-950"
-                                    title="Remove Photo"
-                                  >
-                                    <Trash2 size={14} />
-                                  </button>
+                                    <video
+                                      src={g.image}
+                                      className="h-full w-full object-cover"
+                                      muted
+                                      playsInline
+                                    />
+                                    <div className="absolute inset-0 flex items-center justify-center bg-black/30 transition group-hover:bg-black/10">
+                                      <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#971515]/90 text-white shadow-lg transition group-hover:scale-110">
+                                        <Play size={20} className="ml-0.5" />
+                                      </div>
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <img
+                                    src={g.image}
+                                    alt={g.title}
+                                    className="h-44 w-full object-cover transition duration-300 group-hover:scale-105 cursor-pointer"
+                                    onClick={() => setGalleryDarshanModal(g)}
+                                  />
+                                )}
+                                <div className="absolute top-2 left-2 flex items-center gap-1.5">
+                                  <span className="rounded-full bg-black/70 px-2.5 py-0.5 text-[10px] font-bold text-[#E8B94F] border border-[#C59A52]/30 backdrop-blur-sm">
+                                    {g.category}
+                                  </span>
+                                  {isDynamicUpload && (
+                                    <span className="rounded-full bg-emerald-950/80 px-2 py-0.5 text-[9px] font-bold text-emerald-300 border border-emerald-500/40 backdrop-blur-sm">
+                                      Top / Latest
+                                    </span>
+                                  )}
                                 </div>
                               </div>
-                              {g.caption && (
-                                <p className="mt-1 line-clamp-1 text-[11px] text-[#EDE0C9]/70">{g.caption}</p>
-                              )}
+                              <div className="p-3">
+                                <div className="flex items-center justify-between">
+                                  <span className="text-xs font-bold text-[#FFF9ED] truncate">{g.title}</span>
+                                  <div className="flex items-center gap-1 shrink-0 ml-2">
+                                    <button
+                                      onClick={() => setGalleryDarshanModal(g)}
+                                      className="rounded p-1 text-[#E8B94F] hover:bg-[#2A1C18]"
+                                      title="View Full Darshan"
+                                    >
+                                      <Eye size={14} />
+                                    </button>
+                                    <button
+                                      onClick={() => handleDeleteGallery(g)}
+                                      className="rounded p-1 text-rose-400 transition hover:bg-rose-950"
+                                      title="Remove Photo"
+                                    >
+                                      <Trash2 size={14} />
+                                    </button>
+                                  </div>
+                                </div>
+                                {g.caption && (
+                                  <p className="mt-1 line-clamp-1 text-[11px] text-[#EDE0C9]/70">{g.caption}</p>
+                                )}
+                              </div>
                             </div>
-                          </div>
-                        ))}
+                          );
+                        })}
                     </div>
                   )}
                 </div>
@@ -4670,11 +4750,20 @@ export default function AdminPanel() {
                     onClick={(e) => e.stopPropagation()}
                   >
                     <div className="relative overflow-hidden rounded-2xl border border-[#C59A52]/20 bg-black">
-                      <img
-                        src={galleryDarshanModal.image}
-                        alt={galleryDarshanModal.title}
-                        className="max-h-[70vh] w-full object-contain mx-auto"
-                      />
+                      {galleryDarshanModal.type === "video" || galleryDarshanModal.category === "Videos" || (typeof galleryDarshanModal.image === "string" && galleryDarshanModal.image.endsWith(".mp4")) ? (
+                        <video
+                          src={galleryDarshanModal.image}
+                          controls
+                          autoPlay
+                          className="max-h-[70vh] w-full object-contain mx-auto"
+                        />
+                      ) : (
+                        <img
+                          src={galleryDarshanModal.image}
+                          alt={galleryDarshanModal.title}
+                          className="max-h-[70vh] w-full object-contain mx-auto"
+                        />
+                      )}
                     </div>
                     <div className="mt-4 flex items-start justify-between gap-4 px-2">
                       <div>

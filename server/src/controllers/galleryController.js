@@ -20,22 +20,23 @@ const getGallery = async (req, res) => {
 // @route   POST /api/gallery
 const createGalleryItem = async (req, res) => {
   try {
-    const { title, category, image, caption } = req.body;
+    const { title, category, image, caption, type } = req.body;
     if (!title || !image) {
       return res.status(400).json({ success: false, message: 'Title and image are required' });
     }
 
     let finalImageUrl = image;
     let publicId = '';
-    let storageProvider = image.startsWith('data:image/') ? 'database' : 'local_asset';
+    const isVideo = type === 'video' || image.startsWith('data:video/') || image.endsWith('.mp4');
+    let storageProvider = (image.startsWith('data:image/') || image.startsWith('data:video/')) ? 'database' : 'local_asset';
 
-    // If image is a base64 Data URL and Cloudinary is configured, upload to Cloudinary CDN
-    if (image.startsWith('data:image/') && process.env.CLOUDINARY_URL) {
+    // If media is a base64 Data URL and Cloudinary is configured, upload to Cloudinary CDN
+    if ((image.startsWith('data:image/') || image.startsWith('data:video/')) && process.env.CLOUDINARY_URL) {
       try {
         const uploadResult = await cloudinary.uploader.upload(image, {
           folder: 'chintamoni_kunja/gallery',
-          resource_type: 'image',
-          transformation: [{ quality: 'auto', fetch_format: 'auto' }],
+          resource_type: isVideo ? 'video' : 'image',
+          transformation: !isVideo ? [{ quality: 'auto', fetch_format: 'auto' }] : undefined,
         });
 
         if (uploadResult && uploadResult.secure_url) {
@@ -60,6 +61,7 @@ const createGalleryItem = async (req, res) => {
     if (existing) {
       existing.title = trimmedTitle;
       existing.category = category || existing.category;
+      existing.type = isVideo ? 'video' : (type || existing.type);
       existing.image = finalImageUrl;
       if (publicId) existing.public_id = publicId;
       existing.storageProvider = storageProvider;
@@ -76,7 +78,8 @@ const createGalleryItem = async (req, res) => {
 
     const item = await Gallery.create({
       title: trimmedTitle,
-      category: category || 'Temple & Altar',
+      category: category || (isVideo ? 'Videos' : 'Temple & Altar'),
+      type: isVideo ? 'video' : (type || 'image'),
       image: finalImageUrl,
       public_id: publicId,
       storageProvider,
