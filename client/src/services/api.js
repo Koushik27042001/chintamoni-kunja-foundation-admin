@@ -995,4 +995,62 @@ export async function downloadDatabaseBackupAPI() {
   return { success: false };
 }
 
+/* ==================================================================
+   Razorpay Payment Gateway API (Backend-Controlled)
+================================================================== */
+
+/**
+ * Fetch Razorpay public configuration from backend
+ */
+export async function getPaymentConfigAPI() {
+  try {
+    const res = await fetch(`${API_BASE}/payment/config`, {
+      signal: AbortSignal.timeout(8000),
+    });
+    if (res.ok) {
+      return await res.json();
+    }
+  } catch (e) {}
+  return {
+    success: false,
+    enabled: false,
+    keyId: import.meta.env.VITE_RAZORPAY_KEY_ID || '',
+  };
+}
+
+/**
+ * Securely create a Razorpay order on backend
+ */
+export async function createPaymentOrderAPI(payload) {
+  const res = await fetch(`${API_BASE}/payment/create-order`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+    signal: AbortSignal.timeout(15000),
+  });
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.message || 'Failed to initialize payment order');
+  }
+  return data;
+}
+
+/**
+ * Verify Razorpay payment signature & issue official receipt
+ */
+export async function verifyPaymentAPI(payload) {
+  const res = await fetch(`${API_BASE}/payment/verify`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+    signal: AbortSignal.timeout(15000),
+  });
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.message || 'Payment verification failed');
+  }
+  return data;
+}
+
+
 

@@ -49,8 +49,35 @@ const donationSchema = new mongoose.Schema(
     },
     paymentMode: {
       type: String,
-      enum: ['Cash', 'UPI', 'Bank Transfer / NEFT', 'Cheque', 'Card'],
+      enum: ['Cash', 'UPI', 'Bank Transfer / NEFT', 'Cheque', 'Card', 'Razorpay'],
       default: 'Cash',
+    },
+    razorpayOrderId: {
+      type: String,
+      default: '',
+      index: true,
+    },
+    razorpayPaymentId: {
+      type: String,
+      default: '',
+      index: true,
+    },
+    razorpaySignature: {
+      type: String,
+      default: '',
+    },
+    currency: {
+      type: String,
+      default: 'INR',
+    },
+    pan: {
+      type: String,
+      default: '',
+      trim: true,
+    },
+    taxExempt80G: {
+      type: Boolean,
+      default: true,
     },
     purpose: {
       type: String,

@@ -103,6 +103,7 @@ const eventRoutes = require('./routes/eventRoutes');
 const blogRoutes = require('./routes/blogRoutes');
 const galleryRoutes = require('./routes/galleryRoutes');
 const backupRoutes = require('./routes/backupRoutes');
+const paymentRoutes = require('./routes/paymentRoutes');
 
 // Mount routes on BOTH `/api/*` and direct `/*` for bulletproof compatibility
 app.use('/api/auth', authRoutes);
@@ -119,6 +120,9 @@ app.use('/members', memberRoutes);
 
 app.use('/api/donations', donationRoutes);
 app.use('/donations', donationRoutes);
+
+app.use('/api/payment', paymentRoutes);
+app.use('/payment', paymentRoutes);
 
 app.use('/api/agents', agentRoutes);
 app.use('/agents', agentRoutes);
