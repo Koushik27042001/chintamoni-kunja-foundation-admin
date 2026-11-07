@@ -204,7 +204,13 @@ export function getPageEngagementStats() {
  * @param {string} fromPath 
  */
 export function recordPageStay(pathname, durationSeconds, fromPath = "") {
-  if (!pathname || pathname.startsWith("/admin") || durationSeconds < 1) {
+  const secretAdminPath = (import.meta.env.VITE_ADMIN_PATH || "/ckf-portal-seva-control-2026").trim().replace(/\/+$/, "");
+  if (
+    !pathname ||
+    pathname.startsWith("/admin") ||
+    pathname.startsWith(secretAdminPath) ||
+    durationSeconds < 1
+  ) {
     return; // Don't track admin pages or sub-second bounces
   }
 

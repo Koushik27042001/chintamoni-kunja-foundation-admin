@@ -7,8 +7,9 @@ const {
   seedAdmin,
 } = require('../controllers/authController');
 const { protect } = require('../middleware/authMiddleware');
+const { authRateLimiter } = require('../middleware/rateLimiter');
 
-router.post('/login', login);
+router.post('/login', authRateLimiter, login);
 router.post('/init', seedAdmin);
 router.get('/me', protect, getMe);
 router.post('/refresh', protect, refreshToken);

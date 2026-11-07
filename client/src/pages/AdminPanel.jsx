@@ -1364,6 +1364,10 @@ export default function AdminPanel() {
                 <span className="font-bold text-[#E8B94F]">{currentTabObj.label}</span>
               </div>
             )}
+            <span className="hidden lg:inline-flex items-center gap-1 rounded-full border border-emerald-500/30 bg-emerald-950/50 px-2.5 py-0.5 text-[10px] font-mono font-bold text-emerald-300">
+              <Lock size={10} className="text-emerald-400" />
+              <span>Private Gateway Active</span>
+            </span>
           </div>
 
           <div className="flex items-center gap-2.5 sm:gap-3">
@@ -1488,6 +1492,11 @@ export default function AdminPanel() {
                 {isLoggingIn ? "Verifying Credentials..." : "Access Seva Admin Portal"}
               </button>
             </form>
+
+            <div className="mt-5 flex items-center justify-center gap-1.5 border-t border-[#C59A52]/15 pt-3.5 text-[11px] font-mono text-[#EDE0C9]/60">
+              <ShieldCheck size={13} className="text-emerald-400" />
+              <span>Confidential URL Gateway • Brute-Force Rate Protected</span>
+            </div>
 
 
           </div>

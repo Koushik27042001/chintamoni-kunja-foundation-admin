@@ -42,9 +42,16 @@ function PageLoader() {
   )
 }
 
+// Confidential Admin Route: Defaults to obfuscated slug, configurable via VITE_ADMIN_PATH
+export const ADMIN_ROUTE_PATH = (
+  (import.meta.env.VITE_ADMIN_PATH || '/ckf-portal-seva-control-2026')
+    .trim()
+    .replace(/\/+$/, '') || '/ckf-portal-seva-control-2026'
+)
+
 function App() {
   const location = useLocation()
-  const isAdmin = location.pathname.startsWith('/admin')
+  const isAdmin = location.pathname.startsWith(ADMIN_ROUTE_PATH)
 
   // Real-time user page stay & connectivity tracker
   const startTimeRef = useRef(Date.now())
@@ -95,8 +102,34 @@ function App() {
             <Route path="/gallery" element={<Gallery />} />
 
             <Route path="/events" element={<Events />} />
-            <Route path="/admin" element={<AdminPanel />} />
-            <Route path="/admin-panel" element={<AdminPanel />} />
+
+            {/* Secure Confidential Admin Control Portal */}
+            <Route path={ADMIN_ROUTE_PATH} element={<AdminPanel />} />
+            <Route path={`${ADMIN_ROUTE_PATH}/*`} element={<AdminPanel />} />
+
+            {/* Decoy 404 for obsolete / public /admin endpoints to deceive scanners & crawlers */}
+            <Route
+              path="/admin"
+              element={
+                <PagePlaceholder
+                  title="Page Not Found"
+                  subtitle="404 — Sacred Path Not Located"
+                  description="The page you requested could not be found. Please use the navigation links above or return to our homepage."
+                  badge="Navigation"
+                />
+              }
+            />
+            <Route
+              path="/admin-panel"
+              element={
+                <PagePlaceholder
+                  title="Page Not Found"
+                  subtitle="404 — Sacred Path Not Located"
+                  description="The page you requested could not be found. Please use the navigation links above or return to our homepage."
+                  badge="Navigation"
+                />
+              }
+            />
 
             <Route path="/blog" element={<Blog />} />
 
