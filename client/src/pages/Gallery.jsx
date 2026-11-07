@@ -208,8 +208,8 @@ export default function Gallery() {
         <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#971010] via-[#C59A52] to-[#971010]" />
       </section>
 
-      {/* Category Filter Pills */}
-      <section className="border-b border-[#C59A52]/20 bg-[#FFF4DC]/60 py-4 px-4 sticky top-16 z-20 backdrop-blur-md">
+      {/* Category Filter Pills (Static / Non-sticky) */}
+      <section className="relative border-b border-[#C59A52]/20 bg-[#FFF4DC]/60 py-4 px-4">
         <div className="mx-auto max-w-7xl flex items-center justify-between flex-wrap gap-3">
           <div className="flex items-center gap-2 text-xs font-bold text-[#78372B]">
             <Filter size={14} className="text-[#C59A52]" />
