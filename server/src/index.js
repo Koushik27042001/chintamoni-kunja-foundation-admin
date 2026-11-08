@@ -104,6 +104,13 @@ const blogRoutes = require('./routes/blogRoutes');
 const galleryRoutes = require('./routes/galleryRoutes');
 const backupRoutes = require('./routes/backupRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
+const devoteeRoutes = require('./routes/devoteeRoutes');
+const batchRoutes = require('./routes/batchRoutes');
+const bookRoutes = require('./routes/bookRoutes');
+const dispatchRoutes = require('./routes/dispatchRoutes');
+const returnRoutes = require('./routes/returnRoutes');
+const settlementRoutes = require('./routes/settlementRoutes');
+const aiRoutes = require('./routes/aiRoutes');
 
 // Mount routes on BOTH `/api/*` and direct `/*` for bulletproof compatibility
 app.use('/api/auth', authRoutes);
@@ -123,6 +130,27 @@ app.use('/donations', donationRoutes);
 
 app.use('/api/payment', paymentRoutes);
 app.use('/payment', paymentRoutes);
+
+app.use('/api/devotees', devoteeRoutes);
+app.use('/devotees', devoteeRoutes);
+
+app.use('/api/batches', batchRoutes);
+app.use('/batches', batchRoutes);
+
+app.use('/api/books', bookRoutes);
+app.use('/books', bookRoutes);
+
+app.use('/api/dispatch', dispatchRoutes);
+app.use('/dispatch', dispatchRoutes);
+
+app.use('/api/returns', returnRoutes);
+app.use('/returns', returnRoutes);
+
+app.use('/api/settlements', settlementRoutes);
+app.use('/settlements', settlementRoutes);
+
+app.use('/api/ai', aiRoutes);
+app.use('/ai', aiRoutes);
 
 app.use('/api/agents', agentRoutes);
 app.use('/agents', agentRoutes);

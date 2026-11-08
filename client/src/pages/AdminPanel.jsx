@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
+import AIOperationsAssistant from "../components/devoteeDesk/AIOperationsAssistant";
+import DevoteeDeskOperations from "../components/devoteeDesk/DevoteeDeskOperations";
 import {
   LayoutDashboard,
   Receipt,
