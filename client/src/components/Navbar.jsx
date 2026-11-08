@@ -59,7 +59,7 @@ export default function Navbar() {
             <div className="animate-marquee items-center gap-8 font-medium tracking-wide">
               <span className="flex items-center gap-2">
                 <span className="inline-block h-2 w-2 rounded-full bg-[#F5D58B] animate-pulse" />
-                ✨ Sri Sri Chintamoni Kunja Foundation — Spiritual Heritage, Devotion & Service in Nabadwip Dham
+                ✨ Sri Sri Chintamoni Kunja Foundation — Spiritual Heritage & Devotion in Nabadwip Dham
               </span>
               <span className="text-[#F5D58B]">•</span>
               <span>
@@ -123,7 +123,7 @@ export default function Navbar() {
               </p>
 
               <p className="mt-1 hidden text-[10px] font-medium uppercase tracking-[3px] text-[#A88955] sm:block">
-                Spiritual Heritage • Devotion • Service
+                Spiritual Heritage • Devotion
               </p>
             </div>
           </Link>
