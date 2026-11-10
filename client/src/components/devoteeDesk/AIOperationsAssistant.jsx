@@ -172,9 +172,9 @@ export default function AIOperationsAssistant({ onNavigateTab }) {
   };
 
   return (
-    <div className="rounded-3xl border border-[#3f3f46] bg-[#09090b] text-gray-100 shadow-2xl overflow-hidden min-h-[750px] flex flex-col font-sans">
+    <div className="rounded-2xl border border-[#C59A52]/50 bg-[#09090b] text-gray-100 shadow-2xl overflow-hidden min-h-[750px] flex flex-col font-sans ring-1 ring-inset ring-white/[0.04]">
       {/* Top Header Bar */}
-      <div className="border-b border-[#3f3f46] bg-[#18181b] px-6 py-4 flex flex-wrap items-center justify-between gap-4">
+      <div className="border-b border-[#C59A52]/35 bg-[#18181b] px-6 py-4 flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-[#38bdf8] via-[#8b5cf6] to-[#ec4899] flex items-center justify-center shadow-lg text-white">
             <Sparkles size={22} className="animate-pulse" />
@@ -195,7 +195,7 @@ export default function AIOperationsAssistant({ onNavigateTab }) {
         </div>
 
         {/* View Switcher Pills */}
-        <div className="flex flex-wrap items-center gap-1.5 rounded-xl border border-[#3f3f46] bg-[#27272a] p-1 text-xs font-semibold">
+        <div className="flex flex-wrap items-center gap-1.5 rounded-xl border border-zinc-600/80 bg-[#27272a] p-1 text-xs font-semibold">
           <button
             type="button"
             onClick={() => setActiveView('chat')}
@@ -338,7 +338,7 @@ export default function AIOperationsAssistant({ onNavigateTab }) {
                     className={`rounded-2xl p-4 text-sm leading-relaxed shadow-lg ${
                       m.role === 'user'
                         ? 'bg-[#1e293b] text-white border border-[#38bdf8]/30'
-                        : 'bg-[#27272a] text-gray-200 border border-[#3f3f46]'
+                        : 'bg-[#27272a] text-gray-200 border border-zinc-600/80'
                     }`}
                   >
                     <div className="whitespace-pre-line prose prose-invert max-w-none text-xs sm:text-sm">
@@ -346,12 +346,12 @@ export default function AIOperationsAssistant({ onNavigateTab }) {
                     </div>
 
                     {m.table && (
-                      <div className="mt-4 overflow-x-auto rounded-xl border border-[#3f3f46] bg-[#18181b]">
+                      <div className="mt-4 overflow-x-auto rounded-xl border border-zinc-600/80 bg-[#18181b]">
                         <table className="w-full text-left text-xs text-gray-300">
                           <thead className="bg-[#27272a] text-gray-100 font-semibold uppercase tracking-wider text-[10px]">
                             <tr>
                               {m.table.headers.map((h, i) => (
-                                <th key={i} className="px-3 py-2 border-b border-[#3f3f46]">
+                                <th key={i} className="px-3 py-2 border-b border-zinc-600/80">
                                   {h}
                                 </th>
                               ))}
@@ -377,7 +377,7 @@ export default function AIOperationsAssistant({ onNavigateTab }) {
                         {m.data.devotees?.map((d) => (
                           <div
                             key={d.memberId}
-                            className="flex items-center justify-between rounded-lg bg-[#18181b] p-2.5 text-xs border border-[#3f3f46]"
+                            className="flex items-center justify-between rounded-lg bg-[#18181b] p-2.5 text-xs border border-zinc-600/80"
                           >
                             <div>
                               <strong className="text-[#38bdf8] font-mono">{d.memberId}</strong> — {d.name} ({d.mobile1})
@@ -393,7 +393,7 @@ export default function AIOperationsAssistant({ onNavigateTab }) {
                         {m.data.books?.map((b) => (
                           <div
                             key={b.bookNumber}
-                            className="flex items-center justify-between rounded-lg bg-[#18181b] p-2.5 text-xs border border-[#3f3f46]"
+                            className="flex items-center justify-between rounded-lg bg-[#18181b] p-2.5 text-xs border border-zinc-600/80"
                           >
                             <div>
                               <strong className="text-[#10b981] font-mono">{b.bookNumber}</strong> (Batch: {b.batchName})
@@ -410,7 +410,7 @@ export default function AIOperationsAssistant({ onNavigateTab }) {
                     )}
 
                     {m.suggestions && m.suggestions.length > 0 && (
-                      <div className="mt-4 pt-3 border-t border-[#3f3f46]/40 flex flex-wrap gap-1.5">
+                      <div className="mt-4 pt-3 border-t border-zinc-600/80/40 flex flex-wrap gap-1.5">
                         <span className="text-[10px] uppercase font-bold text-gray-400 w-full mb-1 flex items-center gap-1">
                           <HelpCircle size={11} /> Suggested Follow-up:
                         </span>
@@ -439,7 +439,7 @@ export default function AIOperationsAssistant({ onNavigateTab }) {
               <div ref={messagesEndRef} />
             </div>
 
-            <div className="border-t border-[#3f3f46] bg-[#18181b] p-4">
+            <div className="border-t border-zinc-600/80 bg-[#18181b] p-4">
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
@@ -452,7 +452,7 @@ export default function AIOperationsAssistant({ onNavigateTab }) {
                   value={inputMessage}
                   onChange={(e) => setInputMessage(e.target.value)}
                   placeholder="Ask any question about devotees, inventory, dispatches, settlements..."
-                  className="flex-1 rounded-xl border border-[#3f3f46] bg-[#27272a] px-4 py-3 text-sm text-white placeholder-gray-400 focus:border-[#38bdf8] focus:outline-none focus:ring-1 focus:ring-[#38bdf8]"
+                  className="flex-1 rounded-xl border border-zinc-600/80 bg-[#27272a] px-4 py-3 text-sm text-white placeholder-gray-400 focus:border-[#38bdf8] focus:outline-none focus:ring-1 focus:ring-[#38bdf8]"
                 />
                 <button
                   type="submit"
@@ -471,7 +471,7 @@ export default function AIOperationsAssistant({ onNavigateTab }) {
         {activeView === 'analytics' && analytics && (
           <div className="flex-1 overflow-y-auto p-6 space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="rounded-2xl border border-[#3f3f46] bg-[#18181b] p-5 shadow-xl">
+              <div className="rounded-2xl border border-zinc-600/80 bg-[#18181b] p-5 shadow-xl">
                 <h3 className="text-sm font-bold text-white flex items-center gap-2 mb-4">
                   <Users size={16} className="text-[#38bdf8]" /> Devotee Status Distribution
                 </h3>
@@ -502,7 +502,7 @@ export default function AIOperationsAssistant({ onNavigateTab }) {
                 </div>
               </div>
 
-              <div className="rounded-2xl border border-[#3f3f46] bg-[#18181b] p-5 shadow-xl">
+              <div className="rounded-2xl border border-zinc-600/80 bg-[#18181b] p-5 shadow-xl">
                 <h3 className="text-sm font-bold text-white flex items-center gap-2 mb-4">
                   <BookOpen size={16} className="text-[#10b981]" /> Bill Book Inventory Health
                 </h3>
@@ -524,7 +524,7 @@ export default function AIOperationsAssistant({ onNavigateTab }) {
                 </div>
               </div>
 
-              <div className="rounded-2xl border border-[#3f3f46] bg-[#18181b] p-5 shadow-xl md:col-span-2">
+              <div className="rounded-2xl border border-zinc-600/80 bg-[#18181b] p-5 shadow-xl md:col-span-2">
                 <h3 className="text-sm font-bold text-white flex items-center gap-2 mb-4">
                   <TrendingUp size={16} className="text-[#8b5cf6]" /> Print Batch Stock Distribution
                 </h3>
@@ -561,7 +561,7 @@ export default function AIOperationsAssistant({ onNavigateTab }) {
               <button
                 type="button"
                 onClick={loadInsights}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-[#3f3f46] bg-[#27272a] px-3 py-1.5 text-xs text-gray-300 hover:text-white"
+                className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-600/80 bg-[#27272a] px-3 py-1.5 text-xs text-gray-300 hover:text-white"
               >
                 <RefreshCw size={13} /> Refresh Audit
               </button>
@@ -696,7 +696,7 @@ export default function AIOperationsAssistant({ onNavigateTab }) {
                     type="button"
                     disabled={downloadingReport === rpt.type}
                     onClick={() => handleDownloadReport(rpt.type)}
-                    className="mt-4 inline-flex items-center justify-center gap-2 rounded-xl bg-[#27272a] px-4 py-2.5 text-xs font-bold text-white hover:bg-white hover:text-black transition border border-[#3f3f46] disabled:opacity-50"
+                    className="mt-4 inline-flex items-center justify-center gap-2 rounded-xl bg-[#27272a] px-4 py-2.5 text-xs font-bold text-white hover:bg-white hover:text-black transition border border-zinc-600/80 disabled:opacity-50"
                   >
                     {downloadingReport === rpt.type ? (
                       <Loader2 size={14} className="animate-spin text-[#38bdf8]" />
@@ -715,7 +715,7 @@ export default function AIOperationsAssistant({ onNavigateTab }) {
       {/* Action Confirmation Modal */}
       {actionConfirmModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-          <div className="max-w-md w-full rounded-2xl border border-[#3f3f46] bg-[#18181b] p-6 shadow-2xl text-white">
+          <div className="max-w-md w-full rounded-2xl border border-zinc-600/80 bg-[#18181b] p-6 shadow-2xl text-white">
             <div className="flex items-center gap-3 text-[#f59e0b]">
               <ShieldAlert size={28} />
               <h3 className="font-bold text-lg">Confirm Administrative Action</h3>
@@ -728,7 +728,7 @@ export default function AIOperationsAssistant({ onNavigateTab }) {
               <button
                 type="button"
                 onClick={() => setActionConfirmModal(null)}
-                className="rounded-xl border border-[#3f3f46] bg-[#27272a] px-4 py-2 text-xs font-bold text-gray-300 hover:text-white"
+                className="rounded-xl border border-zinc-600/80 bg-[#27272a] px-4 py-2 text-xs font-bold text-gray-300 hover:text-white"
               >
                 Cancel
               </button>

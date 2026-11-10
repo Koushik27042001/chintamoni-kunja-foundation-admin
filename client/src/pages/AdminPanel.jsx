@@ -1315,8 +1315,8 @@ export default function AdminPanel() {
       `}</style>
 
       {/* Standalone Dark Top Navigation Bar */}
-      <header className="no-print sticky top-0 z-50 border-b border-[#C59A52]/25 bg-[#140E0C]/95 px-4 sm:px-6 py-3 shadow-2xl backdrop-blur-xl">
-        <div className="mx-auto flex w-full items-center justify-between">
+      <header className="no-print sticky top-0 z-50 flex min-h-[64px] items-center border-b border-[#C59A52]/40 bg-[#140E0C]/95 px-4 sm:px-6 py-2.5 shadow-2xl backdrop-blur-xl">
+        <div className="mx-auto flex w-full items-center justify-between gap-3">
           <div className="flex items-center gap-2.5 sm:gap-3">
             {isAuthenticated && (
               <>
@@ -1344,7 +1344,7 @@ export default function AdminPanel() {
 
             <Link
               to="/"
-              className="flex items-center gap-2 rounded-xl border border-[#C59A52]/30 bg-[#1E1513]/70 px-3 py-1.5 text-xs font-semibold text-[#E8B94F] shadow-sm transition hover:bg-[#C59A52]/20 hover:text-white"
+              className="flex items-center gap-2 rounded-xl border border-[#C59A52]/50 bg-[#1E1513]/70 px-3 py-1.5 text-xs font-semibold text-[#E8B94F] shadow-sm transition hover:bg-[#C59A52]/20 hover:text-white"
             >
               <ArrowLeft size={14} />
               <span className="hidden sm:inline">Back to Website</span>
@@ -1408,7 +1408,7 @@ export default function AdminPanel() {
                   <Download size={13} />
                   <span>Backup DB</span>
                 </button>
-                <span className="hidden items-center gap-1.5 rounded-full border border-[#C59A52]/30 bg-[#1E1513] px-3 py-1 text-xs font-bold text-[#E8B94F] sm:flex">
+                <span className="hidden items-center gap-1.5 rounded-full border border-[#C59A52]/50 bg-[#1E1513] px-3 py-1 text-xs font-bold text-[#E8B94F] sm:flex">
                   <Shield size={12} className="text-[#C59A52]" />
                   <span>{currentUser?.name || "Admin"}</span>
                 </span>
@@ -1538,12 +1538,12 @@ export default function AdminPanel() {
 
           {/* Collapsible Left Sidebar */}
           <aside
-            className={`no-print fixed top-[61px] bottom-0 left-0 z-40 flex flex-col border-r border-[#C59A52]/25 bg-[#120B0A] shadow-2xl backdrop-blur-2xl transition-all duration-300 lg:sticky lg:top-[61px] lg:h-[calc(100vh-61px)] ${
+            className={`no-print fixed top-[64px] bottom-0 left-0 z-40 flex flex-col border-r border-[#C59A52]/40 bg-[#120B0A] shadow-2xl backdrop-blur-2xl transition-all duration-300 lg:sticky lg:top-[64px] lg:h-[calc(100vh-64px)] ${
               mobileSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
             } ${sidebarCollapsed ? "w-[76px]" : "w-72"}`}
           >
             {/* Sidebar Top Header & Collapse Toggle */}
-            <div className="flex items-center justify-between border-b border-[#C59A52]/20 px-3.5 py-3.5 bg-[#160E0C]">
+            <div className="flex items-center justify-between border-b border-[#C59A52]/35 px-3.5 py-3.5 bg-[#160E0C]">
               <div
                 className={`flex items-center gap-2.5 overflow-hidden transition-all ${
                   sidebarCollapsed ? "justify-center w-full" : ""
@@ -1568,7 +1568,7 @@ export default function AdminPanel() {
               <button
                 type="button"
                 onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-                className="hidden lg:flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-[#C59A52]/30 bg-[#1E1513] text-[#E8B94F] transition hover:bg-[#C59A52]/20 hover:text-white"
+                className="hidden lg:flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-[#C59A52]/50 bg-[#1E1513] text-[#E8B94F] transition hover:bg-[#C59A52]/20 hover:text-white"
                 title={sidebarCollapsed ? "Expand Left Sidebar" : "Collapse Left Sidebar"}
               >
                 {sidebarCollapsed ? <ChevronRight size={15} /> : <ChevronLeft size={15} />}
@@ -1578,7 +1578,7 @@ export default function AdminPanel() {
               <button
                 type="button"
                 onClick={() => setMobileSidebarOpen(false)}
-                className="lg:hidden flex h-7 w-7 items-center justify-center rounded-lg border border-[#C59A52]/30 bg-[#1E1513] text-[#E8B94F]"
+                className="lg:hidden flex h-7 w-7 items-center justify-center rounded-lg border border-[#C59A52]/50 bg-[#1E1513] text-[#E8B94F]"
                 title="Close Navigation Menu"
               >
                 <X size={16} />
@@ -1586,15 +1586,20 @@ export default function AdminPanel() {
             </div>
 
             {/* Categorized Navigation Menu */}
-            <div className="flex-1 overflow-y-auto px-2.5 py-4 space-y-5">
+            <div className="flex-1 overflow-y-auto px-3 py-4 space-y-4">
               {NAV_SECTIONS.map((sec) => (
-                <div key={sec.group} className="space-y-1">
+                <div
+                  key={sec.group}
+                  className={`rounded-2xl border border-[#C59A52]/50 bg-[#160F0D]/80 space-y-1 ${
+                    sidebarCollapsed ? "p-1.5" : "p-2.5"
+                  }`}
+                >
                   {!sidebarCollapsed ? (
-                    <div className="px-3 pb-1 text-[10px] font-bold uppercase tracking-wider text-[#C59A52]/70">
+                    <div className="px-2.5 pb-1.5 mb-1 border-b border-[#C59A52]/20 text-[10px] font-bold uppercase tracking-wider text-[#E8B94F]/85">
                       {sec.group}
                     </div>
                   ) : (
-                    <div className="my-2 h-px bg-[#C59A52]/15 mx-2" />
+                    <div className="my-1.5 h-px bg-[#C59A52]/25 mx-1" />
                   )}
 
                   {sec.items.map((tab) => {
@@ -1608,14 +1613,14 @@ export default function AdminPanel() {
                           setMobileSidebarOpen(false);
                         }}
                         title={sidebarCollapsed ? tab.label : undefined}
-                        className={`group relative flex w-full items-center gap-3 rounded-xl transition-all duration-200 ${
+                        className={`group relative flex w-full items-center gap-3 rounded-xl border transition-all duration-200 ${
                           sidebarCollapsed
                             ? "justify-center p-3"
                             : "px-3.5 py-2.5 text-xs font-semibold"
                         } ${
                           active
-                            ? "border border-[#E8B94F]/60 bg-gradient-to-r from-[#971515] to-[#78372B] text-[#FFF9ED] shadow-md shadow-[#971515]/25"
-                            : "text-[#EDE0C9]/75 hover:bg-[#1E1412] hover:text-[#FFF9ED]"
+                            ? "border-[#E8B94F]/75 bg-gradient-to-r from-[#971515] to-[#78372B] text-[#FFF9ED] shadow-md shadow-[#971515]/25"
+                            : "border-transparent text-[#EDE0C9]/80 hover:border-[#C59A52]/50 hover:bg-[#1E1412] hover:text-[#FFF9ED]"
                         }`}
                       >
                         <Icon
@@ -1632,7 +1637,7 @@ export default function AdminPanel() {
                                 className={`ml-2 rounded-full px-2 py-0.5 text-[10px] font-bold ${
                                   active
                                     ? "bg-[#FFF9ED]/20 text-[#FFF9ED]"
-                                    : "bg-[#2A1C18] text-[#E8B94F] border border-[#C59A52]/30"
+                                    : "bg-[#2A1C18] text-[#E8B94F] border border-[#C59A52]/50"
                                 }`}
                               >
                                 {tab.badge}
@@ -1660,7 +1665,7 @@ export default function AdminPanel() {
                 }`}
               >
                 <div className="flex items-center gap-2.5 overflow-hidden">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#271815] text-[#E8B94F] border border-[#C59A52]/30">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#271815] text-[#E8B94F] border border-[#C59A52]/50">
                     <UserCheck size={16} />
                   </div>
                   {!sidebarCollapsed && (
@@ -1689,23 +1694,41 @@ export default function AdminPanel() {
           </aside>
 
           {/* Main Content Viewport */}
-          <main className="flex-1 min-w-0 p-4 sm:p-6 lg:p-8 transition-all duration-300">
-            <div className="mx-auto max-w-[1550px]">
+          <main className="flex-1 min-w-0 p-4 sm:p-6 lg:p-7 transition-all duration-300">
+            <div className="mx-auto max-w-[1560px] rounded-3xl border border-[#C59A52]/45 bg-[#100A08]/95 p-4 sm:p-6 lg:p-7 shadow-[0_0_60px_rgba(0,0,0,0.65)] ring-1 ring-inset ring-white/[0.03]">
 
           {/* ==============================================================
               TAB 0: DASHBOARD & ANALYTICS
           ============================================================== */}
           {activeTab === "dashboard" && (
-            <div className="space-y-8">
+            <div className="space-y-6">
+              {/* Dashboard Header Box */}
+              <div className="flex flex-col justify-between gap-4 rounded-2xl border border-[#C59A52]/50 bg-[#16100E]/95 p-5 sm:p-6 shadow-xl sm:flex-row sm:items-center">
+                <div>
+                  <h2
+                    className="font-serif text-2xl font-bold text-[#E8B94F]"
+                    style={{ fontFamily: "'Cormorant Garamond', serif" }}
+                  >
+                    Executive Seva Dashboard &amp; Analytics
+                  </h2>
+                  <p className="mt-0.5 text-xs text-[#EDE0C9]/65">
+                    Real-time metrics across Registered Members, Financial Receipts, Field Agents &amp; Foundation Inventory
+                  </p>
+                </div>
+                <span className="inline-flex items-center gap-2 self-start sm:self-auto rounded-full border border-[#C59A52]/40 bg-[#221613] px-3.5 py-1.5 text-xs font-bold text-[#E8B94F]">
+                  <LayoutDashboard size={14} /> Live Command Overview
+                </span>
+              </div>
+
               {/* KPI Cards Row */}
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
                 {/* Total Members */}
-                <div className="rounded-2xl border border-[#C59A52]/30 bg-[#16100E]/90 p-5 shadow-xl backdrop-blur-md">
+                <div className="rounded-2xl border border-[#C59A52]/50 bg-[#16100E]/90 p-5 shadow-xl backdrop-blur-md">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold uppercase tracking-wider text-[#E8B94F]/80">
                       Registered Members
                     </span>
-                    <div className="rounded-xl border border-[#C59A52]/30 bg-[#251B17] p-2.5 text-[#E8B94F]">
+                    <div className="rounded-xl border border-[#C59A52]/50 bg-[#251B17] p-2.5 text-[#E8B94F]">
                       <Users size={20} />
                     </div>
                   </div>
@@ -1717,7 +1740,7 @@ export default function AdminPanel() {
                 </div>
 
                 {/* Total Collections */}
-                <div className="rounded-2xl border border-[#C59A52]/30 bg-[#16100E]/90 p-5 shadow-xl backdrop-blur-md">
+                <div className="rounded-2xl border border-[#C59A52]/50 bg-[#16100E]/90 p-5 shadow-xl backdrop-blur-md">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold uppercase tracking-wider text-[#E8B94F]/80">
                       Total Seva Collections
@@ -1735,7 +1758,7 @@ export default function AdminPanel() {
                 </div>
 
                 {/* Walk-in vs Field vs Online */}
-                <div className="rounded-2xl border border-[#C59A52]/30 bg-[#16100E]/90 p-5 shadow-xl backdrop-blur-md">
+                <div className="rounded-2xl border border-[#C59A52]/50 bg-[#16100E]/90 p-5 shadow-xl backdrop-blur-md">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold uppercase tracking-wider text-[#E8B94F]/80">
                       Walk-in vs Field
@@ -1785,7 +1808,7 @@ export default function AdminPanel() {
               </div>
 
               {/* Monthly Seva Target Progress Bar */}
-              <div className="rounded-2xl border border-[#C59A52]/30 bg-[#16100E]/90 p-6 shadow-xl backdrop-blur-md">
+              <div className="rounded-2xl border border-[#C59A52]/50 bg-[#16100E]/90 p-6 shadow-xl backdrop-blur-md">
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <span className="text-xs font-bold uppercase tracking-wider text-[#E8B94F]">
@@ -1835,7 +1858,7 @@ export default function AdminPanel() {
               {/* Recharts Analytics Row 1: Donation Trends & Purpose Distribution */}
               <div className="grid gap-8 lg:grid-cols-12">
                 {/* Left 8 Cols: Donation Growth Trend Area Chart */}
-                <div className="rounded-2xl border border-[#C59A52]/30 bg-[#16100E]/90 p-6 shadow-xl backdrop-blur-md lg:col-span-8">
+                <div className="rounded-2xl border border-[#C59A52]/50 bg-[#16100E]/90 p-6 shadow-xl backdrop-blur-md lg:col-span-8">
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-b border-[#C59A52]/20 pb-4">
                     <div>
                       <div className="flex items-center gap-2">
@@ -1849,7 +1872,7 @@ export default function AdminPanel() {
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="rounded-lg border border-[#C59A52]/30 bg-[#251A16] px-2.5 py-1 text-[11px] font-bold text-[#E8B94F]">
+                      <span className="rounded-lg border border-[#C59A52]/50 bg-[#251A16] px-2.5 py-1 text-[11px] font-bold text-[#E8B94F]">
                         May – Nov 2026
                       </span>
                     </div>
@@ -1926,7 +1949,7 @@ export default function AdminPanel() {
                 </div>
 
                 {/* Right 4 Cols: Seva Purpose Pie/Donut Chart */}
-                <div className="rounded-2xl border border-[#C59A52]/30 bg-[#16100E]/90 p-6 shadow-xl backdrop-blur-md lg:col-span-4 flex flex-col justify-between">
+                <div className="rounded-2xl border border-[#C59A52]/50 bg-[#16100E]/90 p-6 shadow-xl backdrop-blur-md lg:col-span-4 flex flex-col justify-between">
                   <div>
                     <div className="flex items-center gap-2 border-b border-[#C59A52]/20 pb-4">
                       <PieChartIcon size={18} className="text-[#E8B94F]" />
@@ -1983,7 +2006,7 @@ export default function AdminPanel() {
               {/* Recharts Analytics Row 2: Channels Bar Chart & Operational Statistics */}
               <div className="grid gap-8 lg:grid-cols-12">
                 {/* Left 7 Cols: Collection Channel Side-by-Side Bar Chart */}
-                <div className="rounded-2xl border border-[#C59A52]/30 bg-[#16100E]/90 p-6 shadow-xl backdrop-blur-md lg:col-span-7">
+                <div className="rounded-2xl border border-[#C59A52]/50 bg-[#16100E]/90 p-6 shadow-xl backdrop-blur-md lg:col-span-7">
                   <div className="flex items-center justify-between border-b border-[#C59A52]/20 pb-4">
                     <div>
                       <div className="flex items-center gap-2">
@@ -1996,7 +2019,7 @@ export default function AdminPanel() {
                         Monthly comparison between Walk-in, Field Agents, and Online
                       </p>
                     </div>
-                    <span className="rounded-lg border border-[#C59A52]/30 bg-[#251A16] px-2.5 py-1 text-[11px] font-bold text-[#E8B94F]">
+                    <span className="rounded-lg border border-[#C59A52]/50 bg-[#251A16] px-2.5 py-1 text-[11px] font-bold text-[#E8B94F]">
                       Channel Comparison
                     </span>
                   </div>
@@ -2037,7 +2060,7 @@ export default function AdminPanel() {
                 </div>
 
                 {/* Right 5 Cols: Operational Efficiency Statistics Progress Bars */}
-                <div className="rounded-2xl border border-[#C59A52]/30 bg-[#16100E]/90 p-6 shadow-xl backdrop-blur-md lg:col-span-5 flex flex-col justify-between">
+                <div className="rounded-2xl border border-[#C59A52]/50 bg-[#16100E]/90 p-6 shadow-xl backdrop-blur-md lg:col-span-5 flex flex-col justify-between">
                   <div>
                     <div className="flex items-center gap-2 border-b border-[#C59A52]/20 pb-4">
                       <SlidersHorizontal size={18} className="text-[#E8B94F]" />
@@ -2114,7 +2137,7 @@ export default function AdminPanel() {
               </div>
 
               {/* Quick Action Buttons */}
-              <div className="rounded-2xl border border-[#C59A52]/30 bg-[#18110F]/80 p-6 shadow-xl backdrop-blur-md">
+              <div className="rounded-2xl border border-[#C59A52]/50 bg-[#18110F]/80 p-6 shadow-xl backdrop-blur-md">
                 <h3 className="font-serif text-lg font-bold text-[#E8B94F]">Quick Administrative Actions</h3>
                 <div className="mt-4 flex flex-wrap gap-3">
                   <button
@@ -2126,35 +2149,35 @@ export default function AdminPanel() {
                   </button>
                   <button
                     onClick={() => setActiveTab("kanban")}
-                    className="flex items-center gap-2 rounded-xl border border-[#C59A52]/30 bg-[#221613] px-4 py-2.5 text-xs font-bold text-[#E8B94F] transition hover:bg-[#2D1D19] hover:text-white"
+                    className="flex items-center gap-2 rounded-xl border border-[#C59A52]/50 bg-[#221613] px-4 py-2.5 text-xs font-bold text-[#E8B94F] transition hover:bg-[#2D1D19] hover:text-white"
                   >
                     <KanbanIcon size={15} />
                     <span>View Field Pipeline Kanban</span>
                   </button>
                   <button
                     onClick={() => setActiveTab("engagement")}
-                    className="flex items-center gap-2 rounded-xl border border-[#C59A52]/30 bg-[#221613] px-4 py-2.5 text-xs font-bold text-[#E8B94F] transition hover:bg-[#2D1D19] hover:text-white"
+                    className="flex items-center gap-2 rounded-xl border border-[#C59A52]/50 bg-[#221613] px-4 py-2.5 text-xs font-bold text-[#E8B94F] transition hover:bg-[#2D1D19] hover:text-white"
                   >
                     <Activity size={15} />
                     <span>Page Engagement & Stay Time</span>
                   </button>
                   <button
                     onClick={() => setActiveTab("members")}
-                    className="flex items-center gap-2 rounded-xl border border-[#C59A52]/30 bg-[#221613] px-4 py-2.5 text-xs font-bold text-[#E8B94F] transition hover:bg-[#2D1D19] hover:text-white"
+                    className="flex items-center gap-2 rounded-xl border border-[#C59A52]/50 bg-[#221613] px-4 py-2.5 text-xs font-bold text-[#E8B94F] transition hover:bg-[#2D1D19] hover:text-white"
                   >
                     <Users size={15} />
                     <span>Add / Import Member</span>
                   </button>
                   <button
                     onClick={() => setActiveTab("events")}
-                    className="flex items-center gap-2 rounded-xl border border-[#C59A52]/30 bg-[#221613] px-4 py-2.5 text-xs font-bold text-[#E8B94F] transition hover:bg-[#2D1D19] hover:text-white"
+                    className="flex items-center gap-2 rounded-xl border border-[#C59A52]/50 bg-[#221613] px-4 py-2.5 text-xs font-bold text-[#E8B94F] transition hover:bg-[#2D1D19] hover:text-white"
                   >
                     <Calendar size={15} />
                     <span>Post Upcoming Festival</span>
                   </button>
                   <button
                     onClick={() => setActiveTab("blogs")}
-                    className="flex items-center gap-2 rounded-xl border border-[#C59A52]/30 bg-[#221613] px-4 py-2.5 text-xs font-bold text-[#E8B94F] transition hover:bg-[#2D1D19] hover:text-white"
+                    className="flex items-center gap-2 rounded-xl border border-[#C59A52]/50 bg-[#221613] px-4 py-2.5 text-xs font-bold text-[#E8B94F] transition hover:bg-[#2D1D19] hover:text-white"
                   >
                     <BookOpenIcon size={15} />
                     <span>Publish Spiritual Katha</span>
@@ -2163,7 +2186,7 @@ export default function AdminPanel() {
               </div>
 
               {/* Recent Collections Table */}
-              <div className="rounded-2xl border border-[#C59A52]/30 bg-[#16100E]/90 p-6 shadow-xl">
+              <div className="rounded-2xl border border-[#C59A52]/50 bg-[#16100E]/90 p-6 shadow-xl">
                 <div className="flex items-center justify-between border-b border-[#C59A52]/20 pb-3">
                   <h3 className="font-serif text-lg font-bold text-[#E8B94F]">Recent Official Receipts</h3>
                   <button onClick={() => setActiveTab("history")} className="text-xs font-bold text-[#E8B94F] hover:underline">
@@ -2215,9 +2238,9 @@ export default function AdminPanel() {
               TAB: DEVOTEE PAGE ENGAGEMENT & DWELL TIME ANALYTICS
           ============================================================== */}
           {activeTab === "engagement" && (
-            <div className="space-y-8">
+            <div className="space-y-6">
               {/* Header & Controls */}
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-[#C59A52]/20 pb-4">
+              <div className="flex flex-col gap-4 rounded-2xl border border-[#C59A52]/50 bg-[#16100E]/95 p-6 shadow-xl sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <div className="flex items-center gap-2">
                     <Activity size={24} className="text-[#E8B94F]" />
@@ -2251,12 +2274,12 @@ export default function AdminPanel() {
 
               {/* Engagement Metric Cards */}
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                <div className="rounded-2xl border border-[#C59A52]/30 bg-[#16100E]/90 p-5 shadow-xl backdrop-blur-md">
+                <div className="rounded-2xl border border-[#C59A52]/50 bg-[#16100E]/90 p-5 shadow-xl backdrop-blur-md">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold uppercase tracking-wider text-[#E8B94F]/80">
                       Total Devotee Visits
                     </span>
-                    <div className="rounded-xl border border-[#C59A52]/30 bg-[#251B17] p-2.5 text-[#E8B94F]">
+                    <div className="rounded-xl border border-[#C59A52]/50 bg-[#251B17] p-2.5 text-[#E8B94F]">
                       <Eye size={20} />
                     </div>
                   </div>
@@ -2267,12 +2290,12 @@ export default function AdminPanel() {
                   <p className="mt-1 text-xs text-[#EDE0C9]/50">Across all public foundation pages</p>
                 </div>
 
-                <div className="rounded-2xl border border-[#C59A52]/30 bg-[#16100E]/90 p-5 shadow-xl backdrop-blur-md">
+                <div className="rounded-2xl border border-[#C59A52]/50 bg-[#16100E]/90 p-5 shadow-xl backdrop-blur-md">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold uppercase tracking-wider text-[#E8B94F]/80">
                       Unique Devotee Sessions
                     </span>
-                    <div className="rounded-xl border border-[#C59A52]/30 bg-[#251B17] p-2.5 text-[#E8B94F]">
+                    <div className="rounded-xl border border-[#C59A52]/50 bg-[#251B17] p-2.5 text-[#E8B94F]">
                       <Users size={20} />
                     </div>
                   </div>
@@ -2319,7 +2342,7 @@ export default function AdminPanel() {
               {/* Engagement Row 1: Bar Chart of Average Stay Time per Page & Device Distribution */}
               <div className="grid gap-8 lg:grid-cols-12">
                 {/* Left 8 Cols: Recharts Bar Chart of Average Stay Time per Page */}
-                <div className="rounded-2xl border border-[#C59A52]/30 bg-[#16100E]/90 p-6 shadow-xl backdrop-blur-md lg:col-span-8">
+                <div className="rounded-2xl border border-[#C59A52]/50 bg-[#16100E]/90 p-6 shadow-xl backdrop-blur-md lg:col-span-8">
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-b border-[#C59A52]/20 pb-4">
                     <div>
                       <div className="flex items-center gap-2">
@@ -2332,7 +2355,7 @@ export default function AdminPanel() {
                         Ranked duration in seconds/minutes showing user interest and content engagement
                       </p>
                     </div>
-                    <span className="rounded-lg border border-[#C59A52]/30 bg-[#251A16] px-2.5 py-1 text-[11px] font-bold text-emerald-400">
+                    <span className="rounded-lg border border-[#C59A52]/50 bg-[#251A16] px-2.5 py-1 text-[11px] font-bold text-emerald-400">
                       Top Retention Pages
                     </span>
                   </div>
@@ -2399,7 +2422,7 @@ export default function AdminPanel() {
                 </div>
 
                 {/* Right 4 Cols: Device & Visitor Distribution */}
-                <div className="rounded-2xl border border-[#C59A52]/30 bg-[#16100E]/90 p-6 shadow-xl backdrop-blur-md lg:col-span-4 flex flex-col justify-between">
+                <div className="rounded-2xl border border-[#C59A52]/50 bg-[#16100E]/90 p-6 shadow-xl backdrop-blur-md lg:col-span-4 flex flex-col justify-between">
                   <div>
                     <div className="flex items-center gap-2 border-b border-[#C59A52]/20 pb-4">
                       <PieChartIcon size={18} className="text-[#E8B94F]" />
@@ -2464,7 +2487,7 @@ export default function AdminPanel() {
               {/* Engagement Row 2: 24-Hour Traffic Area Chart & Page Connectivity Flow */}
               <div className="grid gap-8 lg:grid-cols-12">
                 {/* Left 7 Cols: 24-Hour Devotee Traffic Patterns (Aarti & Darshan peaks) */}
-                <div className="rounded-2xl border border-[#C59A52]/30 bg-[#16100E]/90 p-6 shadow-xl backdrop-blur-md lg:col-span-7">
+                <div className="rounded-2xl border border-[#C59A52]/50 bg-[#16100E]/90 p-6 shadow-xl backdrop-blur-md lg:col-span-7">
                   <div className="flex items-center justify-between border-b border-[#C59A52]/20 pb-4">
                     <div>
                       <div className="flex items-center gap-2">
@@ -2477,7 +2500,7 @@ export default function AdminPanel() {
                         Peak hours coincide with Sandhya Aarti (18:00) and Morning Darshan (08:00)
                       </p>
                     </div>
-                    <span className="rounded-lg border border-[#C59A52]/30 bg-[#251A16] px-2.5 py-1 text-[11px] font-bold text-[#E8B94F]">
+                    <span className="rounded-lg border border-[#C59A52]/50 bg-[#251A16] px-2.5 py-1 text-[11px] font-bold text-[#E8B94F]">
                       IST Timezone
                     </span>
                   </div>
@@ -2515,7 +2538,7 @@ export default function AdminPanel() {
                 </div>
 
                 {/* Right 5 Cols: Page Connectivity & Devotee Navigation Matrix */}
-                <div className="rounded-2xl border border-[#C59A52]/30 bg-[#16100E]/90 p-6 shadow-xl backdrop-blur-md lg:col-span-5 flex flex-col justify-between">
+                <div className="rounded-2xl border border-[#C59A52]/50 bg-[#16100E]/90 p-6 shadow-xl backdrop-blur-md lg:col-span-5 flex flex-col justify-between">
                   <div>
                     <div className="flex items-center gap-2 border-b border-[#C59A52]/20 pb-4">
                       <Sparkles size={18} className="text-[#E8B94F]" />
@@ -2588,7 +2611,7 @@ export default function AdminPanel() {
               </div>
 
               {/* Complete Page Dwell Time & Retention Leaderboard Table */}
-              <div className="rounded-2xl border border-[#C59A52]/30 bg-[#16100E]/90 p-6 shadow-xl backdrop-blur-md">
+              <div className="rounded-2xl border border-[#C59A52]/50 bg-[#16100E]/90 p-6 shadow-xl backdrop-blur-md">
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-b border-[#C59A52]/20 pb-4">
                   <div>
                     <h3 className="font-serif text-lg font-bold text-[#E8B94F]">
@@ -2637,7 +2660,7 @@ export default function AdminPanel() {
                               <div className="font-mono text-[11px] text-[#EDE0C9]/50">{page.path}</div>
                             </td>
                             <td className="p-3">
-                              <span className="rounded-full border border-[#C59A52]/30 bg-[#251B17] px-2.5 py-0.5 text-[10px] font-bold text-[#E8B94F]">
+                              <span className="rounded-full border border-[#C59A52]/50 bg-[#251B17] px-2.5 py-0.5 text-[10px] font-bold text-[#E8B94F]">
                                 {page.category}
                               </span>
                             </td>
@@ -2691,9 +2714,9 @@ export default function AdminPanel() {
               TAB: FIELD COLLECTIONS & DEVOTEE PIPELINE KANBAN
           ============================================================== */}
           {activeTab === "kanban" && (
-            <div className="space-y-8">
+            <div className="space-y-6">
               {/* Header & Controls */}
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-[#C59A52]/20 pb-4">
+              <div className="flex flex-col gap-4 rounded-2xl border border-[#C59A52]/50 bg-[#16100E]/95 p-6 shadow-xl sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <div className="flex items-center gap-2">
                     <KanbanIcon size={24} className="text-[#E8B94F]" />
@@ -2720,7 +2743,7 @@ export default function AdminPanel() {
               </div>
 
               {/* Pipeline Value Statistics Bar */}
-              <div className="rounded-2xl border border-[#C59A52]/30 bg-[#16100E]/90 p-5 shadow-xl backdrop-blur-md">
+              <div className="rounded-2xl border border-[#C59A52]/50 bg-[#16100E]/90 p-5 shadow-xl backdrop-blur-md">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <span className="text-xs font-bold uppercase tracking-wider text-[#E8B94F]">
@@ -2785,7 +2808,7 @@ export default function AdminPanel() {
                     value={kanbanSearch}
                     onChange={(e) => setKanbanSearch(e.target.value)}
                     placeholder="Search by donor or task ID..."
-                    className="w-full rounded-xl border border-[#C59A52]/30 bg-[#0E0A09] py-2 pl-9 pr-3 text-xs font-medium text-[#FFF9ED] placeholder-[#EDE0C9]/40 focus:border-[#E8B94F] focus:outline-none"
+                    className="w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] py-2 pl-9 pr-3 text-xs font-medium text-[#FFF9ED] placeholder-[#EDE0C9]/40 focus:border-[#E8B94F] focus:outline-none"
                   />
                 </div>
 
@@ -2795,7 +2818,7 @@ export default function AdminPanel() {
                   <select
                     value={kanbanFilterAgent}
                     onChange={(e) => setKanbanFilterAgent(e.target.value)}
-                    className="rounded-xl border border-[#C59A52]/30 bg-[#16100E] p-2 text-xs font-semibold text-[#E8B94F] focus:outline-none"
+                    className="rounded-xl border border-[#C59A52]/50 bg-[#16100E] p-2 text-xs font-semibold text-[#E8B94F] focus:outline-none"
                   >
                     <option value="All">All Field Collectors</option>
                     <option value="Subrata Mondal">Subrata Mondal</option>
@@ -2860,7 +2883,7 @@ export default function AdminPanel() {
                           filteredCards.map((card) => (
                             <div
                               key={card.id}
-                              className="group rounded-xl border border-[#C59A52]/30 bg-[#1D1411] p-3.5 shadow-md transition hover:border-[#E8B94F]/60 hover:bg-[#251A16]"
+                              className="group rounded-xl border border-[#C59A52]/50 bg-[#1D1411] p-3.5 shadow-md transition hover:border-[#E8B94F]/60 hover:bg-[#251A16]"
                             >
                               {/* Card Top: ID & Date */}
                               <div className="flex items-center justify-between text-[11px]">
@@ -2956,7 +2979,7 @@ export default function AdminPanel() {
                           value={newKanbanForm.donorName}
                           onChange={(e) => setNewKanbanForm({ ...newKanbanForm, donorName: e.target.value })}
                           placeholder="e.g. Radhamadhav Das"
-                          className="mt-1 w-full rounded-xl border border-[#C59A52]/30 bg-[#0E0A09] p-2.5 text-xs text-[#FFF9ED] focus:outline-none"
+                          className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-xs text-[#FFF9ED] focus:outline-none"
                         />
                       </div>
 
@@ -2968,7 +2991,7 @@ export default function AdminPanel() {
                             value={newKanbanForm.memberId}
                             onChange={(e) => setNewKanbanForm({ ...newKanbanForm, memberId: e.target.value })}
                             placeholder="e.g. CKF-M-003"
-                            className="mt-1 w-full rounded-xl border border-[#C59A52]/30 bg-[#0E0A09] p-2.5 text-xs font-mono text-[#E8B94F] focus:outline-none"
+                            className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-xs font-mono text-[#E8B94F] focus:outline-none"
                           />
                         </div>
                         <div>
@@ -2979,7 +3002,7 @@ export default function AdminPanel() {
                             min="1"
                             value={newKanbanForm.amount}
                             onChange={(e) => setNewKanbanForm({ ...newKanbanForm, amount: e.target.value })}
-                            className="mt-1 w-full rounded-xl border border-[#C59A52]/30 bg-[#0E0A09] p-2.5 text-xs font-bold text-[#E8B94F] focus:outline-none"
+                            className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-xs font-bold text-[#E8B94F] focus:outline-none"
                           />
                         </div>
                       </div>
@@ -2989,7 +3012,7 @@ export default function AdminPanel() {
                         <select
                           value={newKanbanForm.purpose}
                           onChange={(e) => setNewKanbanForm({ ...newKanbanForm, purpose: e.target.value })}
-                          className="mt-1 w-full rounded-xl border border-[#C59A52]/30 bg-[#0E0A09] p-2.5 text-xs text-[#FFF9ED] focus:outline-none"
+                          className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-xs text-[#FFF9ED] focus:outline-none"
                         >
                           <option value="Daily Anna Daan Seva">Daily Anna Daan Seva</option>
                           <option value="Temple Renovation Seva">Temple Renovation Seva</option>
@@ -3005,7 +3028,7 @@ export default function AdminPanel() {
                           <select
                             value={newKanbanForm.agentName}
                             onChange={(e) => setNewKanbanForm({ ...newKanbanForm, agentName: e.target.value })}
-                            className="mt-1 w-full rounded-xl border border-[#C59A52]/30 bg-[#0E0A09] p-2.5 text-xs text-[#FFF9ED] focus:outline-none"
+                            className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-xs text-[#FFF9ED] focus:outline-none"
                           >
                             <option value="Subrata Mondal">Subrata Mondal</option>
                             <option value="Amitabha Roy">Amitabha Roy</option>
@@ -3017,7 +3040,7 @@ export default function AdminPanel() {
                           <select
                             value={newKanbanForm.paymentMode}
                             onChange={(e) => setNewKanbanForm({ ...newKanbanForm, paymentMode: e.target.value })}
-                            className="mt-1 w-full rounded-xl border border-[#C59A52]/30 bg-[#0E0A09] p-2.5 text-xs text-[#FFF9ED] focus:outline-none"
+                            className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-xs text-[#FFF9ED] focus:outline-none"
                           >
                             <option value="Cash">Cash</option>
                             <option value="UPI / QR">UPI / QR</option>
@@ -3033,7 +3056,7 @@ export default function AdminPanel() {
                           value={newKanbanForm.area}
                           onChange={(e) => setNewKanbanForm({ ...newKanbanForm, area: e.target.value })}
                           placeholder="e.g. Nabadwip Mayapur Ghat"
-                          className="mt-1 w-full rounded-xl border border-[#C59A52]/30 bg-[#0E0A09] p-2.5 text-xs text-[#FFF9ED] focus:outline-none"
+                          className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-xs text-[#FFF9ED] focus:outline-none"
                         />
                       </div>
 
@@ -3044,7 +3067,7 @@ export default function AdminPanel() {
                           value={newKanbanForm.notes}
                           onChange={(e) => setNewKanbanForm({ ...newKanbanForm, notes: e.target.value })}
                           placeholder="e.g. Call before arrival"
-                          className="mt-1 w-full rounded-xl border border-[#C59A52]/30 bg-[#0E0A09] p-2.5 text-xs text-[#FFF9ED] focus:outline-none"
+                          className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-xs text-[#FFF9ED] focus:outline-none"
                         />
                       </div>
 
@@ -3052,7 +3075,7 @@ export default function AdminPanel() {
                         <button
                           type="button"
                           onClick={() => setNewKanbanModal(false)}
-                          className="rounded-xl border border-[#C59A52]/30 bg-[#221613] px-4 py-2 text-xs font-bold text-[#EDE0C9] hover:bg-[#2D1D19]"
+                          className="rounded-xl border border-[#C59A52]/50 bg-[#221613] px-4 py-2 text-xs font-bold text-[#EDE0C9] hover:bg-[#2D1D19]"
                         >
                           Cancel
                         </button>
@@ -3077,7 +3100,7 @@ export default function AdminPanel() {
             <div className="grid gap-8 lg:grid-cols-12">
               {/* Left 5 Cols: Form */}
               <div className="no-print space-y-6 lg:col-span-5">
-                <div className="rounded-2xl border border-[#C59A52]/30 bg-[#16100E]/90 p-6 shadow-xl">
+                <div className="rounded-2xl border border-[#C59A52]/50 bg-[#16100E]/90 p-6 shadow-xl">
                   <div className="border-b border-[#C59A52]/20 pb-3">
                     <h2
                       className="font-serif text-2xl font-bold text-[#E8B94F]"
@@ -3106,7 +3129,7 @@ export default function AdminPanel() {
                             if (!e.target.value) setSelectedMemberForReceipt(null);
                           }}
                           placeholder="Type name, ID (e.g. CKF-M-001) or mobile..."
-                          className="w-full rounded-xl border border-[#C59A52]/30 bg-[#0E0A09] py-2.5 pl-10 pr-4 text-xs font-medium text-[#FFF9ED] placeholder-[#EDE0C9]/30 focus:border-[#E8B94F] focus:outline-none"
+                          className="w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] py-2.5 pl-10 pr-4 text-xs font-medium text-[#FFF9ED] placeholder-[#EDE0C9]/30 focus:border-[#E8B94F] focus:outline-none"
                         />
                       </div>
 
@@ -3162,7 +3185,7 @@ export default function AdminPanel() {
                           type="text"
                           value={receiptForm.receiptNo}
                           onChange={(e) => setReceiptForm({ ...receiptForm, receiptNo: e.target.value })}
-                          className="mt-1 w-full rounded-xl border border-[#C59A52]/30 bg-[#0E0A09] p-2.5 font-mono text-xs font-bold text-[#E8B94F] focus:outline-none"
+                          className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 font-mono text-xs font-bold text-[#E8B94F] focus:outline-none"
                         />
                       </div>
                       <div>
@@ -3171,7 +3194,7 @@ export default function AdminPanel() {
                           type="text"
                           value={receiptForm.date}
                           onChange={(e) => setReceiptForm({ ...receiptForm, date: e.target.value })}
-                          className="mt-1 w-full rounded-xl border border-[#C59A52]/30 bg-[#0E0A09] p-2.5 text-xs font-medium text-[#FFF9ED] focus:outline-none"
+                          className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-xs font-medium text-[#FFF9ED] focus:outline-none"
                         />
                       </div>
                     </div>
@@ -3203,7 +3226,7 @@ export default function AdminPanel() {
                       <select
                         value={receiptForm.channel}
                         onChange={(e) => setReceiptForm({ ...receiptForm, channel: e.target.value })}
-                        className="mt-1 w-full rounded-xl border border-[#C59A52]/30 bg-[#0E0A09] p-2.5 text-xs font-semibold text-[#FFF9ED] focus:outline-none"
+                        className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-xs font-semibold text-[#FFF9ED] focus:outline-none"
                       >
                         <option value="Walk-in to Foundation" className="bg-[#16100E]">Mode A: Person comes to Foundation / Office (Nabadwip)</option>
                         <option value="Field Collection" className="bg-[#16100E]">Mode B: Field / Doorstep collection by representative</option>
@@ -3239,7 +3262,7 @@ export default function AdminPanel() {
                         <select
                           value={receiptForm.paymentMode}
                           onChange={(e) => setReceiptForm({ ...receiptForm, paymentMode: e.target.value })}
-                          className="mt-1 w-full rounded-xl border border-[#C59A52]/30 bg-[#0E0A09] p-2.5 text-xs font-medium text-[#FFF9ED] focus:outline-none"
+                          className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-xs font-medium text-[#FFF9ED] focus:outline-none"
                         >
                           <option className="bg-[#16100E]">Cash</option>
                           <option className="bg-[#16100E]">UPI</option>
@@ -3254,7 +3277,7 @@ export default function AdminPanel() {
                         <select
                           value={receiptForm.purpose}
                           onChange={(e) => setReceiptForm({ ...receiptForm, purpose: e.target.value })}
-                          className="mt-1 w-full rounded-xl border border-[#C59A52]/30 bg-[#0E0A09] p-2.5 text-xs font-medium text-[#FFF9ED] focus:outline-none"
+                          className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-xs font-medium text-[#FFF9ED] focus:outline-none"
                         >
                           <option className="bg-[#16100E]">NGO Fund</option>
                           <option className="bg-[#16100E]">Daily Anna Daan Seva</option>
@@ -3283,7 +3306,7 @@ export default function AdminPanel() {
               <div className="lg:col-span-7">
                 {currentReceipt ? (
                   <div className="space-y-4">
-                    <div className="no-print flex items-center justify-between rounded-xl border border-[#C59A52]/30 bg-[#16100E] p-4">
+                    <div className="no-print flex items-center justify-between rounded-xl border border-[#C59A52]/50 bg-[#16100E] p-4">
                       <div>
                         <h4 className="font-bold text-[#E8B94F]">Dual Receipt Ready for Printing</h4>
                         <p className="text-xs text-[#EDE0C9]/60">
@@ -3306,7 +3329,7 @@ export default function AdminPanel() {
                     >
                       {/* DONOR COPY */}
                       <div className="rounded-xl border border-[#C59A52]/50 bg-[#FFF9ED]/30 p-5">
-                        <div className="flex items-start justify-between border-b border-[#C59A52]/30 pb-3">
+                        <div className="flex items-start justify-between border-b border-[#C59A52]/50 pb-3">
                           <div>
                             <span className="rounded bg-[#971515] px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-white">
                               Official Donor Copy
@@ -3341,7 +3364,7 @@ export default function AdminPanel() {
                             <div className="mt-0.5 text-[11px] text-[#39251D]/80">Address: {currentReceipt.address}</div>
                             <div className="text-[11px] text-[#39251D]/80">Mobile: {currentReceipt.mobile}</div>
                           </div>
-                          <div className="rounded-lg border border-[#C59A52]/30 bg-white p-3">
+                          <div className="rounded-lg border border-[#C59A52]/50 bg-white p-3">
                             <div className="flex justify-between">
                               <span className="text-[#39251D]/70">Amount Received:</span>
                               <span className="font-bold text-base text-[#971515]">
@@ -3384,7 +3407,7 @@ export default function AdminPanel() {
 
                       {/* OFFICE COPY */}
                       <div className="rounded-xl border border-[#C59A52]/50 bg-amber-50/20 p-5">
-                        <div className="flex items-start justify-between border-b border-[#C59A52]/30 pb-3">
+                        <div className="flex items-start justify-between border-b border-[#C59A52]/50 pb-3">
                           <div>
                             <span className="rounded bg-[#78372B] px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-white">
                               Central Office Collection Record
@@ -3421,7 +3444,7 @@ export default function AdminPanel() {
                               <span className="font-semibold">{currentReceipt.channel}</span>
                             </div>
                           </div>
-                          <div className="rounded-lg border border-[#C59A52]/30 bg-white p-3">
+                          <div className="rounded-lg border border-[#C59A52]/50 bg-white p-3">
                             <div className="flex justify-between">
                               <span className="text-[#39251D]/70">Collected Amount:</span>
                               <span className="font-bold text-base text-[#78372B]">
@@ -3461,7 +3484,7 @@ export default function AdminPanel() {
                     </div>
                   </div>
                 ) : (
-                  <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-[#C59A52]/30 bg-[#16100E]/60 p-12 text-center">
+                  <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-[#C59A52]/50 bg-[#16100E]/60 p-12 text-center">
                     <Receipt size={48} className="text-[#C59A52]/50" />
                     <h3 className="mt-4 font-serif text-xl font-bold text-[#E8B94F]">Dual Receipt Preview</h3>
                     <p className="mt-1 max-w-sm text-xs text-[#EDE0C9]/60">
@@ -3478,7 +3501,7 @@ export default function AdminPanel() {
           ============================================================== */}
           {activeTab === "history" && (
             <div className="space-y-6">
-              <div className="flex flex-col justify-between gap-4 rounded-2xl border border-[#C59A52]/30 bg-[#16100E]/90 p-6 shadow-xl sm:flex-row sm:items-center">
+              <div className="flex flex-col justify-between gap-4 rounded-2xl border border-[#C59A52]/50 bg-[#16100E]/90 p-6 shadow-xl sm:flex-row sm:items-center">
                 <div>
                   <h2
                     className="font-serif text-2xl font-bold text-[#E8B94F]"
@@ -3503,7 +3526,7 @@ export default function AdminPanel() {
               </div>
 
               {/* Filter and Search Bar */}
-              <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-[#C59A52]/30 bg-[#16100E]/90 p-4 shadow-lg">
+              <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-[#C59A52]/50 bg-[#16100E]/90 p-4 shadow-lg">
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-bold text-[#E8B94F]">Channel:</span>
                   {["All", "Walk-in to Foundation", "Field Collection", "Online Donation"].map((ch) => (
@@ -3527,13 +3550,13 @@ export default function AdminPanel() {
                     value={historySearchQuery}
                     onChange={(e) => setHistorySearchQuery(e.target.value)}
                     placeholder="Search receipt, donor, phone..."
-                    className="w-full rounded-lg border border-[#C59A52]/30 bg-[#0E0A09] py-2 pl-9 pr-3 text-xs text-[#FFF9ED] placeholder-[#EDE0C9]/30 focus:border-[#E8B94F] focus:outline-none"
+                    className="w-full rounded-lg border border-[#C59A52]/50 bg-[#0E0A09] py-2 pl-9 pr-3 text-xs text-[#FFF9ED] placeholder-[#EDE0C9]/30 focus:border-[#E8B94F] focus:outline-none"
                   />
                 </div>
               </div>
 
               {/* History Table */}
-              <div className="overflow-hidden rounded-2xl border border-[#C59A52]/30 bg-[#16100E]/95 shadow-xl">
+              <div className="overflow-hidden rounded-2xl border border-[#C59A52]/50 bg-[#16100E]/95 shadow-xl">
                 {filteredReceipts.length > 0 ? (
                   <div className="overflow-x-auto">
                     <table className="w-full text-left text-xs">
@@ -3616,8 +3639,8 @@ export default function AdminPanel() {
               TAB 3: MEMBER DATABASE (ALL 12 COLUMNS)
           ============================================================== */}
           {activeTab === "members" && (
-            <div className="space-y-8">
-              <div className="flex flex-col justify-between gap-4 rounded-2xl border border-[#C59A52]/30 bg-[#16100E]/90 p-6 shadow-xl sm:flex-row sm:items-center">
+            <div className="space-y-6">
+              <div className="flex flex-col justify-between gap-4 rounded-2xl border border-[#C59A52]/50 bg-[#16100E]/90 p-6 shadow-xl sm:flex-row sm:items-center">
                 <div>
                   <h2
                     className="font-serif text-2xl font-bold text-[#E8B94F]"
@@ -3643,7 +3666,7 @@ export default function AdminPanel() {
 
               {/* Form & Upload Grid */}
               <div className="grid gap-8 lg:grid-cols-12">
-                <div className="rounded-2xl border border-[#C59A52]/30 bg-[#16100E]/90 p-6 shadow-xl lg:col-span-7">
+                <div className="rounded-2xl border border-[#C59A52]/50 bg-[#16100E]/90 p-6 shadow-xl lg:col-span-7">
                   <h3 className="font-serif text-lg font-bold text-[#E8B94F] border-b border-[#C59A52]/20 pb-3">
                     Add New Member Manually
                   </h3>
@@ -3656,7 +3679,7 @@ export default function AdminPanel() {
                           value={newMember.id}
                           onChange={(e) => setNewMember({ ...newMember, id: e.target.value })}
                           placeholder="Auto-generated if empty"
-                          className="mt-1 w-full rounded-xl border border-[#C59A52]/30 bg-[#0E0A09] p-2.5 font-mono text-xs font-semibold text-[#FFF9ED] focus:outline-none"
+                          className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 font-mono text-xs font-semibold text-[#FFF9ED] focus:outline-none"
                         />
                       </div>
                       <div>
@@ -3669,7 +3692,7 @@ export default function AdminPanel() {
                           value={newMember.name}
                           onChange={(e) => setNewMember({ ...newMember, name: e.target.value })}
                           placeholder="Full devotee name"
-                          className="mt-1 w-full rounded-xl border border-[#C59A52]/30 bg-[#0E0A09] p-2.5 text-xs font-semibold text-[#FFF9ED] focus:outline-none"
+                          className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-xs font-semibold text-[#FFF9ED] focus:outline-none"
                         />
                       </div>
                     </div>
@@ -3682,7 +3705,7 @@ export default function AdminPanel() {
                           value={newMember.address1}
                           onChange={(e) => setNewMember({ ...newMember, address1: e.target.value })}
                           placeholder="House / Street"
-                          className="mt-1 w-full rounded-xl border border-[#C59A52]/30 bg-[#0E0A09] p-2.5 text-xs text-[#FFF9ED] focus:outline-none"
+                          className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-xs text-[#FFF9ED] focus:outline-none"
                         />
                       </div>
                       <div>
@@ -3692,7 +3715,7 @@ export default function AdminPanel() {
                           value={newMember.address2}
                           onChange={(e) => setNewMember({ ...newMember, address2: e.target.value })}
                           placeholder="Landmark / Locality"
-                          className="mt-1 w-full rounded-xl border border-[#C59A52]/30 bg-[#0E0A09] p-2.5 text-xs text-[#FFF9ED] focus:outline-none"
+                          className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-xs text-[#FFF9ED] focus:outline-none"
                         />
                       </div>
                     </div>
@@ -3704,7 +3727,7 @@ export default function AdminPanel() {
                           type="text"
                           value={newMember.city}
                           onChange={(e) => setNewMember({ ...newMember, city: e.target.value })}
-                          className="mt-1 w-full rounded-xl border border-[#C59A52]/30 bg-[#0E0A09] p-2 text-xs text-[#FFF9ED] focus:outline-none"
+                          className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2 text-xs text-[#FFF9ED] focus:outline-none"
                         />
                       </div>
                       <div>
@@ -3713,7 +3736,7 @@ export default function AdminPanel() {
                           type="text"
                           value={newMember.postOffice}
                           onChange={(e) => setNewMember({ ...newMember, postOffice: e.target.value })}
-                          className="mt-1 w-full rounded-xl border border-[#C59A52]/30 bg-[#0E0A09] p-2 text-xs text-[#FFF9ED] focus:outline-none"
+                          className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2 text-xs text-[#FFF9ED] focus:outline-none"
                         />
                       </div>
                       <div>
@@ -3722,7 +3745,7 @@ export default function AdminPanel() {
                           type="text"
                           value={newMember.district}
                           onChange={(e) => setNewMember({ ...newMember, district: e.target.value })}
-                          className="mt-1 w-full rounded-xl border border-[#C59A52]/30 bg-[#0E0A09] p-2 text-xs text-[#FFF9ED] focus:outline-none"
+                          className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2 text-xs text-[#FFF9ED] focus:outline-none"
                         />
                       </div>
                       <div>
@@ -3731,7 +3754,7 @@ export default function AdminPanel() {
                           type="text"
                           value={newMember.state}
                           onChange={(e) => setNewMember({ ...newMember, state: e.target.value })}
-                          className="mt-1 w-full rounded-xl border border-[#C59A52]/30 bg-[#0E0A09] p-2 text-xs text-[#FFF9ED] focus:outline-none"
+                          className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2 text-xs text-[#FFF9ED] focus:outline-none"
                         />
                       </div>
                     </div>
@@ -3743,7 +3766,7 @@ export default function AdminPanel() {
                           type="text"
                           value={newMember.pincode}
                           onChange={(e) => setNewMember({ ...newMember, pincode: e.target.value })}
-                          className="mt-1 w-full rounded-xl border border-[#C59A52]/30 bg-[#0E0A09] p-2 font-mono text-xs text-[#FFF9ED] focus:outline-none"
+                          className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2 font-mono text-xs text-[#FFF9ED] focus:outline-none"
                         />
                       </div>
                       <div>
@@ -3752,7 +3775,7 @@ export default function AdminPanel() {
                           type="text"
                           value={newMember.country}
                           onChange={(e) => setNewMember({ ...newMember, country: e.target.value })}
-                          className="mt-1 w-full rounded-xl border border-[#C59A52]/30 bg-[#0E0A09] p-2 text-xs text-[#FFF9ED] focus:outline-none"
+                          className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2 text-xs text-[#FFF9ED] focus:outline-none"
                         />
                       </div>
                       <div>
@@ -3765,7 +3788,7 @@ export default function AdminPanel() {
                           value={newMember.mobile1}
                           onChange={(e) => setNewMember({ ...newMember, mobile1: e.target.value })}
                           placeholder="10-digit mobile"
-                          className="mt-1 w-full rounded-xl border border-[#C59A52]/30 bg-[#0E0A09] p-2 font-mono text-xs text-[#FFF9ED] focus:outline-none"
+                          className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2 font-mono text-xs text-[#FFF9ED] focus:outline-none"
                         />
                       </div>
                       <div>
@@ -3775,7 +3798,7 @@ export default function AdminPanel() {
                           value={newMember.mobile2}
                           onChange={(e) => setNewMember({ ...newMember, mobile2: e.target.value })}
                           placeholder="Secondary mobile"
-                          className="mt-1 w-full rounded-xl border border-[#C59A52]/30 bg-[#0E0A09] p-2 font-mono text-xs text-[#FFF9ED] focus:outline-none"
+                          className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2 font-mono text-xs text-[#FFF9ED] focus:outline-none"
                         />
                       </div>
                     </div>
@@ -3793,7 +3816,7 @@ export default function AdminPanel() {
 
                 {/* Bulk Excel Upload */}
                 <div className="space-y-6 lg:col-span-5">
-                  <div className="rounded-2xl border border-[#C59A52]/30 bg-[#16100E]/90 p-6 shadow-xl">
+                  <div className="rounded-2xl border border-[#C59A52]/50 bg-[#16100E]/90 p-6 shadow-xl">
                     <h3 className="font-serif text-lg font-bold text-[#E8B94F] border-b border-[#C59A52]/20 pb-3">
                       Bulk Add / Upload Excel or CSV
                     </h3>
@@ -3821,14 +3844,14 @@ export default function AdminPanel() {
                     </div>
                   </div>
 
-                  <div className="rounded-2xl border border-[#C59A52]/30 bg-[#16100E]/90 p-6 shadow-xl">
+                  <div className="rounded-2xl border border-[#C59A52]/50 bg-[#16100E]/90 p-6 shadow-xl">
                     <h3 className="font-serif text-lg font-bold text-[#E8B94F] border-b border-[#C59A52]/20 pb-3">
                       Bulk Selection & Cleanup
                     </h3>
                     <div className="mt-4 flex flex-wrap items-center gap-3">
                       <button
                         onClick={handleSelectAllMembers}
-                        className="flex items-center gap-1.5 rounded-xl border border-[#C59A52]/30 bg-[#221613] px-3.5 py-2 text-xs font-bold text-[#E8B94F] transition hover:bg-[#2D1D19]"
+                        className="flex items-center gap-1.5 rounded-xl border border-[#C59A52]/50 bg-[#221613] px-3.5 py-2 text-xs font-bold text-[#E8B94F] transition hover:bg-[#2D1D19]"
                       >
                         {selectedMemberIds.length === members.length ? <CheckSquare size={14} /> : <Square size={14} />}
                         <span>{selectedMemberIds.length === members.length ? "Clear Selection" : "Select All"}</span>
@@ -3848,7 +3871,7 @@ export default function AdminPanel() {
               </div>
 
               {/* Table */}
-              <div className="overflow-hidden rounded-2xl border border-[#C59A52]/30 bg-[#16100E]/95 shadow-xl">
+              <div className="overflow-hidden rounded-2xl border border-[#C59A52]/50 bg-[#16100E]/95 shadow-xl">
                 <div className="flex flex-col justify-between gap-3 border-b border-[#C59A52]/20 p-4 sm:flex-row sm:items-center">
                   <span className="font-serif text-lg font-bold text-[#E8B94F]">
                     Member Directory ({filteredMembers.length} records)
@@ -3860,7 +3883,7 @@ export default function AdminPanel() {
                       value={memberSearchQuery}
                       onChange={(e) => setMemberSearchQuery(e.target.value)}
                       placeholder="Search by name, ID, phone, city..."
-                      className="w-full rounded-lg border border-[#C59A52]/30 bg-[#0E0A09] py-2 pl-9 pr-3 text-xs text-[#FFF9ED] placeholder-[#EDE0C9]/30 focus:border-[#E8B94F] focus:outline-none"
+                      className="w-full rounded-lg border border-[#C59A52]/50 bg-[#0E0A09] py-2 pl-9 pr-3 text-xs text-[#FFF9ED] placeholder-[#EDE0C9]/30 focus:border-[#E8B94F] focus:outline-none"
                     />
                   </div>
                 </div>
@@ -3945,8 +3968,8 @@ export default function AdminPanel() {
               TAB 4: FIELD COLLECTION AGENTS (Doorstep Collectors)
           ============================================================== */}
           {activeTab === "agents" && (
-            <div className="space-y-8">
-              <div className="flex flex-col justify-between gap-4 rounded-2xl border border-[#C59A52]/30 bg-[#16100E]/90 p-6 shadow-xl sm:flex-row sm:items-center">
+            <div className="space-y-6">
+              <div className="flex flex-col justify-between gap-4 rounded-2xl border border-[#C59A52]/50 bg-[#16100E]/90 p-6 shadow-xl sm:flex-row sm:items-center">
                 <div>
                   <h2
                     className="font-serif text-2xl font-bold text-[#E8B94F]"
@@ -3961,7 +3984,7 @@ export default function AdminPanel() {
               </div>
 
               <div className="grid gap-8 lg:grid-cols-12">
-                <div className="rounded-2xl border border-[#C59A52]/30 bg-[#16100E]/90 p-6 shadow-xl lg:col-span-4">
+                <div className="rounded-2xl border border-[#C59A52]/50 bg-[#16100E]/90 p-6 shadow-xl lg:col-span-4">
                   <h3 className="font-serif text-lg font-bold text-[#E8B94F] border-b border-[#C59A52]/20 pb-3">
                     Register Field Agent
                   </h3>
@@ -3973,7 +3996,7 @@ export default function AdminPanel() {
                         value={newAgent.agentCode}
                         onChange={(e) => setNewAgent({ ...newAgent, agentCode: e.target.value })}
                         placeholder="e.g. AGT-004 (Auto if blank)"
-                        className="mt-1 w-full rounded-xl border border-[#C59A52]/30 bg-[#0E0A09] p-2.5 font-mono text-xs text-[#FFF9ED] focus:outline-none"
+                        className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 font-mono text-xs text-[#FFF9ED] focus:outline-none"
                       />
                     </div>
                     <div>
@@ -3984,7 +4007,7 @@ export default function AdminPanel() {
                         value={newAgent.name}
                         onChange={(e) => setNewAgent({ ...newAgent, name: e.target.value })}
                         placeholder="Representative Name"
-                        className="mt-1 w-full rounded-xl border border-[#C59A52]/30 bg-[#0E0A09] p-2.5 text-xs font-semibold text-[#FFF9ED] focus:outline-none"
+                        className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-xs font-semibold text-[#FFF9ED] focus:outline-none"
                       />
                     </div>
                     <div>
@@ -3995,7 +4018,7 @@ export default function AdminPanel() {
                         value={newAgent.phone}
                         onChange={(e) => setNewAgent({ ...newAgent, phone: e.target.value })}
                         placeholder="Primary contact"
-                        className="mt-1 w-full rounded-xl border border-[#C59A52]/30 bg-[#0E0A09] p-2.5 font-mono text-xs text-[#FFF9ED] focus:outline-none"
+                        className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 font-mono text-xs text-[#FFF9ED] focus:outline-none"
                       />
                     </div>
                     <div>
@@ -4005,7 +4028,7 @@ export default function AdminPanel() {
                         value={newAgent.assignedArea}
                         onChange={(e) => setNewAgent({ ...newAgent, assignedArea: e.target.value })}
                         placeholder="e.g. Nabadwip Ghats & Market"
-                        className="mt-1 w-full rounded-xl border border-[#C59A52]/30 bg-[#0E0A09] p-2.5 text-xs text-[#FFF9ED] focus:outline-none"
+                        className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-xs text-[#FFF9ED] focus:outline-none"
                       />
                     </div>
                     <button
@@ -4017,7 +4040,7 @@ export default function AdminPanel() {
                   </form>
                 </div>
 
-                <div className="rounded-2xl border border-[#C59A52]/30 bg-[#16100E]/90 p-6 shadow-xl lg:col-span-8">
+                <div className="rounded-2xl border border-[#C59A52]/50 bg-[#16100E]/90 p-6 shadow-xl lg:col-span-8">
                   <h3 className="font-serif text-lg font-bold text-[#E8B94F] border-b border-[#C59A52]/20 pb-3">
                     Active Collectors & Office Settlement Status
                   </h3>
@@ -4074,8 +4097,8 @@ export default function AdminPanel() {
               TAB 5: EVENTS & UTSAVS CMS (Syncs with /events)
           ============================================================== */}
           {activeTab === "events" && (
-            <div className="space-y-8">
-              <div className="flex flex-col justify-between gap-4 rounded-2xl border border-[#C59A52]/30 bg-[#16100E]/90 p-6 shadow-xl sm:flex-row sm:items-center">
+            <div className="space-y-6">
+              <div className="flex flex-col justify-between gap-4 rounded-2xl border border-[#C59A52]/50 bg-[#16100E]/90 p-6 shadow-xl sm:flex-row sm:items-center">
                 <div>
                   <h2
                     className="font-serif text-2xl font-bold text-[#E8B94F]"
@@ -4090,7 +4113,7 @@ export default function AdminPanel() {
               </div>
 
               <div className="grid gap-8 lg:grid-cols-12">
-                <div className="rounded-2xl border border-[#C59A52]/30 bg-[#16100E]/90 p-6 shadow-xl lg:col-span-5">
+                <div className="rounded-2xl border border-[#C59A52]/50 bg-[#16100E]/90 p-6 shadow-xl lg:col-span-5">
                   <h3 className="font-serif text-lg font-bold text-[#E8B94F] border-b border-[#C59A52]/20 pb-3">
                     Post New Festival / Seva
                   </h3>
@@ -4103,7 +4126,7 @@ export default function AdminPanel() {
                         value={newEvent.title}
                         onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })}
                         placeholder="e.g. Sri Radhashtami Mahotsav"
-                        className="mt-1 w-full rounded-xl border border-[#C59A52]/30 bg-[#0E0A09] p-2.5 text-xs font-semibold text-[#FFF9ED] focus:outline-none"
+                        className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-xs font-semibold text-[#FFF9ED] focus:outline-none"
                       />
                     </div>
                     <div className="grid grid-cols-2 gap-3">
@@ -4114,7 +4137,7 @@ export default function AdminPanel() {
                           value={newEvent.bengali}
                           onChange={(e) => setNewEvent({ ...newEvent, bengali: e.target.value })}
                           placeholder="শ্রী রাধাষ্টমী উৎসব"
-                          className="mt-1 w-full rounded-xl border border-[#C59A52]/30 bg-[#0E0A09] p-2.5 text-xs text-[#FFF9ED] focus:outline-none"
+                          className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-xs text-[#FFF9ED] focus:outline-none"
                         />
                       </div>
                       <div>
@@ -4122,7 +4145,7 @@ export default function AdminPanel() {
                         <select
                           value={newEvent.category}
                           onChange={(e) => setNewEvent({ ...newEvent, category: e.target.value })}
-                          className="mt-1 w-full rounded-xl border border-[#C59A52]/30 bg-[#0E0A09] p-2.5 text-xs text-[#FFF9ED] focus:outline-none"
+                          className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-xs text-[#FFF9ED] focus:outline-none"
                         >
                           <option className="bg-[#16100E]">Major Utsav</option>
                           <option className="bg-[#16100E]">Pariwar Seva</option>
@@ -4139,7 +4162,7 @@ export default function AdminPanel() {
                           value={newEvent.season}
                           onChange={(e) => setNewEvent({ ...newEvent, season: e.target.value })}
                           placeholder="e.g. Bhadra Shukla Ashtami"
-                          className="mt-1 w-full rounded-xl border border-[#C59A52]/30 bg-[#0E0A09] p-2.5 text-xs text-[#FFF9ED] focus:outline-none"
+                          className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-xs text-[#FFF9ED] focus:outline-none"
                         />
                       </div>
                       <div>
@@ -4149,7 +4172,7 @@ export default function AdminPanel() {
                           value={newEvent.time}
                           onChange={(e) => setNewEvent({ ...newEvent, time: e.target.value })}
                           placeholder="e.g. 12:00 PM Midday Abhishek"
-                          className="mt-1 w-full rounded-xl border border-[#C59A52]/30 bg-[#0E0A09] p-2.5 text-xs text-[#FFF9ED] focus:outline-none"
+                          className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-xs text-[#FFF9ED] focus:outline-none"
                         />
                       </div>
                     </div>
@@ -4160,7 +4183,7 @@ export default function AdminPanel() {
                         value={newEvent.seva}
                         onChange={(e) => setNewEvent({ ...newEvent, seva: e.target.value })}
                         placeholder="e.g. Anna Daan & Pushpa Abhishek"
-                        className="mt-1 w-full rounded-xl border border-[#C59A52]/30 bg-[#0E0A09] p-2.5 text-xs text-[#FFF9ED] focus:outline-none"
+                        className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-xs text-[#FFF9ED] focus:outline-none"
                       />
                     </div>
                     <div>
@@ -4171,7 +4194,7 @@ export default function AdminPanel() {
                         value={newEvent.desc}
                         onChange={(e) => setNewEvent({ ...newEvent, desc: e.target.value })}
                         placeholder="Details of rituals, parikrama, kirtan, prasadam distribution..."
-                        className="mt-1 w-full rounded-xl border border-[#C59A52]/30 bg-[#0E0A09] p-2.5 text-xs text-[#FFF9ED] focus:outline-none"
+                        className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-xs text-[#FFF9ED] focus:outline-none"
                       />
                     </div>
                     {/* Event Banner Media Upload */}
@@ -4231,7 +4254,7 @@ export default function AdminPanel() {
                     {events.map((ev) => (
                       <div
                         key={ev._id || ev.title}
-                        className="flex items-start justify-between rounded-xl border border-[#C59A52]/30 bg-[#16100E]/90 p-4 shadow-xl"
+                        className="flex items-start justify-between rounded-xl border border-[#C59A52]/50 bg-[#16100E]/90 p-4 shadow-xl"
                       >
                         <div className="space-y-1">
                           <div className="flex items-center gap-2">
@@ -4242,7 +4265,7 @@ export default function AdminPanel() {
                             {ev.season} • {ev.time}
                           </div>
                           <p className="mt-1 line-clamp-2 max-w-lg text-xs text-[#EDE0C9]/80">{ev.desc}</p>
-                          <div className="mt-2 inline-block rounded-md border border-[#C59A52]/30 bg-[#251714] px-2 py-0.5 text-[10px] font-bold text-[#E8B94F]">
+                          <div className="mt-2 inline-block rounded-md border border-[#C59A52]/50 bg-[#251714] px-2 py-0.5 text-[10px] font-bold text-[#E8B94F]">
                             Seva: {ev.seva}
                           </div>
                         </div>
@@ -4265,8 +4288,8 @@ export default function AdminPanel() {
               TAB 6: BLOGS & KATHA CMS (Syncs with /blog)
           ============================================================== */}
           {activeTab === "blogs" && (
-            <div className="space-y-8">
-              <div className="flex flex-col justify-between gap-4 rounded-2xl border border-[#C59A52]/30 bg-[#16100E]/90 p-6 shadow-xl sm:flex-row sm:items-center">
+            <div className="space-y-6">
+              <div className="flex flex-col justify-between gap-4 rounded-2xl border border-[#C59A52]/50 bg-[#16100E]/90 p-6 shadow-xl sm:flex-row sm:items-center">
                 <div>
                   <h2
                     className="font-serif text-2xl font-bold text-[#E8B94F]"
@@ -4281,7 +4304,7 @@ export default function AdminPanel() {
               </div>
 
               <div className="grid gap-8 lg:grid-cols-12">
-                <div className="rounded-2xl border border-[#C59A52]/30 bg-[#16100E]/90 p-6 shadow-xl lg:col-span-6">
+                <div className="rounded-2xl border border-[#C59A52]/50 bg-[#16100E]/90 p-6 shadow-xl lg:col-span-6">
                   <h3 className="font-serif text-lg font-bold text-[#E8B94F] border-b border-[#C59A52]/20 pb-3">
                     Write Spiritual Article
                   </h3>
@@ -4294,7 +4317,7 @@ export default function AdminPanel() {
                         value={newBlog.title}
                         onChange={(e) => setNewBlog({ ...newBlog, title: e.target.value })}
                         placeholder="Title of discourse or article"
-                        className="mt-1 w-full rounded-xl border border-[#C59A52]/30 bg-[#0E0A09] p-2.5 text-xs font-semibold text-[#FFF9ED] focus:outline-none"
+                        className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-xs font-semibold text-[#FFF9ED] focus:outline-none"
                       />
                     </div>
                     <div className="grid grid-cols-2 gap-3">
@@ -4305,7 +4328,7 @@ export default function AdminPanel() {
                           value={newBlog.bengali}
                           onChange={(e) => setNewBlog({ ...newBlog, bengali: e.target.value })}
                           placeholder="বাংলায় শিরোনাম"
-                          className="mt-1 w-full rounded-xl border border-[#C59A52]/30 bg-[#0E0A09] p-2.5 text-xs text-[#FFF9ED] focus:outline-none"
+                          className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-xs text-[#FFF9ED] focus:outline-none"
                         />
                       </div>
                       <div>
@@ -4313,7 +4336,7 @@ export default function AdminPanel() {
                         <select
                           value={newBlog.category}
                           onChange={(e) => setNewBlog({ ...newBlog, category: e.target.value })}
-                          className="mt-1 w-full rounded-xl border border-[#C59A52]/30 bg-[#0E0A09] p-2.5 text-xs text-[#FFF9ED] focus:outline-none"
+                          className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-xs text-[#FFF9ED] focus:outline-none"
                         >
                           <option className="bg-[#16100E]">Heritage & History</option>
                           <option className="bg-[#16100E]">Vaishnav Philosophy</option>
@@ -4332,7 +4355,7 @@ export default function AdminPanel() {
                         value={newBlog.excerpt}
                         onChange={(e) => setNewBlog({ ...newBlog, excerpt: e.target.value })}
                         placeholder="Short synopsis shown on the blog cards..."
-                        className="mt-1 w-full rounded-xl border border-[#C59A52]/30 bg-[#0E0A09] p-2.5 text-xs text-[#FFF9ED] focus:outline-none"
+                        className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-xs text-[#FFF9ED] focus:outline-none"
                       />
                     </div>
                     <div>
@@ -4343,7 +4366,7 @@ export default function AdminPanel() {
                         value={newBlog.content}
                         onChange={(e) => setNewBlog({ ...newBlog, content: e.target.value })}
                         placeholder="Spiritual text, verses, commentary, historical citations..."
-                        className="mt-1 w-full rounded-xl border border-[#C59A52]/30 bg-[#0E0A09] p-2.5 text-xs text-[#FFF9ED] focus:outline-none"
+                        className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-xs text-[#FFF9ED] focus:outline-none"
                       />
                     </div>
                     {/* SEO & Meta Tags Suite for Search Engine Friendliness */}
@@ -4403,7 +4426,7 @@ export default function AdminPanel() {
                               value={newBlog.metaTitle}
                               onChange={(e) => setNewBlog({ ...newBlog, metaTitle: e.target.value })}
                               placeholder={newBlog.title ? `${newBlog.title} | Sri Sri Chintamoni Kunja` : "e.g. History of Sri Chintamoni Kunja | Gaudiya Vaishnav Heritage"}
-                              className="mt-1 w-full rounded-xl border border-[#C59A52]/30 bg-[#16100E] p-2.5 text-xs text-[#FFF9ED] placeholder-[#EDE0C9]/30 focus:border-[#E8B94F] focus:outline-none"
+                              className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#16100E] p-2.5 text-xs text-[#FFF9ED] placeholder-[#EDE0C9]/30 focus:border-[#E8B94F] focus:outline-none"
                             />
                             <p className="mt-1 text-[10px] text-[#EDE0C9]/50">
                               Headline shown as the clickable title in Google search results and browser tab.
@@ -4433,7 +4456,7 @@ export default function AdminPanel() {
                               value={newBlog.metaDescription}
                               onChange={(e) => setNewBlog({ ...newBlog, metaDescription: e.target.value })}
                               placeholder={newBlog.excerpt || "e.g. Explore historical documents and Vaishnav philosophy dating back to 1809 at Sri Sri Chintamoni Kunja, holy Nabadwip Dham."}
-                              className="mt-1 w-full rounded-xl border border-[#C59A52]/30 bg-[#16100E] p-2.5 text-xs text-[#FFF9ED] placeholder-[#EDE0C9]/30 focus:border-[#E8B94F] focus:outline-none"
+                              className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#16100E] p-2.5 text-xs text-[#FFF9ED] placeholder-[#EDE0C9]/30 focus:border-[#E8B94F] focus:outline-none"
                             />
                             <p className="mt-1 text-[10px] text-[#EDE0C9]/50">
                               Appears as the preview summary snippet below the title in search engines.
@@ -4453,7 +4476,7 @@ export default function AdminPanel() {
                               value={newBlog.metaKeywords}
                               onChange={(e) => setNewBlog({ ...newBlog, metaKeywords: e.target.value })}
                               placeholder="e.g. Vaishnav Philosophy, Nabadwip Dham, Chaitanya Mahaprabhu, Bhakti, Seva"
-                              className="mt-1 w-full rounded-xl border border-[#C59A52]/30 bg-[#16100E] p-2.5 text-xs text-[#FFF9ED] placeholder-[#EDE0C9]/30 focus:border-[#E8B94F] focus:outline-none"
+                              className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#16100E] p-2.5 text-xs text-[#FFF9ED] placeholder-[#EDE0C9]/30 focus:border-[#E8B94F] focus:outline-none"
                             />
                             {/* Live Keyword Tag Chips */}
                             {newBlog.metaKeywords && (
@@ -4465,7 +4488,7 @@ export default function AdminPanel() {
                                   .map((tag, idx) => (
                                     <span
                                       key={idx}
-                                      className="inline-flex items-center gap-1 rounded-md border border-[#C59A52]/30 bg-[#251A16] px-2 py-0.5 text-[10px] font-semibold text-[#E8B94F]"
+                                      className="inline-flex items-center gap-1 rounded-md border border-[#C59A52]/50 bg-[#251A16] px-2 py-0.5 text-[10px] font-semibold text-[#E8B94F]"
                                     >
                                       <Tag size={10} />
                                       <span>{tag}</span>
@@ -4479,7 +4502,7 @@ export default function AdminPanel() {
                           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                             <div>
                               <label className="block text-xs font-bold text-[#E8B94F]">URL Slug / Permalink</label>
-                              <div className="mt-1 flex items-center rounded-xl border border-[#C59A52]/30 bg-[#16100E] px-2.5 py-1.5 text-xs text-[#FFF9ED]">
+                              <div className="mt-1 flex items-center rounded-xl border border-[#C59A52]/50 bg-[#16100E] px-2.5 py-1.5 text-xs text-[#FFF9ED]">
                                 <span className="text-[10px] text-[#EDE0C9]/50">/blog/</span>
                                 <input
                                   type="text"
@@ -4502,13 +4525,13 @@ export default function AdminPanel() {
                                 value={newBlog.canonicalUrl}
                                 onChange={(e) => setNewBlog({ ...newBlog, canonicalUrl: e.target.value })}
                                 placeholder="https://chintamonikunja.org/blog/..."
-                                className="mt-1 w-full rounded-xl border border-[#C59A52]/30 bg-[#16100E] p-2.5 text-xs text-[#FFF9ED] placeholder-[#EDE0C9]/30 focus:border-[#E8B94F] focus:outline-none font-mono text-[11px]"
+                                className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#16100E] p-2.5 text-xs text-[#FFF9ED] placeholder-[#EDE0C9]/30 focus:border-[#E8B94F] focus:outline-none font-mono text-[11px]"
                               />
                             </div>
                           </div>
 
                           {/* Live Google Search Engine (SERP) Preview */}
-                          <div className="mt-3 rounded-xl border border-[#C59A52]/30 bg-[#140F0D] p-3.5 shadow-sm">
+                          <div className="mt-3 rounded-xl border border-[#C59A52]/50 bg-[#140F0D] p-3.5 shadow-sm">
                             <div className="flex items-center justify-between border-b border-[#C59A52]/20 pb-2">
                               <span className="flex items-center gap-1.5 text-[11px] font-bold text-[#E8B94F]">
                                 <Search size={12} />
@@ -4622,12 +4645,12 @@ export default function AdminPanel() {
                       return (
                         <div
                           key={b._id || b.title}
-                          className="rounded-xl border border-[#C59A52]/30 bg-[#16100E]/90 p-4 shadow-xl transition hover:border-[#E8B94F]/50"
+                          className="rounded-xl border border-[#C59A52]/50 bg-[#16100E]/90 p-4 shadow-xl transition hover:border-[#E8B94F]/50"
                         >
                           <div className="flex items-start justify-between gap-3">
                             <div>
                               <div className="flex items-center gap-1.5">
-                                <span className="rounded border border-[#C59A52]/30 bg-[#251714] px-2 py-0.5 text-[10px] font-bold text-[#E8B94F]">
+                                <span className="rounded border border-[#C59A52]/50 bg-[#251714] px-2 py-0.5 text-[10px] font-bold text-[#E8B94F]">
                                   {b.category}
                                 </span>
                                 <span className="inline-flex items-center gap-1 rounded bg-emerald-950/80 px-2 py-0.5 text-[9px] font-bold text-emerald-300 border border-emerald-500/30">
@@ -4706,7 +4729,7 @@ export default function AdminPanel() {
                       </div>
                       <button
                         onClick={() => setViewingBlogSeoModal(null)}
-                        className="rounded-xl border border-[#C59A52]/30 bg-[#251A16] p-1.5 text-[#EDE0C9]/80 hover:text-white"
+                        className="rounded-xl border border-[#C59A52]/50 bg-[#251A16] p-1.5 text-[#EDE0C9]/80 hover:text-white"
                       >
                         <X size={16} />
                       </button>
@@ -4714,7 +4737,7 @@ export default function AdminPanel() {
 
                     <div className="mt-4 space-y-4 text-xs">
                       {/* Live SERP Simulation */}
-                      <div className="rounded-xl border border-[#C59A52]/30 bg-[#0E0A09] p-3.5">
+                      <div className="rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-3.5">
                         <span className="text-[10px] font-bold uppercase tracking-wider text-[#E8B94F]">
                           Google Search Result Preview
                         </span>
@@ -4790,7 +4813,7 @@ export default function AdminPanel() {
                             ).map((k, i) => (
                               <span
                                 key={i}
-                                className="rounded bg-[#251A16] px-2 py-0.5 text-[10px] font-semibold text-[#E8B94F] border border-[#C59A52]/30"
+                                className="rounded bg-[#251A16] px-2 py-0.5 text-[10px] font-semibold text-[#E8B94F] border border-[#C59A52]/50"
                               >
                                 #{k.trim ? k.trim() : k}
                               </span>
@@ -4818,9 +4841,9 @@ export default function AdminPanel() {
               TAB 7: GALLERY MEDIA MANAGER (Local Device Upload & CMS)
           ============================================================== */}
           {activeTab === "gallery" && (
-            <div className="space-y-8">
+            <div className="space-y-6">
               {/* Gallery Header & Category Filters */}
-              <div className="flex flex-col justify-between gap-4 rounded-2xl border border-[#C59A52]/30 bg-[#16100E]/90 p-6 shadow-xl sm:flex-row sm:items-center">
+              <div className="flex flex-col justify-between gap-4 rounded-2xl border border-[#C59A52]/50 bg-[#16100E]/90 p-6 shadow-xl sm:flex-row sm:items-center">
                 <div>
                   <div className="flex items-center gap-2">
                     <ImageIcon size={22} className="text-[#E8B94F]" />
@@ -4836,7 +4859,7 @@ export default function AdminPanel() {
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="rounded-xl border border-[#C59A52]/30 bg-[#251A16] px-3.5 py-1.5 font-mono text-xs font-bold text-[#E8B94F]">
+                  <span className="rounded-xl border border-[#C59A52]/50 bg-[#251A16] px-3.5 py-1.5 font-mono text-xs font-bold text-[#E8B94F]">
                     {gallery.length} Sacred Visuals Active
                   </span>
                 </div>
@@ -4869,7 +4892,7 @@ export default function AdminPanel() {
 
               <div className="grid gap-8 lg:grid-cols-12">
                 {/* Left 5 Cols: Add Photo Form with Local Device Upload Dropzone */}
-                <div className="rounded-2xl border border-[#C59A52]/30 bg-[#16100E]/90 p-6 shadow-xl lg:col-span-5">
+                <div className="rounded-2xl border border-[#C59A52]/50 bg-[#16100E]/90 p-6 shadow-xl lg:col-span-5">
                   <div className="flex items-center justify-between border-b border-[#C59A52]/20 pb-3">
                     <h3 className="font-serif text-lg font-bold text-[#E8B94F]">Add Sacred Media</h3>
                     <span className="text-[11px] font-semibold text-[#EDE0C9]/50">Photo &amp; Video Upload</span>
@@ -4887,7 +4910,7 @@ export default function AdminPanel() {
                         value={newGallery.title}
                         onChange={(e) => setNewGallery({ ...newGallery, title: e.target.value })}
                         placeholder="e.g. Gaura Purnima Sandhya Darshan"
-                        className="mt-1 w-full rounded-xl border border-[#C59A52]/30 bg-[#0E0A09] p-2.5 text-xs font-semibold text-[#FFF9ED] placeholder-[#EDE0C9]/30 focus:border-[#E8B94F] focus:outline-none"
+                        className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-xs font-semibold text-[#FFF9ED] placeholder-[#EDE0C9]/30 focus:border-[#E8B94F] focus:outline-none"
                       />
                     </div>
 
@@ -4897,7 +4920,7 @@ export default function AdminPanel() {
                       <select
                         value={newGallery.category}
                         onChange={(e) => setNewGallery({ ...newGallery, category: e.target.value })}
-                        className="mt-1 w-full rounded-xl border border-[#C59A52]/30 bg-[#0E0A09] p-2.5 text-xs text-[#FFF9ED] focus:border-[#E8B94F] focus:outline-none"
+                        className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-xs text-[#FFF9ED] focus:border-[#E8B94F] focus:outline-none"
                       >
                         <option className="bg-[#16100E]">Temple &amp; Altar</option>
                         <option className="bg-[#16100E]">Festivals &amp; Utsavs</option>
@@ -5072,10 +5095,10 @@ export default function AdminPanel() {
                             setGalleryFilePreview(e.target.value);
                           }}
                           placeholder="/assets/image.png or https://..."
-                          className="mt-1 w-full rounded-xl border border-[#C59A52]/30 bg-[#0E0A09] p-2.5 font-mono text-xs text-[#FFF9ED] placeholder-[#EDE0C9]/30 focus:border-[#E8B94F] focus:outline-none"
+                          className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 font-mono text-xs text-[#FFF9ED] placeholder-[#EDE0C9]/30 focus:border-[#E8B94F] focus:outline-none"
                         />
                         {newGallery.image && (
-                          <div className="mt-2 overflow-hidden rounded-xl border border-[#C59A52]/30 bg-[#0E0A09]">
+                          <div className="mt-2 overflow-hidden rounded-xl border border-[#C59A52]/50 bg-[#0E0A09]">
                             <img
                               src={newGallery.image}
                               alt="URL Preview"
@@ -5095,7 +5118,7 @@ export default function AdminPanel() {
                         value={newGallery.caption}
                         onChange={(e) => setNewGallery({ ...newGallery, caption: e.target.value })}
                         placeholder="e.g. Revered devotees offering evening Aarti..."
-                        className="mt-1 w-full rounded-xl border border-[#C59A52]/30 bg-[#0E0A09] p-2.5 text-xs text-[#FFF9ED] placeholder-[#EDE0C9]/30 focus:border-[#E8B94F] focus:outline-none"
+                        className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-xs text-[#FFF9ED] placeholder-[#EDE0C9]/30 focus:border-[#E8B94F] focus:outline-none"
                       />
                     </div>
 
@@ -5110,7 +5133,7 @@ export default function AdminPanel() {
                 </div>
 
                 {/* Right 7 Cols: Gallery Visuals Directory */}
-                <div className="rounded-2xl border border-[#C59A52]/30 bg-[#16100E]/90 p-6 shadow-xl lg:col-span-7">
+                <div className="rounded-2xl border border-[#C59A52]/50 bg-[#16100E]/90 p-6 shadow-xl lg:col-span-7">
                   <div className="flex items-center justify-between border-b border-[#C59A52]/20 pb-3">
                     <h3 className="font-serif text-lg font-bold text-[#E8B94F]">
                       Gallery Visuals ({
@@ -5148,7 +5171,7 @@ export default function AdminPanel() {
                           return (
                             <div
                               key={g._id || g.title}
-                              className="group relative overflow-hidden rounded-xl border border-[#C59A52]/30 bg-[#1E1513] transition hover:border-[#E8B94F]/60 hover:shadow-xl"
+                              className="group relative overflow-hidden rounded-xl border border-[#C59A52]/50 bg-[#1E1513] transition hover:border-[#E8B94F]/60 hover:shadow-xl"
                             >
                               <div className="relative overflow-hidden">
                                 {isVid ? (
@@ -5177,7 +5200,7 @@ export default function AdminPanel() {
                                   />
                                 )}
                                 <div className="absolute top-2 left-2 flex items-center gap-1.5">
-                                  <span className="rounded-full bg-black/70 px-2.5 py-0.5 text-[10px] font-bold text-[#E8B94F] border border-[#C59A52]/30 backdrop-blur-sm">
+                                  <span className="rounded-full bg-black/70 px-2.5 py-0.5 text-[10px] font-bold text-[#E8B94F] border border-[#C59A52]/50 backdrop-blur-sm">
                                     {g.category}
                                   </span>
                                   {isDynamicUpload && (
@@ -5263,7 +5286,7 @@ export default function AdminPanel() {
                       </div>
                       <button
                         onClick={() => setGalleryDarshanModal(null)}
-                        className="rounded-xl border border-[#C59A52]/30 bg-[#251A16] px-4 py-1.5 text-xs font-bold text-[#FFF9ED] hover:bg-[#971515]"
+                        className="rounded-xl border border-[#C59A52]/50 bg-[#251A16] px-4 py-1.5 text-xs font-bold text-[#FFF9ED] hover:bg-[#971515]"
                       >
                         Close
                       </button>
@@ -5279,7 +5302,7 @@ export default function AdminPanel() {
           ============================================================== */}
           {activeTab === "inquiries" && (
             <div className="space-y-6">
-              <div className="flex flex-col justify-between gap-4 rounded-2xl border border-[#C59A52]/30 bg-[#16100E]/90 p-6 shadow-xl sm:flex-row sm:items-center">
+              <div className="flex flex-col justify-between gap-4 rounded-2xl border border-[#C59A52]/50 bg-[#16100E]/90 p-6 shadow-xl sm:flex-row sm:items-center">
                 <div>
                   <h2
                     className="font-serif text-2xl font-bold text-[#E8B94F]"
@@ -5293,7 +5316,7 @@ export default function AdminPanel() {
                 </div>
               </div>
 
-              <div className="overflow-hidden rounded-2xl border border-[#C59A52]/30 bg-[#16100E]/95 shadow-xl">
+              <div className="overflow-hidden rounded-2xl border border-[#C59A52]/50 bg-[#16100E]/95 shadow-xl">
                 {contacts.length > 0 ? (
                   <div className="overflow-x-auto">
                     <table className="w-full text-left text-xs">
@@ -5318,7 +5341,7 @@ export default function AdminPanel() {
                             </td>
                             <td className="p-3.5 text-[#EDE0C9]/70">{c.address || "—"}</td>
                             <td className="p-3.5">
-                              <span className="rounded border border-[#C59A52]/30 bg-[#251714] px-2 py-0.5 text-[10px] font-bold text-[#E8B94F]">
+                              <span className="rounded border border-[#C59A52]/50 bg-[#251714] px-2 py-0.5 text-[10px] font-bold text-[#E8B94F]">
                                 {c.purpose || "General Inquiry"}
                               </span>
                             </td>
@@ -5339,7 +5362,7 @@ export default function AdminPanel() {
                               <select
                                 value={c.status || "New"}
                                 onChange={(e) => handleUpdateContactStatus(c._id, e.target.value)}
-                                className="rounded border border-[#C59A52]/30 bg-[#0E0A09] p-1 text-[10px] font-bold text-[#E8B94F] focus:outline-none"
+                                className="rounded border border-[#C59A52]/50 bg-[#0E0A09] p-1 text-[10px] font-bold text-[#E8B94F] focus:outline-none"
                               >
                                 <option value="New" className="bg-[#16100E]">New</option>
                                 <option value="In Progress" className="bg-[#16100E]">In Progress</option>
