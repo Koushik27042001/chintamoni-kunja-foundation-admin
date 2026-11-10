@@ -1,116 +1,80 @@
 const Devotee = require('../models/Devotee');
 const Book = require('../models/Book');
-const PrintBatch = require('../models/PrintBatch');
 const DispatchLog = require('../models/DispatchLog');
 const ReturnLog = require('../models/ReturnLog');
 const SettlementLog = require('../models/SettlementLog');
 const ActivityLog = require('../models/ActivityLog');
+const { getBatchesWithStockCounts } = require('../services/batchQueryService');
 
 /**
- * Calculates comprehensive operational analytics calculated strictly
- * from real MongoDB records without any fabricated data.
+ * Calculates comprehensive operational analytics strictly from real MongoDB records,
+ * running all aggregations in parallel for fast dashboard response times.
  */
 async function getCompleteAnalytics() {
-  // 1. Devotee Analytics
-  const totalDevotees = await Devotee.countDocuments();
-  const activeDevotees = await Devotee.countDocuments({ status: 'Active' });
-  const inactiveDevotees = await Devotee.countDocuments({ status: 'Inactive' });
-  const deceasedDevotees = await Devotee.countDocuments({ status: 'Deceased' });
-
-  const interestBreakdown = await Devotee.aggregate([
-    { $group: { _id: '$nextYearInterest', count: { $sum: 1 } } },
-  ]);
-
-  const devoteesWithAllocatedBooks = await Devotee.countDocuments({
-    allocatedBooksCount: { $gt: 0 },
-  });
-
-  // 2. Inventory Analytics
-  const totalBooks = await Book.countDocuments();
-  const availableBooks = await Book.countDocuments({ status: 'Available' });
-  const allocatedBooks = await Book.countDocuments({ status: 'Allocated' });
-  const settledBooks = await Book.countDocuments({ status: 'Settled' });
-
-  // Batch-wise Inventory
-  const batchInventory = await PrintBatch.aggregate([
-    {
-      $lookup: {
-        from: 'books',
-        localField: '_id',
-        foreignField: 'batchId',
-        as: 'books',
-      },
-    },
-    {
-      $project: {
-        batchName: 1,
-        batchPrefix: 1,
-        totalBooks: 1,
-        isActive: 1,
-        available: {
-          $size: {
-            $filter: {
-              input: '$books',
-              as: 'b',
-              cond: { $eq: ['$$b.status', 'Available'] },
-            },
-          },
-        },
-        allocated: {
-          $size: {
-            $filter: {
-              input: '$books',
-              as: 'b',
-              cond: { $eq: ['$$b.status', 'Allocated'] },
-            },
-          },
-        },
-        settled: {
-          $size: {
-            $filter: {
-              input: '$books',
-              as: 'b',
-              cond: { $eq: ['$$b.status', 'Settled'] },
-            },
-          },
+  const [
+    devoteeStatusAgg,
+    interestBreakdown,
+    devoteesWithAllocatedBooks,
+    bookStatusAgg,
+    batchInventoryRaw,
+    totalDispatches,
+    totalReturns,
+    totalSettlements,
+    dispatchModes,
+    returnReasons,
+    pageMetrics,
+    recentActivities,
+  ] = await Promise.all([
+    Devotee.aggregate([{ $group: { _id: '$status', count: { $sum: 1 } } }]),
+    Devotee.aggregate([{ $group: { _id: '$nextYearInterest', count: { $sum: 1 } } }]),
+    Devotee.countDocuments({ allocatedBooksCount: { $gt: 0 } }),
+    Book.aggregate([{ $group: { _id: '$status', count: { $sum: 1 } } }]),
+    getBatchesWithStockCounts(),
+    DispatchLog.countDocuments(),
+    ReturnLog.countDocuments(),
+    SettlementLog.countDocuments(),
+    DispatchLog.aggregate([{ $group: { _id: '$dispatchMode', count: { $sum: 1 } } }]),
+    ReturnLog.aggregate([{ $group: { _id: '$returnReason', count: { $sum: 1 } } }]),
+    SettlementLog.aggregate([
+      {
+        $group: {
+          _id: null,
+          totalCalculatedPages: { $sum: '$totalCalculatedPages' },
+          totalUsedPages: { $sum: '$usedPages' },
+          totalUnusedPages: { $sum: '$unusedPages' },
         },
       },
-    },
+    ]),
+    ActivityLog.find().sort({ timestamp: -1 }).limit(10).lean(),
   ]);
 
-  // 3. Operational Analytics
-  const totalDispatches = await DispatchLog.countDocuments();
-  const totalReturns = await ReturnLog.countDocuments();
-  const totalSettlements = await SettlementLog.countDocuments();
+  const devoteeStatusMap = Object.fromEntries(devoteeStatusAgg.map((s) => [s._id, s.count]));
+  const activeDevotees = devoteeStatusMap.Active || 0;
+  const inactiveDevotees = devoteeStatusMap.Inactive || 0;
+  const deceasedDevotees = devoteeStatusMap.Deceased || 0;
+  const totalDevotees = activeDevotees + inactiveDevotees + deceasedDevotees;
 
-  const dispatchModes = await DispatchLog.aggregate([
-    { $group: { _id: '$dispatchMode', count: { $sum: 1 } } },
-  ]);
+  const bookStatusMap = Object.fromEntries(bookStatusAgg.map((b) => [b._id, b.count]));
+  const availableBooks = bookStatusMap.Available || 0;
+  const allocatedBooks = bookStatusMap.Allocated || 0;
+  const settledBooks = bookStatusMap.Settled || 0;
+  const totalBooks = availableBooks + allocatedBooks + settledBooks;
 
-  const returnReasons = await ReturnLog.aggregate([
-    { $group: { _id: '$returnReason', count: { $sum: 1 } } },
-  ]);
-
-  // Page settlement totals
-  const pageMetrics = await SettlementLog.aggregate([
-    {
-      $group: {
-        _id: null,
-        totalCalculatedPages: { $sum: '$totalCalculatedPages' },
-        totalUsedPages: { $sum: '$usedPages' },
-        totalUnusedPages: { $sum: '$unusedPages' },
-      },
-    },
-  ]);
+  const batchInventory = batchInventoryRaw.map((b) => ({
+    batchName: b.batchName,
+    batchPrefix: b.batchPrefix,
+    totalBooks: b.totalBooks,
+    isActive: b.isActive,
+    available: b.availableBooks,
+    allocated: b.allocatedBooks,
+    settled: b.settledBooks,
+  }));
 
   const pageTotals = pageMetrics[0] || {
     totalCalculatedPages: 0,
     totalUsedPages: 0,
     totalUnusedPages: 0,
   };
-
-  // 4. Activity Analytics
-  const recentActivities = await ActivityLog.find().sort({ timestamp: -1 }).limit(10);
 
   return {
     devoteeAnalytics: {

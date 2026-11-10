@@ -1,19 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import {
   BookOpen,
-  PackagePlus,
-  Send,
   RotateCcw,
   CheckCircle2,
   AlertCircle,
-  Loader2,
-  Search,
   Users,
   Layers,
   Truck,
   FileCheck,
-  RefreshCw,
   Plus,
+  Download,
+  UserPlus,
 } from 'lucide-react';
 import {
   getBatchesAPI,
@@ -31,17 +28,38 @@ import {
   getSettlementPreviewAPI,
   confirmSettlementAPI,
   getDevoteesAPI,
+  createDevoteeAPI,
+  downloadExcelReportAPI,
 } from '../../services/devoteeDeskApi';
 
 export default function DevoteeDeskOperations() {
-  const [subTab, setSubTab] = useState('inventory'); // 'inventory', 'issue', 'returns', 'settlements', 'dispatch'
+  const [subTab, setSubTab] = useState('devotees'); // 'devotees', 'inventory', 'issue', 'returns', 'settlements', 'dispatch'
+
+  // Devotees state
+  const [devotees, setDevotees] = useState([]);
+  const [devoteeSearch, setDevoteeSearch] = useState('');
+  const [devoteeStatusFilter, setDevoteeStatusFilter] = useState('All');
+  const [showCreateDevoteeModal, setShowCreateDevoteeModal] = useState(false);
+  const [newDevotee, setNewDevotee] = useState({
+    memberId: '',
+    name: '',
+    gender: 'Male',
+    mobile1: '',
+    mobile2: '',
+    email: '',
+    cityVillage: '',
+    district: 'Nadia',
+    state: 'West Bengal',
+    pinCode: '741302',
+    nextYearInterest: 'Yes',
+    remarks: '',
+  });
 
   // Batches & Books state
   const [batches, setBatches] = useState([]);
   const [books, setBooks] = useState([]);
   const [bookFilterStatus, setBookFilterStatus] = useState('All');
   const [bookSearch, setBookSearch] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
 
@@ -72,12 +90,14 @@ export default function DevoteeDeskOperations() {
   const [returnReason, setReturnReason] = useState('Address Not Found');
   const [allocatedDevoteeBooks, setAllocatedDevoteeBooks] = useState([]);
   const [selectedReturnBooks, setSelectedReturnBooks] = useState([]);
+  const [returnsHistory, setReturnsHistory] = useState([]);
 
   // Settlement Form state
   const [settleMemberId, setSettleMemberId] = useState('');
   const [settlementPreview, setSettlementPreview] = useState(null);
   const [usedPages, setUsedPages] = useState('');
   const [nextYearInterest, setNextYearInterest] = useState('Yes');
+  const [settlementsHistory, setSettlementsHistory] = useState([]);
 
   // Dispatch Form state
   const [dispatchForm, setDispatchForm] = useState({
@@ -92,29 +112,44 @@ export default function DevoteeDeskOperations() {
   const [dispatches, setDispatches] = useState([]);
 
   useEffect(() => {
+    loadDevotees();
     loadBatches();
     loadBooks();
     loadDispatches();
-  }, [bookFilterStatus]);
+    loadReturns();
+    loadSettlements();
+  }, [bookFilterStatus, devoteeStatusFilter]);
+
+  const loadDevotees = async () => {
+    try {
+      const params = {};
+      if (devoteeStatusFilter !== 'All') params.status = devoteeStatusFilter;
+      if (devoteeSearch.trim()) params.q = devoteeSearch.trim();
+      const res = await getDevoteesAPI(params);
+      if (res.success) setDevotees(res.data);
+    } catch {
+      // Non-fatal
+    }
+  };
 
   const loadBatches = async () => {
     try {
       const res = await getBatchesAPI();
       if (res.success) setBatches(res.data);
-    } catch (e) {}
+    } catch {
+      // Non-fatal
+    }
   };
 
   const loadBooks = async () => {
     try {
-      setIsLoading(true);
       const params = {};
       if (bookFilterStatus !== 'All') params.status = bookFilterStatus;
       if (bookSearch.trim()) params.q = bookSearch.trim();
       const res = await getBooksAPI(params);
       if (res.success) setBooks(res.data);
-    } catch (e) {
-    } finally {
-      setIsLoading(false);
+    } catch {
+      // Non-fatal
     }
   };
 
@@ -122,10 +157,59 @@ export default function DevoteeDeskOperations() {
     try {
       const res = await getDispatchesAPI();
       if (res.success) setDispatches(res.data);
-    } catch (e) {}
+    } catch {
+      // Non-fatal
+    }
   };
 
-  // Create Batch Handler
+  const loadReturns = async () => {
+    try {
+      const res = await getReturnsAPI();
+      if (res.success) setReturnsHistory(res.data);
+    } catch {
+      // Non-fatal
+    }
+  };
+
+  const loadSettlements = async () => {
+    try {
+      const res = await getSettlementsAPI();
+      if (res.success) setSettlementsHistory(res.data);
+    } catch {
+      // Non-fatal
+    }
+  };
+
+  const handleCreateDevotee = async (e) => {
+    e.preventDefault();
+    setErrorMsg('');
+    setSuccessMsg('');
+    try {
+      const res = await createDevoteeAPI(newDevotee);
+      if (res.success) {
+        setSuccessMsg(`Registered Devotee ${res.data.name} (${res.data.memberId}).`);
+        setShowCreateDevoteeModal(false);
+        setNewDevotee({
+          memberId: '',
+          name: '',
+          gender: 'Male',
+          mobile1: '',
+          mobile2: '',
+          email: '',
+          cityVillage: '',
+          district: 'Nadia',
+          state: 'West Bengal',
+          pinCode: '741302',
+          nextYearInterest: 'Yes',
+          remarks: '',
+        });
+        loadDevotees();
+      }
+    } catch (err) {
+      setErrorMsg(err.message);
+    }
+  };
+
   const handleCreateBatch = async (e) => {
     e.preventDefault();
     setErrorMsg('');
@@ -143,7 +227,15 @@ export default function DevoteeDeskOperations() {
     }
   };
 
-  // Propose Books Handler
+  const handleToggleBatch = async (batchId) => {
+    try {
+      await toggleBatchStatusAPI(batchId);
+      loadBatches();
+    } catch (err) {
+      setErrorMsg(err.message);
+    }
+  };
+
   const handleProposeBooks = async (e) => {
     e.preventDefault();
     setErrorMsg('');
@@ -159,8 +251,8 @@ export default function DevoteeDeskOperations() {
     }
   };
 
-  // Replace Single Book Handler
   const handleReplaceBook = async (bookNumberToReplace) => {
+    setErrorMsg('');
     try {
       const currentExcluded = selectedBookNumbers.join(',');
       const res = await getAlternativeBookAPI(proposedData.batchName, currentExcluded);
@@ -170,11 +262,10 @@ export default function DevoteeDeskOperations() {
         );
       }
     } catch (err) {
-      alert(`Replacement failed: ${err.message}`);
+      setErrorMsg(`Replacement failed: ${err.message}`);
     }
   };
 
-  // Confirm Issue Handler
   const handleConfirmIssue = async () => {
     setErrorMsg('');
     setSuccessMsg('');
@@ -187,17 +278,20 @@ export default function DevoteeDeskOperations() {
         setIssueForm({ memberId: '', quantity: 1, batchName: '' });
         loadBatches();
         loadBooks();
+        loadDevotees();
       }
     } catch (err) {
       setErrorMsg(err.message);
     }
   };
 
-  // Load Devotee Allocated Books for Return
   const handleLookupReturnBooks = async () => {
     setErrorMsg('');
     try {
-      const res = await getBooksAPI({ devoteeId: returnMemberId.trim().toUpperCase(), status: 'Allocated' });
+      const res = await getBooksAPI({
+        devoteeId: returnMemberId.trim().toUpperCase(),
+        status: 'Allocated',
+      });
       if (res.success) {
         setAllocatedDevoteeBooks(res.data);
         setSelectedReturnBooks(res.data.map((b) => b.bookNumber));
@@ -207,7 +301,6 @@ export default function DevoteeDeskOperations() {
     }
   };
 
-  // Confirm Return Handler
   const handleProcessReturn = async () => {
     if (selectedReturnBooks.length === 0) {
       setErrorMsg('Please select at least one book to return.');
@@ -228,13 +321,14 @@ export default function DevoteeDeskOperations() {
         setReturnMemberId('');
         loadBatches();
         loadBooks();
+        loadReturns();
+        loadDevotees();
       }
     } catch (err) {
       setErrorMsg(err.message);
     }
   };
 
-  // Settlement Preview Handler
   const handleLookupSettlement = async () => {
     setErrorMsg('');
     try {
@@ -248,7 +342,6 @@ export default function DevoteeDeskOperations() {
     }
   };
 
-  // Confirm Settlement Handler
   const handleConfirmSettlement = async () => {
     setErrorMsg('');
     setSuccessMsg('');
@@ -264,13 +357,14 @@ export default function DevoteeDeskOperations() {
         setSettleMemberId('');
         loadBatches();
         loadBooks();
+        loadSettlements();
+        loadDevotees();
       }
     } catch (err) {
       setErrorMsg(err.message);
     }
   };
 
-  // Log Dispatch Handler
   const handleLogDispatch = async (e) => {
     e.preventDefault();
     setErrorMsg('');
@@ -300,9 +394,10 @@ export default function DevoteeDeskOperations() {
       {/* Sub-Navigation Tabs */}
       <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-[#3f3f46] bg-[#18181b] p-2 text-xs font-bold">
         {[
-          { id: 'inventory', label: 'Bill Book Inventory & Batches', icon: Layers },
+          { id: 'devotees', label: 'Devotees Directory', icon: Users },
+          { id: 'inventory', label: 'Inventory & Batches', icon: Layers },
           { id: 'issue', label: 'Issue Bill Books', icon: BookOpen },
-          { id: 'returns', label: 'Return / Bounce Management', icon: RotateCcw },
+          { id: 'returns', label: 'Return / Bounce', icon: RotateCcw },
           { id: 'settlements', label: 'Final Settlement (Admin)', icon: FileCheck },
           { id: 'dispatch', label: 'Dispatch Register', icon: Truck },
         ].map((tab) => {
@@ -343,10 +438,120 @@ export default function DevoteeDeskOperations() {
         </div>
       )}
 
+      {/* SUBTAB 0: DEVOTEES DIRECTORY */}
+      {subTab === 'devotees' && (
+        <div className="space-y-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 rounded-2xl border border-[#3f3f46] bg-[#18181b] p-5 shadow-xl">
+            <div>
+              <h3 className="font-bold text-white text-base flex items-center gap-2">
+                <Users size={18} className="text-[#38bdf8]" /> DevoteeDesk Member Registry
+              </h3>
+              <p className="text-xs text-gray-400">
+                Register devotees with unique Member IDs for book allocations, dispatches, returns & settlements.
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={() => downloadExcelReportAPI('devotees')}
+                className="inline-flex items-center gap-1.5 rounded-xl border border-[#3f3f46] bg-[#27272a] px-3.5 py-2 text-xs font-bold text-gray-200 hover:bg-white hover:text-black transition"
+              >
+                <Download size={14} /> Export Excel
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowCreateDevoteeModal(true)}
+                className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-[#38bdf8] to-[#8b5cf6] px-4 py-2 text-xs font-bold text-black shadow hover:brightness-110"
+              >
+                <UserPlus size={15} /> Register Devotee
+              </button>
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-[#3f3f46] bg-[#18181b] p-5 shadow-xl space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <span className="text-xs text-gray-400">Showing {devotees.length} devotee(s)</span>
+              <div className="flex items-center gap-2">
+                <select
+                  value={devoteeStatusFilter}
+                  onChange={(e) => setDevoteeStatusFilter(e.target.value)}
+                  className="rounded-xl border border-[#3f3f46] bg-[#27272a] px-3 py-1.5 text-xs text-white"
+                >
+                  <option value="All">All Statuses</option>
+                  <option value="Active">Active</option>
+                  <option value="Inactive">Inactive</option>
+                  <option value="Deceased">Deceased</option>
+                </select>
+                <input
+                  type="text"
+                  placeholder="Search ID, Name or Mobile..."
+                  value={devoteeSearch}
+                  onChange={(e) => setDevoteeSearch(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && loadDevotees()}
+                  className="rounded-xl border border-[#3f3f46] bg-[#27272a] px-3 py-1.5 text-xs text-white placeholder-gray-400"
+                />
+                <button
+                  type="button"
+                  onClick={loadDevotees}
+                  className="rounded-xl bg-[#3f3f46] px-3 py-1.5 text-xs font-bold text-white hover:bg-white hover:text-black transition"
+                >
+                  Search
+                </button>
+              </div>
+            </div>
+
+            <div className="overflow-x-auto rounded-xl border border-[#3f3f46]">
+              <table className="w-full text-left text-xs text-gray-300">
+                <thead className="bg-[#27272a] text-gray-100 uppercase tracking-wider text-[10px]">
+                  <tr>
+                    <th className="p-3">Member ID</th>
+                    <th className="p-3">Name</th>
+                    <th className="p-3">Mobile</th>
+                    <th className="p-3">Location</th>
+                    <th className="p-3">Status</th>
+                    <th className="p-3">Allocated / Settled</th>
+                    <th className="p-3">Next-Year</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#3f3f46]/40">
+                  {devotees.map((d) => (
+                    <tr key={d._id} className="hover:bg-white/5 transition">
+                      <td className="p-3 font-mono font-bold text-[#38bdf8]">{d.memberId}</td>
+                      <td className="p-3 font-semibold text-white">{d.name}</td>
+                      <td className="p-3 font-mono">{d.mobile1}</td>
+                      <td className="p-3">
+                        {[d.cityVillage, d.district].filter(Boolean).join(', ') || '—'}
+                      </td>
+                      <td className="p-3">
+                        <span
+                          className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                            d.status === 'Active'
+                              ? 'bg-emerald-500/20 text-emerald-400'
+                              : d.status === 'Inactive'
+                              ? 'bg-amber-500/20 text-amber-400'
+                              : 'bg-red-500/20 text-red-400'
+                          }`}
+                        >
+                          {d.status}
+                        </span>
+                      </td>
+                      <td className="p-3 font-mono">
+                        <span className="text-amber-400">{d.allocatedBooksCount}</span> /{' '}
+                        <span className="text-purple-400">{d.settledBooksCount}</span>
+                      </td>
+                      <td className="p-3">{d.nextYearInterest}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* SUBTAB 1: INVENTORY & PRINT BATCHES */}
       {subTab === 'inventory' && (
         <div className="space-y-6">
-          {/* Batches Header */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 rounded-2xl border border-[#3f3f46] bg-[#18181b] p-5 shadow-xl">
             <div>
               <h3 className="font-bold text-white text-base flex items-center gap-2">
@@ -365,7 +570,6 @@ export default function DevoteeDeskOperations() {
             </button>
           </div>
 
-          {/* Batches Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {batches.map((b) => (
               <div
@@ -374,13 +578,17 @@ export default function DevoteeDeskOperations() {
               >
                 <div className="flex items-center justify-between">
                   <span className="font-mono text-sm font-bold text-[#38bdf8]">{b.batchName}</span>
-                  <span
-                    className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase ${
-                      b.isActive ? 'bg-emerald-500/20 text-emerald-400' : 'bg-gray-700 text-gray-400'
+                  <button
+                    type="button"
+                    onClick={() => handleToggleBatch(b._id)}
+                    className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase transition ${
+                      b.isActive
+                        ? 'bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30'
+                        : 'bg-gray-700 text-gray-400 hover:bg-gray-600'
                     }`}
                   >
-                    {b.isActive ? 'Active' : 'Inactive'}
-                  </span>
+                    {b.isActive ? 'Active (Click to Pause)' : 'Paused (Click to Enable)'}
+                  </button>
                 </div>
                 <div className="grid grid-cols-2 gap-2 text-xs text-gray-300">
                   <div>
@@ -410,7 +618,6 @@ export default function DevoteeDeskOperations() {
             ))}
           </div>
 
-          {/* Books Inventory Table */}
           <div className="rounded-2xl border border-[#3f3f46] bg-[#18181b] p-5 shadow-xl space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <h3 className="font-bold text-white text-sm">Physical Bill Books Inventory</h3>
@@ -560,7 +767,6 @@ export default function DevoteeDeskOperations() {
             </div>
           </form>
 
-          {/* Proposed Books Allocation View */}
           {proposedData && (
             <div className="rounded-2xl border border-[#38bdf8]/40 bg-[#121215] p-5 space-y-4">
               <div className="border-b border-[#3f3f46] pb-3">
@@ -571,7 +777,8 @@ export default function DevoteeDeskOperations() {
                   {proposedData.devotee.name} ({proposedData.devotee.memberId})
                 </h4>
                 <p className="text-xs text-gray-400">
-                  Mobile: {proposedData.devotee.mobile} • Status: {proposedData.devotee.status} • Batch: {proposedData.batchName}
+                  Mobile: {proposedData.devotee.mobile} • Status: {proposedData.devotee.status} • Batch:{' '}
+                  {proposedData.batchName}
                 </p>
               </div>
 
@@ -612,191 +819,261 @@ export default function DevoteeDeskOperations() {
 
       {/* SUBTAB 3: RETURN / BOUNCE WORKFLOW */}
       {subTab === 'returns' && (
-        <div className="rounded-2xl border border-[#3f3f46] bg-[#18181b] p-6 shadow-xl space-y-6 max-w-3xl mx-auto">
-          <div>
-            <h3 className="font-bold text-white text-base flex items-center gap-2">
-              <RotateCcw size={18} className="text-[#f59e0b]" /> Return & Bounce Management
-            </h3>
-            <p className="text-xs text-gray-400">
-              Rule: Deceased reason → Status changed to Deceased; All other reasons → Status changed to Inactive. Books return to Available.
-            </p>
-          </div>
+        <div className="space-y-6">
+          <div className="rounded-2xl border border-[#3f3f46] bg-[#18181b] p-6 shadow-xl space-y-6 max-w-3xl mx-auto">
+            <div>
+              <h3 className="font-bold text-white text-base flex items-center gap-2">
+                <RotateCcw size={18} className="text-[#f59e0b]" /> Return & Bounce Management
+              </h3>
+              <p className="text-xs text-gray-400">
+                Rule: Deceased reason → Status changed to Deceased; All other reasons → Status changed to Inactive. Books return to Available.
+              </p>
+            </div>
 
-          <div className="flex gap-2">
-            <input
-              type="text"
-              placeholder="Enter Devotee Member ID..."
-              value={returnMemberId}
-              onChange={(e) => setReturnMemberId(e.target.value)}
-              className="flex-1 rounded-xl border border-[#3f3f46] bg-[#27272a] p-2.5 text-xs text-white uppercase font-mono"
-            />
-            <button
-              type="button"
-              onClick={handleLookupReturnBooks}
-              className="rounded-xl bg-[#38bdf8] px-4 py-2.5 text-xs font-bold text-black hover:brightness-110"
-            >
-              Lookup Allocated Books
-            </button>
-          </div>
-
-          {allocatedDevoteeBooks.length > 0 && (
-            <div className="space-y-4 rounded-2xl border border-[#3f3f46] bg-[#121215] p-5">
-              <div>
-                <label className="block text-xs font-semibold text-gray-300 mb-2">
-                  Select Books to Return to Office Stock:
-                </label>
-                <div className="space-y-2">
-                  {allocatedDevoteeBooks.map((bk) => {
-                    const checked = selectedReturnBooks.includes(bk.bookNumber);
-                    return (
-                      <label
-                        key={bk.bookNumber}
-                        className="flex items-center gap-3 rounded-xl bg-[#27272a] p-3 text-xs border border-[#3f3f46] cursor-pointer"
-                      >
-                        <input
-                          type="checkbox"
-                          checked={checked}
-                          onChange={(e) => {
-                            if (e.target.checked) {
-                              setSelectedReturnBooks([...selectedReturnBooks, bk.bookNumber]);
-                            } else {
-                              setSelectedReturnBooks(selectedReturnBooks.filter((n) => n !== bk.bookNumber));
-                            }
-                          }}
-                          className="rounded text-[#38bdf8]"
-                        />
-                        <span className="font-mono font-bold text-white">{bk.bookNumber}</span>
-                        <span className="text-gray-400">
-                          (Bills: {bk.startBillNumber}–{bk.endBillNumber})
-                        </span>
-                      </label>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-gray-300">
-                  Return Reason <span className="text-red-400">*</span>
-                </label>
-                <select
-                  value={returnReason}
-                  onChange={(e) => setReturnReason(e.target.value)}
-                  className="mt-1 w-full rounded-xl border border-[#3f3f46] bg-[#27272a] p-2.5 text-xs text-white"
-                >
-                  <option value="Address Not Found">Address Not Found</option>
-                  <option value="Mobile Off / Unable to reach">Mobile Off / Unable to reach</option>
-                  <option value="Refused to Accept">Refused to Accept</option>
-                  <option value="Devotee Deceased">Devotee Deceased</option>
-                  <option value="Other Reason">Other Reason</option>
-                </select>
-                <p className="mt-1 text-[11px] text-amber-400">
-                  {returnReason === 'Devotee Deceased'
-                    ? '⚠️ Devotee status will be transitioned to "Deceased".'
-                    : 'Devotee status will be transitioned to "Inactive".'}
-                </p>
-              </div>
-
+            <div className="flex gap-2">
+              <input
+                type="text"
+                placeholder="Enter Devotee Member ID..."
+                value={returnMemberId}
+                onChange={(e) => setReturnMemberId(e.target.value)}
+                className="flex-1 rounded-xl border border-[#3f3f46] bg-[#27272a] p-2.5 text-xs text-white uppercase font-mono"
+              />
               <button
                 type="button"
-                onClick={handleProcessReturn}
-                className="w-full rounded-xl bg-gradient-to-r from-[#f59e0b] to-[#ef4444] py-3 text-xs font-bold text-black shadow hover:brightness-110"
+                onClick={handleLookupReturnBooks}
+                className="rounded-xl bg-[#38bdf8] px-4 py-2.5 text-xs font-bold text-black hover:brightness-110"
               >
-                Confirm Return of {selectedReturnBooks.length} Book(s)
+                Lookup Allocated Books
               </button>
             </div>
-          )}
+
+            {allocatedDevoteeBooks.length > 0 && (
+              <div className="space-y-4 rounded-2xl border border-[#3f3f46] bg-[#121215] p-5">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-300 mb-2">
+                    Select Books to Return to Office Stock:
+                  </label>
+                  <div className="space-y-2">
+                    {allocatedDevoteeBooks.map((bk) => {
+                      const checked = selectedReturnBooks.includes(bk.bookNumber);
+                      return (
+                        <label
+                          key={bk.bookNumber}
+                          className="flex items-center gap-3 rounded-xl bg-[#27272a] p-3 text-xs border border-[#3f3f46] cursor-pointer"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={checked}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setSelectedReturnBooks([...selectedReturnBooks, bk.bookNumber]);
+                              } else {
+                                setSelectedReturnBooks(selectedReturnBooks.filter((n) => n !== bk.bookNumber));
+                              }
+                            }}
+                            className="rounded text-[#38bdf8]"
+                          />
+                          <span className="font-mono font-bold text-white">{bk.bookNumber}</span>
+                          <span className="text-gray-400">
+                            (Bills: {bk.startBillNumber}–{bk.endBillNumber})
+                          </span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-gray-300">
+                    Return Reason <span className="text-red-400">*</span>
+                  </label>
+                  <select
+                    value={returnReason}
+                    onChange={(e) => setReturnReason(e.target.value)}
+                    className="mt-1 w-full rounded-xl border border-[#3f3f46] bg-[#27272a] p-2.5 text-xs text-white"
+                  >
+                    <option value="Address Not Found">Address Not Found</option>
+                    <option value="Mobile Off / Unable to reach">Mobile Off / Unable to reach</option>
+                    <option value="Refused to Accept">Refused to Accept</option>
+                    <option value="Devotee Deceased">Devotee Deceased</option>
+                    <option value="Other Reason">Other Reason</option>
+                  </select>
+                  <p className="mt-1 text-[11px] text-amber-400">
+                    {returnReason === 'Devotee Deceased'
+                      ? '⚠️ Devotee status will be transitioned to "Deceased".'
+                      : 'Devotee status will be transitioned to "Inactive".'}
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleProcessReturn}
+                  className="w-full rounded-xl bg-gradient-to-r from-[#f59e0b] to-[#ef4444] py-3 text-xs font-bold text-black shadow hover:brightness-110"
+                >
+                  Confirm Return of {selectedReturnBooks.length} Book(s)
+                </button>
+              </div>
+            )}
+          </div>
+
+          <div className="rounded-2xl border border-[#3f3f46] bg-[#18181b] p-5 shadow-xl">
+            <h4 className="font-bold text-white text-sm mb-3">Recent Return / Bounce Logs</h4>
+            <div className="overflow-x-auto rounded-xl border border-[#3f3f46]">
+              <table className="w-full text-left text-xs text-gray-300">
+                <thead className="bg-[#27272a] text-gray-100 uppercase tracking-wider text-[10px]">
+                  <tr>
+                    <th className="p-3">Date</th>
+                    <th className="p-3">Member ID</th>
+                    <th className="p-3">Devotee</th>
+                    <th className="p-3">Reason</th>
+                    <th className="p-3">Books</th>
+                    <th className="p-3">Status Transition</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#3f3f46]/40">
+                  {returnsHistory.map((r) => (
+                    <tr key={r._id} className="hover:bg-white/5 transition">
+                      <td className="p-3">{new Date(r.returnDate).toLocaleDateString('en-IN')}</td>
+                      <td className="p-3 font-mono font-bold text-[#38bdf8]">{r.memberId}</td>
+                      <td className="p-3 text-white font-semibold">{r.devoteeName}</td>
+                      <td className="p-3 text-amber-300">{r.returnReason}</td>
+                      <td className="p-3 font-mono">{r.returnedBooks?.join(', ')}</td>
+                      <td className="p-3">
+                        {r.previousDevoteeStatus} → <strong>{r.newDevoteeStatus}</strong>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       )}
 
       {/* SUBTAB 4: FINAL SETTLEMENT WORKFLOW */}
       {subTab === 'settlements' && (
-        <div className="rounded-2xl border border-[#3f3f46] bg-[#18181b] p-6 shadow-xl space-y-6 max-w-3xl mx-auto">
-          <div>
-            <h3 className="font-bold text-white text-base flex items-center gap-2">
-              <FileCheck size={18} className="text-[#8b5cf6]" /> Final Bill Book Settlement (Admin)
-            </h3>
-            <p className="text-xs text-gray-400">
-              Formula: Total Pages = Sum(Bill To - Bill From + 1). Validated 0 ≤ Used Pages ≤ Total Pages. Books mark Settled.
-            </p>
-          </div>
+        <div className="space-y-6">
+          <div className="rounded-2xl border border-[#3f3f46] bg-[#18181b] p-6 shadow-xl space-y-6 max-w-3xl mx-auto">
+            <div>
+              <h3 className="font-bold text-white text-base flex items-center gap-2">
+                <FileCheck size={18} className="text-[#8b5cf6]" /> Final Bill Book Settlement (Admin)
+              </h3>
+              <p className="text-xs text-gray-400">
+                Formula: Total Pages = Sum(Bill To - Bill From + 1). Validated 0 ≤ Used Pages ≤ Total Pages. Books mark Settled.
+              </p>
+            </div>
 
-          <div className="flex gap-2">
-            <input
-              type="text"
-              placeholder="Enter Devotee Member ID..."
-              value={settleMemberId}
-              onChange={(e) => setSettleMemberId(e.target.value)}
-              className="flex-1 rounded-xl border border-[#3f3f46] bg-[#27272a] p-2.5 text-xs text-white uppercase font-mono"
-            />
-            <button
-              type="button"
-              onClick={handleLookupSettlement}
-              className="rounded-xl bg-[#8b5cf6] px-4 py-2.5 text-xs font-bold text-white hover:brightness-110"
-            >
-              Calculate Pages Preview
-            </button>
-          </div>
-
-          {settlementPreview && (
-            <div className="space-y-4 rounded-2xl border border-[#8b5cf6]/40 bg-[#121215] p-5">
-              <div className="border-b border-[#3f3f46] pb-3">
-                <span className="text-[10px] uppercase font-bold text-[#8b5cf6]">Devotee:</span>
-                <h4 className="text-base font-bold text-white">
-                  {settlementPreview.devotee.name} ({settlementPreview.devotee.memberId})
-                </h4>
-                <p className="text-xs text-gray-400">
-                  Allocated Books: {settlementPreview.booksCount} • Total Calculated Pages:{' '}
-                  <strong className="text-white font-mono text-sm">
-                    {settlementPreview.totalCalculatedPages} pages
-                  </strong>
-                </p>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-semibold text-gray-300">
-                    Used Pages (Validated 0 – {settlementPreview.totalCalculatedPages}){' '}
-                    <span className="text-red-400">*</span>
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    max={settlementPreview.totalCalculatedPages}
-                    required
-                    value={usedPages}
-                    onChange={(e) => setUsedPages(e.target.value)}
-                    placeholder="Enter used pages count"
-                    className="mt-1 w-full rounded-xl border border-[#3f3f46] bg-[#27272a] p-2.5 text-xs text-white font-mono"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-gray-300">
-                    Next-Year Seva Interest <span className="text-red-400">*</span>
-                  </label>
-                  <select
-                    value={nextYearInterest}
-                    onChange={(e) => setNextYearInterest(e.target.value)}
-                    className="mt-1 w-full rounded-xl border border-[#3f3f46] bg-[#27272a] p-2.5 text-xs text-white"
-                  >
-                    <option value="Yes">Yes (Confirmed)</option>
-                    <option value="High Probability">High Probability</option>
-                    <option value="Undecided">Undecided</option>
-                    <option value="No">No</option>
-                  </select>
-                </div>
-              </div>
-
+            <div className="flex gap-2">
+              <input
+                type="text"
+                placeholder="Enter Devotee Member ID..."
+                value={settleMemberId}
+                onChange={(e) => setSettleMemberId(e.target.value)}
+                className="flex-1 rounded-xl border border-[#3f3f46] bg-[#27272a] p-2.5 text-xs text-white uppercase font-mono"
+              />
               <button
                 type="button"
-                onClick={handleConfirmSettlement}
-                className="w-full rounded-xl bg-gradient-to-r from-[#8b5cf6] to-[#ec4899] py-3 text-xs font-bold text-white shadow hover:brightness-110"
+                onClick={handleLookupSettlement}
+                className="rounded-xl bg-[#8b5cf6] px-4 py-2.5 text-xs font-bold text-white hover:brightness-110"
               >
-                Confirm Final Settlement ({settlementPreview.booksCount} Books → Settled)
+                Calculate Pages Preview
               </button>
             </div>
-          )}
+
+            {settlementPreview && (
+              <div className="space-y-4 rounded-2xl border border-[#8b5cf6]/40 bg-[#121215] p-5">
+                <div className="border-b border-[#3f3f46] pb-3">
+                  <span className="text-[10px] uppercase font-bold text-[#8b5cf6]">Devotee:</span>
+                  <h4 className="text-base font-bold text-white">
+                    {settlementPreview.devotee.name} ({settlementPreview.devotee.memberId})
+                  </h4>
+                  <p className="text-xs text-gray-400">
+                    Allocated Books: {settlementPreview.booksCount} • Total Calculated Pages:{' '}
+                    <strong className="text-white font-mono text-sm">
+                      {settlementPreview.totalCalculatedPages} pages
+                    </strong>
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-300">
+                      Used Pages (Validated 0 – {settlementPreview.totalCalculatedPages}){' '}
+                      <span className="text-red-400">*</span>
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      max={settlementPreview.totalCalculatedPages}
+                      required
+                      value={usedPages}
+                      onChange={(e) => setUsedPages(e.target.value)}
+                      placeholder="Enter used pages count"
+                      className="mt-1 w-full rounded-xl border border-[#3f3f46] bg-[#27272a] p-2.5 text-xs text-white font-mono"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-300">
+                      Next-Year Seva Interest <span className="text-red-400">*</span>
+                    </label>
+                    <select
+                      value={nextYearInterest}
+                      onChange={(e) => setNextYearInterest(e.target.value)}
+                      className="mt-1 w-full rounded-xl border border-[#3f3f46] bg-[#27272a] p-2.5 text-xs text-white"
+                    >
+                      <option value="Yes">Yes (Confirmed)</option>
+                      <option value="High Probability">High Probability</option>
+                      <option value="Undecided">Undecided</option>
+                      <option value="No">No</option>
+                    </select>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleConfirmSettlement}
+                  className="w-full rounded-xl bg-gradient-to-r from-[#8b5cf6] to-[#ec4899] py-3 text-xs font-bold text-white shadow hover:brightness-110"
+                >
+                  Confirm Final Settlement ({settlementPreview.booksCount} Books → Settled)
+                </button>
+              </div>
+            )}
+          </div>
+
+          <div className="rounded-2xl border border-[#3f3f46] bg-[#18181b] p-5 shadow-xl">
+            <h4 className="font-bold text-white text-sm mb-3">Completed Settlements Register</h4>
+            <div className="overflow-x-auto rounded-xl border border-[#3f3f46]">
+              <table className="w-full text-left text-xs text-gray-300">
+                <thead className="bg-[#27272a] text-gray-100 uppercase tracking-wider text-[10px]">
+                  <tr>
+                    <th className="p-3">Settlement No</th>
+                    <th className="p-3">Date</th>
+                    <th className="p-3">Devotee</th>
+                    <th className="p-3">Pages (Used / Total)</th>
+                    <th className="p-3">Next-Year Interest</th>
+                    <th className="p-3">Approved By</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#3f3f46]/40">
+                  {settlementsHistory.map((s) => (
+                    <tr key={s._id} className="hover:bg-white/5 transition">
+                      <td className="p-3 font-mono font-bold text-purple-400">{s.settlementNo}</td>
+                      <td className="p-3">{new Date(s.settlementDate).toLocaleDateString('en-IN')}</td>
+                      <td className="p-3 text-white font-semibold">
+                        {s.devoteeName} ({s.memberId})
+                      </td>
+                      <td className="p-3 font-mono">
+                        {s.usedPages} / {s.totalCalculatedPages}
+                      </td>
+                      <td className="p-3">{s.nextYearInterest}</td>
+                      <td className="p-3">{s.approvedByAdmin}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       )}
 
@@ -873,7 +1150,6 @@ export default function DevoteeDeskOperations() {
             </form>
           </div>
 
-          {/* Dispatches Table */}
           <div className="rounded-2xl border border-[#3f3f46] bg-[#18181b] p-5 shadow-xl">
             <h4 className="font-bold text-white text-sm mb-3">Recent Dispatches</h4>
             <div className="overflow-x-auto rounded-xl border border-[#3f3f46]">
@@ -912,6 +1188,99 @@ export default function DevoteeDeskOperations() {
                 </tbody>
               </table>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Register Devotee */}
+      {showCreateDevoteeModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+          <div className="max-w-lg w-full rounded-2xl border border-[#3f3f46] bg-[#18181b] p-6 shadow-2xl text-white space-y-4">
+            <div className="flex items-center justify-between border-b border-[#3f3f46] pb-3">
+              <h3 className="font-bold text-base flex items-center gap-2">
+                <UserPlus size={18} className="text-[#38bdf8]" /> Register Devotee Member
+              </h3>
+              <button
+                type="button"
+                onClick={() => setShowCreateDevoteeModal(false)}
+                className="text-gray-400 hover:text-white"
+              >
+                ✕
+              </button>
+            </div>
+            <form onSubmit={handleCreateDevotee} className="grid grid-cols-2 gap-3 text-xs">
+              <div>
+                <label className="block font-semibold text-gray-300">Member ID *</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. M-1001"
+                  value={newDevotee.memberId}
+                  onChange={(e) => setNewDevotee({ ...newDevotee, memberId: e.target.value.toUpperCase() })}
+                  className="mt-1 w-full rounded-xl border border-[#3f3f46] bg-[#27272a] p-2.5 text-white font-mono"
+                />
+              </div>
+              <div>
+                <label className="block font-semibold text-gray-300">Full Name *</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Devotee Full Name"
+                  value={newDevotee.name}
+                  onChange={(e) => setNewDevotee({ ...newDevotee, name: e.target.value })}
+                  className="mt-1 w-full rounded-xl border border-[#3f3f46] bg-[#27272a] p-2.5 text-white"
+                />
+              </div>
+              <div>
+                <label className="block font-semibold text-gray-300">Primary Mobile *</label>
+                <input
+                  type="tel"
+                  required
+                  placeholder="10-digit Mobile"
+                  value={newDevotee.mobile1}
+                  onChange={(e) => setNewDevotee({ ...newDevotee, mobile1: e.target.value })}
+                  className="mt-1 w-full rounded-xl border border-[#3f3f46] bg-[#27272a] p-2.5 text-white font-mono"
+                />
+              </div>
+              <div>
+                <label className="block font-semibold text-gray-300">Gender</label>
+                <select
+                  value={newDevotee.gender}
+                  onChange={(e) => setNewDevotee({ ...newDevotee, gender: e.target.value })}
+                  className="mt-1 w-full rounded-xl border border-[#3f3f46] bg-[#27272a] p-2.5 text-white"
+                >
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+              <div>
+                <label className="block font-semibold text-gray-300">City / Village</label>
+                <input
+                  type="text"
+                  value={newDevotee.cityVillage}
+                  onChange={(e) => setNewDevotee({ ...newDevotee, cityVillage: e.target.value })}
+                  className="mt-1 w-full rounded-xl border border-[#3f3f46] bg-[#27272a] p-2.5 text-white"
+                />
+              </div>
+              <div>
+                <label className="block font-semibold text-gray-300">District</label>
+                <input
+                  type="text"
+                  value={newDevotee.district}
+                  onChange={(e) => setNewDevotee({ ...newDevotee, district: e.target.value })}
+                  className="mt-1 w-full rounded-xl border border-[#3f3f46] bg-[#27272a] p-2.5 text-white"
+                />
+              </div>
+              <div className="col-span-2 pt-2">
+                <button
+                  type="submit"
+                  className="w-full rounded-xl bg-gradient-to-r from-[#38bdf8] to-[#8b5cf6] py-3 text-xs font-bold text-black shadow hover:brightness-110"
+                >
+                  Save Devotee Record
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

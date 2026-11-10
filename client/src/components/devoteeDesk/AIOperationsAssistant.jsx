@@ -6,19 +6,16 @@ import {
   AlertTriangle,
   FileSpreadsheet,
   BarChart3,
-  Search,
   BookOpen,
   Users,
   Package,
   TrendingUp,
   RefreshCw,
   CheckCircle2,
-  XCircle,
   HelpCircle,
   ShieldAlert,
   ArrowRight,
   Download,
-  AlertCircle,
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -39,8 +36,6 @@ import {
   downloadExcelReportAPI,
   executeAIActionAPI,
 } from '../../services/devoteeDeskApi';
-
-const COLORS = ['#38bdf8', '#10b981', '#f59e0b', '#8b5cf6', '#ef4444'];
 
 export default function AIOperationsAssistant({ onNavigateTab }) {
   const [messages, setMessages] = useState([
@@ -67,18 +62,14 @@ export default function AIOperationsAssistant({ onNavigateTab }) {
   const [activeView, setActiveView] = useState('chat'); // 'chat', 'analytics', 'insights', 'reports'
   const [downloadingReport, setDownloadingReport] = useState(null);
   const [actionConfirmModal, setActionConfirmModal] = useState(null);
+  const [statusBanner, setStatusBanner] = useState(null);
 
   const messagesEndRef = useRef(null);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
   useEffect(() => {
-    scrollToBottom();
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Load analytics and insights on mount
   useEffect(() => {
     loadLiveAnalytics();
     loadInsights();
@@ -88,8 +79,8 @@ export default function AIOperationsAssistant({ onNavigateTab }) {
     try {
       const res = await getAIAnalyticsAPI();
       if (res.success) setAnalytics(res.data);
-    } catch (e) {
-      console.error(e);
+    } catch {
+      // Handled gracefully in UI
     }
   };
 
@@ -97,8 +88,8 @@ export default function AIOperationsAssistant({ onNavigateTab }) {
     try {
       const res = await getAIInsightsAPI();
       if (res.success) setInsights(res.data);
-    } catch (e) {
-      console.error(e);
+    } catch {
+      // Handled gracefully in UI
     }
   };
 
@@ -119,16 +110,18 @@ export default function AIOperationsAssistant({ onNavigateTab }) {
     try {
       const res = await aiChatAPI(query.trim());
       if (res.success) {
-        const assistantMsg = {
-          role: 'assistant',
-          content: res.message,
-          type: res.type,
-          data: res.data,
-          table: res.table,
-          suggestions: res.suggestions || [],
-          timestamp: new Date(),
-        };
-        setMessages((prev) => [...prev, assistantMsg]);
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: 'assistant',
+            content: res.message,
+            type: res.type,
+            data: res.data,
+            table: res.table,
+            suggestions: res.suggestions || [],
+            timestamp: new Date(),
+          },
+        ]);
       }
     } catch (err) {
       setMessages((prev) => [
@@ -147,10 +140,12 @@ export default function AIOperationsAssistant({ onNavigateTab }) {
 
   const handleDownloadReport = async (reportType) => {
     setDownloadingReport(reportType);
+    setStatusBanner(null);
     try {
       await downloadExcelReportAPI(reportType);
+      setStatusBanner({ type: 'success', text: `Downloaded ${reportType} operational Excel report.` });
     } catch (e) {
-      alert(`Failed to download report: ${e.message}`);
+      setStatusBanner({ type: 'error', text: e.message || 'Failed to download report.' });
     } finally {
       setDownloadingReport(null);
     }
@@ -160,12 +155,19 @@ export default function AIOperationsAssistant({ onNavigateTab }) {
     if (!actionConfirmModal) return;
     try {
       await executeAIActionAPI(actionConfirmModal.actionType, actionConfirmModal.payload);
-      alert(`Action "${actionConfirmModal.title}" has been recorded.`);
+      setStatusBanner({
+        type: 'success',
+        text: `Resolution "${actionConfirmModal.title}" logged. Opening Bill Books & Inventory Ops.`,
+      });
       setActionConfirmModal(null);
       loadLiveAnalytics();
       loadInsights();
+      if (onNavigateTab) {
+        onNavigateTab('devoteedesk-ops');
+      }
     } catch (e) {
-      alert(`Failed to execute: ${e.message}`);
+      setStatusBanner({ type: 'error', text: e.message || 'Failed to execute action.' });
+      setActionConfirmModal(null);
     }
   };
 
@@ -193,7 +195,7 @@ export default function AIOperationsAssistant({ onNavigateTab }) {
         </div>
 
         {/* View Switcher Pills */}
-        <div className="flex items-center gap-1.5 rounded-xl border border-[#3f3f46] bg-[#27272a] p-1 text-xs font-semibold">
+        <div className="flex flex-wrap items-center gap-1.5 rounded-xl border border-[#3f3f46] bg-[#27272a] p-1 text-xs font-semibold">
           <button
             type="button"
             onClick={() => setActiveView('chat')}
@@ -248,15 +250,40 @@ export default function AIOperationsAssistant({ onNavigateTab }) {
             <FileSpreadsheet size={14} />
             <span>Excel Reports</span>
           </button>
+          {onNavigateTab && (
+            <button
+              type="button"
+              onClick={() => onNavigateTab('devoteedesk-ops')}
+              className="flex items-center gap-1 rounded-lg px-3 py-1.5 text-[#38bdf8] hover:bg-white/5 transition"
+            >
+              <span>Manage Ops</span>
+              <ArrowRight size={13} />
+            </button>
+          )}
         </div>
       </div>
+
+      {/* Inline Status Banner */}
+      {statusBanner && (
+        <div
+          className={`px-6 py-2.5 text-xs font-semibold flex items-center justify-between border-b ${
+            statusBanner.type === 'error'
+              ? 'bg-red-950/60 text-red-300 border-red-500/40'
+              : 'bg-emerald-950/60 text-emerald-300 border-emerald-500/40'
+          }`}
+        >
+          <span>{statusBanner.text}</span>
+          <button type="button" onClick={() => setStatusBanner(null)} className="hover:text-white">
+            ✕
+          </button>
+        </div>
+      )}
 
       {/* Main Container Views */}
       <div className="flex-1 flex flex-col overflow-hidden bg-[#09090b]">
         {/* VIEW 1: AI CHAT */}
         {activeView === 'chat' && (
           <div className="flex-1 flex flex-col h-full overflow-hidden">
-            {/* Quick Metrics Bar */}
             {analytics && (
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 px-6 py-3 border-b border-[#27272a] bg-[#121215] text-xs">
                 <div className="flex items-center gap-2">
@@ -289,7 +316,6 @@ export default function AIOperationsAssistant({ onNavigateTab }) {
               </div>
             )}
 
-            {/* Chat Messages Feed */}
             <div className="flex-1 overflow-y-auto p-6 space-y-4">
               {messages.map((m, idx) => (
                 <div
@@ -319,7 +345,6 @@ export default function AIOperationsAssistant({ onNavigateTab }) {
                       {m.content}
                     </div>
 
-                    {/* Interactive Table if provided */}
                     {m.table && (
                       <div className="mt-4 overflow-x-auto rounded-xl border border-[#3f3f46] bg-[#18181b]">
                         <table className="w-full text-left text-xs text-gray-300">
@@ -347,7 +372,6 @@ export default function AIOperationsAssistant({ onNavigateTab }) {
                       </div>
                     )}
 
-                    {/* Search results cards */}
                     {m.type === 'SEARCH_RESULTS' && m.data && (
                       <div className="mt-4 space-y-2">
                         {m.data.devotees?.map((d) => (
@@ -385,7 +409,6 @@ export default function AIOperationsAssistant({ onNavigateTab }) {
                       </div>
                     )}
 
-                    {/* Suggested follow-up questions */}
                     {m.suggestions && m.suggestions.length > 0 && (
                       <div className="mt-4 pt-3 border-t border-[#3f3f46]/40 flex flex-wrap gap-1.5">
                         <span className="text-[10px] uppercase font-bold text-gray-400 w-full mb-1 flex items-center gap-1">
@@ -416,7 +439,6 @@ export default function AIOperationsAssistant({ onNavigateTab }) {
               <div ref={messagesEndRef} />
             </div>
 
-            {/* Input Bar */}
             <div className="border-t border-[#3f3f46] bg-[#18181b] p-4">
               <form
                 onSubmit={(e) => {
@@ -449,7 +471,6 @@ export default function AIOperationsAssistant({ onNavigateTab }) {
         {activeView === 'analytics' && analytics && (
           <div className="flex-1 overflow-y-auto p-6 space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Chart 1: Devotee Status Breakdown */}
               <div className="rounded-2xl border border-[#3f3f46] bg-[#18181b] p-5 shadow-xl">
                 <h3 className="text-sm font-bold text-white flex items-center gap-2 mb-4">
                   <Users size={16} className="text-[#38bdf8]" /> Devotee Status Distribution
@@ -481,7 +502,6 @@ export default function AIOperationsAssistant({ onNavigateTab }) {
                 </div>
               </div>
 
-              {/* Chart 2: Inventory Breakdown */}
               <div className="rounded-2xl border border-[#3f3f46] bg-[#18181b] p-5 shadow-xl">
                 <h3 className="text-sm font-bold text-white flex items-center gap-2 mb-4">
                   <BookOpen size={16} className="text-[#10b981]" /> Bill Book Inventory Health
@@ -504,7 +524,6 @@ export default function AIOperationsAssistant({ onNavigateTab }) {
                 </div>
               </div>
 
-              {/* Chart 3: Batch Performance */}
               <div className="rounded-2xl border border-[#3f3f46] bg-[#18181b] p-5 shadow-xl md:col-span-2">
                 <h3 className="text-sm font-bold text-white flex items-center gap-2 mb-4">
                   <TrendingUp size={16} className="text-[#8b5cf6]" /> Print Batch Stock Distribution

@@ -1,6 +1,7 @@
 const Devotee = require('../models/Devotee');
 const ActivityLog = require('../models/ActivityLog');
 const ExcelJS = require('exceljs');
+const { escapeRegex } = require('../utils/regexHelper');
 
 // @desc    Get devotees with search, filters and pagination
 // @route   GET /api/devotees
@@ -19,8 +20,9 @@ const getDevotees = async (req, res) => {
       query.district = district;
     }
 
-    if (q && q.trim()) {
-      const regex = new RegExp(q.trim(), 'i');
+    const safeQ = escapeRegex(q);
+    if (safeQ) {
+      const regex = new RegExp(safeQ, 'i');
       query.$or = [
         { memberId: regex },
         { name: regex },
@@ -31,18 +33,20 @@ const getDevotees = async (req, res) => {
       ];
     }
 
-    const skip = (parseInt(page, 10) - 1) * parseInt(limit, 10);
-    const total = await Devotee.countDocuments(query);
-    const devotees = await Devotee.find(query)
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(parseInt(limit, 10));
+    const parsedLimit = Math.min(200, Math.max(1, parseInt(limit, 10) || 50));
+    const parsedPage = Math.max(1, parseInt(page, 10) || 1);
+    const skip = (parsedPage - 1) * parsedLimit;
+
+    const [total, devotees] = await Promise.all([
+      Devotee.countDocuments(query),
+      Devotee.find(query).sort({ createdAt: -1 }).skip(skip).limit(parsedLimit).lean(),
+    ]);
 
     res.status(200).json({
       success: true,
       total,
-      page: parseInt(page, 10),
-      pages: Math.ceil(total / parseInt(limit, 10)),
+      page: parsedPage,
+      pages: Math.ceil(total / parsedLimit),
       count: devotees.length,
       data: devotees,
     });
@@ -227,14 +231,30 @@ const bulkImportDevotees = async (req, res) => {
       }
     });
 
+    const seenInFile = new Set();
+    const dedupedRows = [];
     for (const r of rows) {
-      const exists = await Devotee.findOne({ memberId: r.memberId });
-      if (exists) {
-        skipped++;
+      if (!seenInFile.has(r.memberId)) {
+        seenInFile.add(r.memberId);
+        dedupedRows.push(r);
       } else {
-        await Devotee.create(r);
-        imported++;
+        skipped++;
       }
+    }
+
+    const existingDocs = await Devotee.find({
+      memberId: { $in: dedupedRows.map((r) => r.memberId) },
+    })
+      .select('memberId')
+      .lean();
+    const existingSet = new Set(existingDocs.map((d) => d.memberId));
+
+    const toInsert = dedupedRows.filter((r) => !existingSet.has(r.memberId));
+    skipped += dedupedRows.length - toInsert.length;
+
+    if (toInsert.length > 0) {
+      await Devotee.insertMany(toInsert, { ordered: false });
+      imported = toInsert.length;
     }
 
     res.status(200).json({

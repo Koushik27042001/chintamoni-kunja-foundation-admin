@@ -1,29 +1,14 @@
 const PrintBatch = require('../models/PrintBatch');
 const Book = require('../models/Book');
 const ActivityLog = require('../models/ActivityLog');
+const { getBatchesWithStockCounts } = require('../services/batchQueryService');
 
 // @desc    Get all print batches with stock summary
 // @route   GET /api/batches
 const getBatches = async (req, res) => {
   try {
-    const batches = await PrintBatch.find().sort({ createdAt: -1 });
-
-    const batchesWithCounts = await Promise.all(
-      batches.map(async (b) => {
-        const available = await Book.countDocuments({ batchId: b._id, status: 'Available' });
-        const allocated = await Book.countDocuments({ batchId: b._id, status: 'Allocated' });
-        const settled = await Book.countDocuments({ batchId: b._id, status: 'Settled' });
-        return {
-          ...b.toObject(),
-          availableBooks: available,
-          allocatedBooks: allocated,
-          settledBooks: settled,
-          remainingStockRatio: b.totalBooks > 0 ? Math.round((available / b.totalBooks) * 100) : 0,
-        };
-      })
-    );
-
-    res.status(200).json({ success: true, count: batches.length, data: batchesWithCounts });
+    const batchesWithCounts = await getBatchesWithStockCounts();
+    res.status(200).json({ success: true, count: batchesWithCounts.length, data: batchesWithCounts });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

@@ -13,6 +13,7 @@ const getSettlements = async (req, res) => {
       query.memberId = memberId.trim().toUpperCase();
     }
 
+    
     const skip = (parseInt(page, 10) - 1) * parseInt(limit, 10);
     const total = await SettlementLog.countDocuments(query);
     const settlements = await SettlementLog.find(query)
@@ -144,10 +145,10 @@ const confirmSettlement = async (req, res) => {
     const settlementNo = `SETTLE-${Date.now().toString().slice(-6)}`;
     const now = new Date();
 
-    // 1. Transition books: Allocated -> Settled
+    // 1. Atomically transition Allocated -> Settled (prevents double settlement)
     const bookNumbers = allocatedBooks.map((b) => b.bookNumber);
-    await Book.updateMany(
-      { bookNumber: { $in: bookNumbers } },
+    const updateRes = await Book.updateMany(
+      { bookNumber: { $in: bookNumbers }, status: 'Allocated', currentDevoteeId: devotee.memberId },
       {
         $set: {
           status: 'Settled',
@@ -155,6 +156,13 @@ const confirmSettlement = async (req, res) => {
         },
       }
     );
+
+    if (updateRes.modifiedCount === 0) {
+      return res.status(409).json({
+        success: false,
+        message: 'Books were already settled or modified concurrently.',
+      });
+    }
 
     // 2. Update devotee record: decrement allocated, increment settled, update interest
     devotee.allocatedBooksCount = Math.max(0, (devotee.allocatedBooksCount || 0) - bookNumbers.length);

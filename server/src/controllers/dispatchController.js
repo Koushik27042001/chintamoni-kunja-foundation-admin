@@ -1,6 +1,7 @@
 const DispatchLog = require('../models/DispatchLog');
 const Devotee = require('../models/Devotee');
 const ActivityLog = require('../models/ActivityLog');
+const { escapeRegex } = require('../utils/regexHelper');
 
 // @desc    Get all dispatch logs with filters
 // @route   GET /api/dispatch
@@ -15,8 +16,9 @@ const getDispatches = async (req, res) => {
     if (dispatchMode && dispatchMode !== 'All') {
       query.dispatchMode = dispatchMode;
     }
-    if (q && q.trim()) {
-      const regex = new RegExp(q.trim(), 'i');
+    const safeQ = escapeRegex(q);
+    if (safeQ) {
+      const regex = new RegExp(safeQ, 'i');
       query.$or = [
         { memberId: regex },
         { devoteeName: regex },
@@ -26,18 +28,20 @@ const getDispatches = async (req, res) => {
       ];
     }
 
-    const skip = (parseInt(page, 10) - 1) * parseInt(limit, 10);
-    const total = await DispatchLog.countDocuments(query);
-    const dispatches = await DispatchLog.find(query)
-      .sort({ dispatchDate: -1 })
-      .skip(skip)
-      .limit(parseInt(limit, 10));
+    const parsedLimit = Math.min(200, Math.max(1, parseInt(limit, 10) || 50));
+    const parsedPage = Math.max(1, parseInt(page, 10) || 1);
+    const skip = (parsedPage - 1) * parsedLimit;
+
+    const [total, dispatches] = await Promise.all([
+      DispatchLog.countDocuments(query),
+      DispatchLog.find(query).sort({ dispatchDate: -1 }).skip(skip).limit(parsedLimit).lean(),
+    ]);
 
     res.status(200).json({
       success: true,
       total,
-      page: parseInt(page, 10),
-      pages: Math.ceil(total / parseInt(limit, 10)),
+      page: parsedPage,
+      pages: Math.ceil(total / parsedLimit),
       count: dispatches.length,
       data: dispatches,
     });

@@ -2,6 +2,7 @@ const Book = require('../models/Book');
 const PrintBatch = require('../models/PrintBatch');
 const Devotee = require('../models/Devotee');
 const ActivityLog = require('../models/ActivityLog');
+const { escapeRegex } = require('../utils/regexHelper');
 
 // @desc    Get books list with filters
 // @route   GET /api/books
@@ -19,8 +20,9 @@ const getBooks = async (req, res) => {
     if (devoteeId) {
       query.currentDevoteeId = devoteeId;
     }
-    if (q && q.trim()) {
-      const regex = new RegExp(q.trim(), 'i');
+    const safeQ = escapeRegex(q);
+    if (safeQ) {
+      const regex = new RegExp(safeQ, 'i');
       query.$or = [
         { bookNumber: regex },
         { currentDevoteeId: regex },
@@ -29,18 +31,20 @@ const getBooks = async (req, res) => {
       ];
     }
 
-    const skip = (parseInt(page, 10) - 1) * parseInt(limit, 10);
-    const total = await Book.countDocuments(query);
-    const books = await Book.find(query)
-      .sort({ bookNumber: 1 })
-      .skip(skip)
-      .limit(parseInt(limit, 10));
+    const parsedLimit = Math.min(200, Math.max(1, parseInt(limit, 10) || 50));
+    const parsedPage = Math.max(1, parseInt(page, 10) || 1);
+    const skip = (parsedPage - 1) * parsedLimit;
+
+    const [total, books] = await Promise.all([
+      Book.countDocuments(query),
+      Book.find(query).sort({ bookNumber: 1 }).skip(skip).limit(parsedLimit).lean(),
+    ]);
 
     res.status(200).json({
       success: true,
       total,
-      page: parseInt(page, 10),
-      pages: Math.ceil(total / parseInt(limit, 10)),
+      page: parsedPage,
+      pages: Math.ceil(total / parsedLimit),
       count: books.length,
       data: books,
     });
@@ -162,25 +166,11 @@ const confirmIssueBooks = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Devotee not found.' });
     }
 
-    // Verify all selected books are currently Available
-    const books = await Book.find({
-      bookNumber: { $in: bookNumbers },
-      status: 'Available',
-    });
-
-    if (books.length !== bookNumbers.length) {
-      const foundNumbers = books.map((b) => b.bookNumber);
-      const unavailable = bookNumbers.filter((num) => !foundNumbers.includes(num));
-      return res.status(400).json({
-        success: false,
-        message: `Some books are no longer available for issue: ${unavailable.join(', ')}`,
-      });
-    }
-
-    // Update status to Allocated
+    // Atomically transition only currently Available books (prevents race conditions)
+    const uniqueNumbers = [...new Set(bookNumbers)];
     const now = new Date();
-    await Book.updateMany(
-      { bookNumber: { $in: bookNumbers } },
+    const updateRes = await Book.updateMany(
+      { bookNumber: { $in: uniqueNumbers }, status: 'Available' },
       {
         $set: {
           status: 'Allocated',
@@ -191,8 +181,15 @@ const confirmIssueBooks = async (req, res) => {
       }
     );
 
-    // Increment devotee allocated count
-    devotee.allocatedBooksCount = (devotee.allocatedBooksCount || 0) + bookNumbers.length;
+    if (updateRes.modifiedCount === 0) {
+      return res.status(409).json({
+        success: false,
+        message: 'Selected books were already allocated or are no longer available.',
+      });
+    }
+
+    // Increment devotee allocated count by exact modified count
+    devotee.allocatedBooksCount = (devotee.allocatedBooksCount || 0) + updateRes.modifiedCount;
     await devotee.save();
 
     await ActivityLog.create({
@@ -200,14 +197,14 @@ const confirmIssueBooks = async (req, res) => {
       module: 'Inventory',
       performedBy: req.user?.name || 'Admin',
       memberId: devotee.memberId,
-      details: `Issued ${bookNumbers.length} book(s) [${bookNumbers.join(', ')}] to ${devotee.name} (${devotee.memberId})`,
-      metadata: { bookNumbers, count: bookNumbers.length },
+      details: `Issued ${updateRes.modifiedCount} book(s) [${uniqueNumbers.join(', ')}] to ${devotee.name} (${devotee.memberId})`,
+      metadata: { bookNumbers: uniqueNumbers, count: updateRes.modifiedCount },
     });
 
     res.status(200).json({
       success: true,
-      message: `Successfully issued ${bookNumbers.length} book(s) to ${devotee.name}.`,
-      allocatedBooks: bookNumbers,
+      message: `Successfully issued ${updateRes.modifiedCount} book(s) to ${devotee.name}.`,
+      allocatedBooks: uniqueNumbers,
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });

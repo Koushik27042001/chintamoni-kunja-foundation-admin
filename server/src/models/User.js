@@ -27,7 +27,7 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ['admin', 'superadmin', 'seva_coordinator'],
+      enum: ['admin', 'superadmin', 'operator', 'seva_coordinator'],
       default: 'admin',
     },
     lastLogin: {

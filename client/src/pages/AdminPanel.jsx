@@ -1245,6 +1245,8 @@ export default function AdminPanel() {
       group: "Core Intelligence",
       items: [
         { id: "dashboard", label: "Dashboard & KPIs", icon: LayoutDashboard },
+        { id: "ai-assistant", label: "AI Operations Assistant", icon: Sparkles, badge: "AI" },
+        { id: "devoteedesk-ops", label: "Bill Books & Inventory Ops", icon: Layers },
         { id: "engagement", label: "Page Dwell & Engagement", icon: Activity },
         { id: "kanban", label: "Field Collection Kanban", icon: KanbanIcon, badge: kanbanCards.length },
       ],
@@ -5358,6 +5360,14 @@ export default function AdminPanel() {
               </div>
             </div>
           )}
+
+          {/* DevoteeDesk AI Operations Assistant */}
+          {activeTab === "ai-assistant" && (
+            <AIOperationsAssistant onNavigateTab={(tab) => setActiveTab(tab)} />
+          )}
+
+          {/* DevoteeDesk Bill Books, Devotees & Inventory Operations */}
+          {activeTab === "devoteedesk-ops" && <DevoteeDeskOperations />}
             </div>
           </main>
         </div>

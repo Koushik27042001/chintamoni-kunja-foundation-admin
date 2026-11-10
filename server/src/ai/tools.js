@@ -3,8 +3,9 @@ const Book = require('../models/Book');
 const PrintBatch = require('../models/PrintBatch');
 const DispatchLog = require('../models/DispatchLog');
 const ReturnLog = require('../models/ReturnLog');
-const SettlementLog = require('../models/SettlementLog');
 const { detectOperationalInsights } = require('./insightService');
+const { getBatchesWithStockCounts } = require('../services/batchQueryService');
+const { escapeRegex } = require('../utils/regexHelper');
 
 /**
  * Predefined, verified Tool functions that execute strictly validated
@@ -12,13 +13,13 @@ const { detectOperationalInsights } = require('./insightService');
  */
 const tools = {
   getDevoteeOverview: async () => {
-    const total = await Devotee.countDocuments();
-    const active = await Devotee.countDocuments({ status: 'Active' });
-    const inactive = await Devotee.countDocuments({ status: 'Inactive' });
-    const deceased = await Devotee.countDocuments({ status: 'Deceased' });
-    const nextYearInterested = await Devotee.countDocuments({
-      nextYearInterest: { $in: ['Yes', 'High Probability'] },
-    });
+    const [total, active, inactive, deceased, nextYearInterested] = await Promise.all([
+      Devotee.countDocuments(),
+      Devotee.countDocuments({ status: 'Active' }),
+      Devotee.countDocuments({ status: 'Inactive' }),
+      Devotee.countDocuments({ status: 'Deceased' }),
+      Devotee.countDocuments({ nextYearInterest: { $in: ['Yes', 'High Probability'] } }),
+    ]);
 
     return {
       totalDevotees: total,
@@ -30,10 +31,12 @@ const tools = {
   },
 
   getInventoryStatus: async () => {
-    const total = await Book.countDocuments();
-    const available = await Book.countDocuments({ status: 'Available' });
-    const allocated = await Book.countDocuments({ status: 'Allocated' });
-    const settled = await Book.countDocuments({ status: 'Settled' });
+    const [total, available, allocated, settled] = await Promise.all([
+      Book.countDocuments(),
+      Book.countDocuments({ status: 'Available' }),
+      Book.countDocuments({ status: 'Allocated' }),
+      Book.countDocuments({ status: 'Settled' }),
+    ]);
 
     return {
       totalBooks: total,
@@ -45,26 +48,18 @@ const tools = {
   },
 
   getBatchStockSummary: async () => {
-    const batches = await PrintBatch.find().sort({ createdAt: -1 });
-    const summaries = await Promise.all(
-      batches.map(async (b) => {
-        const available = await Book.countDocuments({ batchId: b._id, status: 'Available' });
-        const allocated = await Book.countDocuments({ batchId: b._id, status: 'Allocated' });
-        const settled = await Book.countDocuments({ batchId: b._id, status: 'Settled' });
-        return {
-          batchName: b.batchName,
-          prefix: b.batchPrefix,
-          totalBooks: b.totalBooks,
-          available,
-          allocated,
-          settled,
-          remainingStockPercent: b.totalBooks > 0 ? Math.round((available / b.totalBooks) * 100) : 0,
-          isActive: b.isActive,
-        };
-      })
-    );
+    const batches = await getBatchesWithStockCounts();
+    const summaries = batches.map((b) => ({
+      batchName: b.batchName,
+      prefix: b.batchPrefix,
+      totalBooks: b.totalBooks,
+      available: b.availableBooks,
+      allocated: b.allocatedBooks,
+      settled: b.settledBooks,
+      remainingStockPercent: b.remainingStockRatio,
+      isActive: b.isActive,
+    }));
 
-    // Sort by highest remaining available stock
     summaries.sort((a, b) => b.available - a.available);
     return summaries;
   },
@@ -124,27 +119,31 @@ const tools = {
   },
 
   searchRecords: async (query) => {
-    if (!query || !query.trim()) return { devotees: [], books: [], batches: [] };
+    const safeQuery = escapeRegex(query);
+    if (!safeQuery) return { devotees: [], books: [], batches: [] };
 
-    const regex = new RegExp(query.trim(), 'i');
+    const regex = new RegExp(safeQuery, 'i');
 
-    const devotees = await Devotee.find({
-      $or: [{ memberId: regex }, { name: regex }, { mobile1: regex }, { cityVillage: regex }],
-    })
-      .limit(5)
-      .select('memberId name mobile1 status cityVillage district allocatedBooksCount');
-
-    const books = await Book.find({
-      $or: [{ bookNumber: regex }, { currentDevoteeId: regex }, { batchName: regex }],
-    })
-      .limit(5)
-      .select('bookNumber batchName status currentDevoteeId currentDevoteeName');
-
-    const batches = await PrintBatch.find({
-      $or: [{ batchName: regex }, { batchPrefix: regex }],
-    })
-      .limit(5)
-      .select('batchName batchPrefix totalBooks isActive');
+    const [devotees, books, batches] = await Promise.all([
+      Devotee.find({
+        $or: [{ memberId: regex }, { name: regex }, { mobile1: regex }, { cityVillage: regex }],
+      })
+        .limit(5)
+        .select('memberId name mobile1 status cityVillage district allocatedBooksCount')
+        .lean(),
+      Book.find({
+        $or: [{ bookNumber: regex }, { currentDevoteeId: regex }, { batchName: regex }],
+      })
+        .limit(5)
+        .select('bookNumber batchName status currentDevoteeId currentDevoteeName')
+        .lean(),
+      PrintBatch.find({
+        $or: [{ batchName: regex }, { batchPrefix: regex }],
+      })
+        .limit(5)
+        .select('batchName batchPrefix totalBooks isActive')
+        .lean(),
+    ]);
 
     return { devotees, books, batches };
   },
