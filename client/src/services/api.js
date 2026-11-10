@@ -1005,7 +1005,7 @@ export async function downloadDatabaseBackupAPI() {
 export async function getPaymentConfigAPI() {
   try {
     const res = await fetch(`${API_BASE}/payment/config`, {
-      signal: AbortSignal.timeout(8000),
+      signal: AbortSignal.timeout(30000),
     });
     if (res.ok) {
       return await res.json();
@@ -1026,7 +1026,7 @@ export async function createPaymentOrderAPI(payload) {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
-    signal: AbortSignal.timeout(15000),
+    signal: AbortSignal.timeout(35000),
   });
   const data = await res.json();
   if (!res.ok) {
@@ -1043,7 +1043,7 @@ export async function verifyPaymentAPI(payload) {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
-    signal: AbortSignal.timeout(15000),
+    signal: AbortSignal.timeout(35000),
   });
   const data = await res.json();
   if (!res.ok) {

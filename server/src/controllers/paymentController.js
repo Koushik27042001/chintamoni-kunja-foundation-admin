@@ -5,16 +5,43 @@ const Member = require('../models/Member');
 const { numberToWords } = require('../utils/numberToWords');
 
 /**
- * Lazily initialize Razorpay client to prevent startup failure
- * if environment variables are empty during initial setup.
+ * Safely read and trim Razorpay credentials from environment
+ */
+function getRazorpayCredentials() {
+  const keyId = (process.env.RAZORPAY_KEY_ID || '').trim();
+  const keySecret = (process.env.RAZORPAY_KEY_SECRET || '').trim();
+  const webhookSecret = (process.env.RAZORPAY_WEBHOOK_SECRET || '').trim();
+  const mode = keyId.startsWith('rzp_live_')
+    ? 'live'
+    : keyId.startsWith('rzp_test_')
+    ? 'test'
+    : 'unconfigured';
+
+  return { keyId, keySecret, webhookSecret, mode };
+}
+
+/**
+ * Timing-safe hex HMAC SHA-256 signature verification
+ */
+function verifyHmacSignature(payloadString, signature, secret) {
+  if (!payloadString || !signature || !secret) return false;
+  const expectedHex = crypto
+    .createHmac('sha256', secret)
+    .update(payloadString)
+    .digest('hex');
+
+  const expectedBuf = Buffer.from(expectedHex, 'utf-8');
+  const actualBuf = Buffer.from(String(signature).trim(), 'utf-8');
+  if (expectedBuf.length !== actualBuf.length) return false;
+  return crypto.timingSafeEqual(expectedBuf, actualBuf);
+}
+
+/**
+ * Lazily initialize Razorpay client
  */
 function getRazorpayClient() {
-  const keyId = process.env.RAZORPAY_KEY_ID;
-  const keySecret = process.env.RAZORPAY_KEY_SECRET;
-
-  if (!keyId || !keySecret) {
-    return null;
-  }
+  const { keyId, keySecret } = getRazorpayCredentials();
+  if (!keyId || !keySecret) return null;
 
   return new Razorpay({
     key_id: keyId,
@@ -23,19 +50,20 @@ function getRazorpayClient() {
 }
 
 /**
- * @desc    Get public Razorpay configuration (Key ID & status)
+ * @desc    Get public Razorpay configuration (Key ID, mode & status)
  * @route   GET /api/payment/config
  * @access  Public
  */
 const getPaymentConfig = async (req, res) => {
   try {
-    const keyId = process.env.RAZORPAY_KEY_ID || '';
-    const isConfigured = Boolean(keyId && process.env.RAZORPAY_KEY_SECRET);
+    const { keyId, keySecret, mode } = getRazorpayCredentials();
+    const isConfigured = Boolean(keyId && keySecret);
 
     res.status(200).json({
       success: true,
       enabled: isConfigured,
-      keyId: keyId,
+      mode,
+      keyId,
       currency: 'INR',
       organization: 'Sri Sri Chintamoni Kunja Foundation',
     });
@@ -56,6 +84,8 @@ const getPaymentConfig = async (req, res) => {
 const createOrder = async (req, res) => {
   try {
     const razorpay = getRazorpayClient();
+    const { keyId, mode } = getRazorpayCredentials();
+
     if (!razorpay) {
       return res.status(503).json({
         success: false,
@@ -84,13 +114,11 @@ const createOrder = async (req, res) => {
 
     // Razorpay requires amount in paise (1 INR = 100 paise)
     const amountInPaise = Math.round(parsedAmount * 100);
-
-    // Create a unique receipt identifier
     const receiptTag = `rcpt_${Date.now().toString().slice(-8)}`;
 
     const options = {
       amount: amountInPaise,
-      currency: currency.toUpperCase(),
+      currency: String(currency).toUpperCase(),
       receipt: receiptTag,
       notes: {
         donorName: (donorName || '').trim().slice(0, 40),
@@ -105,13 +133,14 @@ const createOrder = async (req, res) => {
 
     res.status(200).json({
       success: true,
+      mode,
       order: {
         id: order.id,
         amount: order.amount,
         currency: order.currency,
         receipt: order.receipt,
       },
-      keyId: process.env.RAZORPAY_KEY_ID,
+      keyId,
     });
   } catch (error) {
     console.error('❌ [Razorpay createOrder Error]:', error);
@@ -129,7 +158,7 @@ const createOrder = async (req, res) => {
  */
 const verifyPayment = async (req, res) => {
   try {
-    const keySecret = process.env.RAZORPAY_KEY_SECRET;
+    const { keySecret } = getRazorpayCredentials();
     if (!keySecret) {
       return res.status(503).json({
         success: false,
@@ -157,15 +186,11 @@ const verifyPayment = async (req, res) => {
       });
     }
 
-    // Cryptographic HMAC SHA-256 verification
-    const expectedSignature = crypto
-      .createHmac('sha256', keySecret)
-      .update(`${razorpay_order_id}|${razorpay_payment_id}`)
-      .digest('hex');
-
-    const signatureValid = crypto.timingSafeEqual(
-      Buffer.from(expectedSignature, 'utf-8'),
-      Buffer.from(razorpay_signature, 'utf-8')
+    // Cryptographic HMAC SHA-256 verification (length-safe timingSafeEqual)
+    const signatureValid = verifyHmacSignature(
+      `${razorpay_order_id}|${razorpay_payment_id}`,
+      razorpay_signature,
+      keySecret
     );
 
     if (!signatureValid) {
@@ -176,7 +201,7 @@ const verifyPayment = async (req, res) => {
     }
 
     // Idempotency: Check if this payment was already recorded
-    let existingDonation = await Donation.findOne({ razorpayPaymentId: razorpay_payment_id });
+    const existingDonation = await Donation.findOne({ razorpayPaymentId: razorpay_payment_id });
     if (existingDonation) {
       return res.status(200).json({
         success: true,
@@ -185,19 +210,31 @@ const verifyPayment = async (req, res) => {
       });
     }
 
-    // Parse valid donation amount
-    const parsedAmount = parseFloat(amount);
-    const amountVal = !isNaN(parsedAmount) && parsedAmount > 0 ? parsedAmount : 1;
+    // Fetch authoritative order amount from Razorpay (never trust client-supplied amount alone)
+    let verifiedAmountRupees = parseFloat(amount);
+    const razorpay = getRazorpayClient();
+    if (razorpay) {
+      try {
+        const fetchedOrder = await razorpay.orders.fetch(razorpay_order_id);
+        if (fetchedOrder && typeof fetchedOrder.amount === 'number' && fetchedOrder.amount > 0) {
+          verifiedAmountRupees = fetchedOrder.amount / 100;
+        }
+      } catch {
+        // If Razorpay fetch fails transiently after valid HMAC, use validated fallback
+      }
+    }
 
-    // Generate Official Sequential Receipt Number for Online Seva
+    const amountVal =
+      !isNaN(verifiedAmountRupees) && verifiedAmountRupees > 0 ? verifiedAmountRupees : 1;
+
     const receiptNo = `CKF-ONL-${Date.now().toString().slice(-6)}`;
     const amountInWords = numberToWords(amountVal);
+    const cleanMobile = (mobile || '').trim();
 
-    // Create Official Donation Record in Database
     const newDonation = await Donation.create({
       receiptNo,
       donorName: (donorName || 'Devotee / Donor').trim(),
-      mobile: (mobile || '').trim(),
+      mobile: cleanMobile,
       email: (email || '').trim(),
       address: (address || '').trim(),
       pan: (pan || '').trim().toUpperCase(),
@@ -218,14 +255,13 @@ const verifyPayment = async (req, res) => {
       notes: `Verified online contribution via Razorpay. Order ID: ${razorpay_order_id}`,
     });
 
-    // If mobile number matches a registered Member, increment their total donation record
-    if (mobile && mobile.trim().length >= 10) {
+    // If mobile matches registered Member (mobile1 or mobile2), increment totalDonations
+    if (cleanMobile.length >= 10) {
       try {
-        const member = await Member.findOne({ mobile: mobile.trim() });
-        if (member) {
-          member.totalDonations = (member.totalDonations || 0) + amountVal;
-          await member.save();
-        }
+        await Member.updateOne(
+          { $or: [{ mobile1: cleanMobile }, { mobile2: cleanMobile }] },
+          { $inc: { totalDonations: amountVal } }
+        );
       } catch (err) {
         console.error('⚠️ [Member donation update skipped]:', err.message);
       }
@@ -247,27 +283,17 @@ const verifyPayment = async (req, res) => {
 };
 
 /**
- * @desc    Webhook handler for asynchronous Razorpay events (Payment captured, failed, refund)
+ * @desc    Webhook handler for asynchronous Razorpay events (Payment captured, failed)
  * @route   POST /api/payment/webhook
  * @access  Public (Signature protected)
  */
 const handleWebhook = async (req, res) => {
   try {
-    const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET;
+    const { webhookSecret } = getRazorpayCredentials();
     const signature = req.headers['x-razorpay-signature'];
 
-    // If webhook secret is configured, verify signature
     if (webhookSecret && signature) {
-      const expectedSignature = crypto
-        .createHmac('sha256', webhookSecret)
-        .update(JSON.stringify(req.body))
-        .digest('hex');
-
-      const isValid = crypto.timingSafeEqual(
-        Buffer.from(expectedSignature, 'utf-8'),
-        Buffer.from(signature, 'utf-8')
-      );
-
+      const isValid = verifyHmacSignature(JSON.stringify(req.body), signature, webhookSecret);
       if (!isValid) {
         return res.status(400).json({ success: false, message: 'Invalid webhook signature.' });
       }
@@ -277,9 +303,8 @@ const handleWebhook = async (req, res) => {
     const payload = req.body.payload;
 
     if (event === 'payment.captured') {
-      const payment = payload.payment.entity;
-      // Mark matching donation as completed if still pending
-      if (payment.order_id) {
+      const payment = payload?.payment?.entity;
+      if (payment?.order_id) {
         await Donation.updateOne(
           { razorpayOrderId: payment.order_id },
           {
@@ -293,8 +318,8 @@ const handleWebhook = async (req, res) => {
         );
       }
     } else if (event === 'payment.failed') {
-      const payment = payload.payment.entity;
-      if (payment.order_id) {
+      const payment = payload?.payment?.entity;
+      if (payment?.order_id) {
         await Donation.updateOne(
           { razorpayOrderId: payment.order_id },
           { $set: { status: 'Failed' } }
@@ -315,4 +340,3 @@ module.exports = {
   verifyPayment,
   handleWebhook,
 };
-

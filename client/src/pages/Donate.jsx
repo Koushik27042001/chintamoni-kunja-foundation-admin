@@ -138,7 +138,7 @@ export default function Donate() {
         throw new Error('Failed to obtain a secure order token from the server.')
       }
 
-      const keyId = orderData.keyId || gatewayConfig.keyId || import.meta.env.VITE_RAZORPAY_KEY_ID
+      const keyId = (orderData.keyId || gatewayConfig.keyId || import.meta.env.VITE_RAZORPAY_KEY_ID || '').trim()
 
       // Step 2: Configure Razorpay Checkout modal
       const options = {
@@ -147,7 +147,7 @@ export default function Donate() {
         currency: orderData.order.currency,
         name: 'Sri Sri Chintamoni Kunja Foundation',
         description: `Seva Contribution: ${sevaType}`,
-        image: 'https://chintamonikunja.org/logo192.png',
+        image: `${window.location.origin}/images/chintamoni-kunja-logo.png`,
         order_id: orderData.order.id,
         prefill: {
           name: donorName.trim(),
