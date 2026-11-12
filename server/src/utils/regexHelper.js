@@ -7,3 +7,4 @@ function escapeRegex(str = '') {
 }
 
 module.exports = { escapeRegex };
+

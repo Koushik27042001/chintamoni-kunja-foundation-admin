@@ -63,3 +63,4 @@ async function getBatchesWithStockCounts() {
 }
 
 module.exports = { getBatchesWithStockCounts };
+
