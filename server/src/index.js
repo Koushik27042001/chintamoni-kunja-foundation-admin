@@ -90,7 +90,7 @@ const handleHealthCheck = (req, res) => {
 };
 
 app.get('/health', handleHealthCheck);
-app.get('/api/health', handleHealthCheck);
+app.get('/api/health', require('./controllers/healthController').getHealth);
 
 // Route Controllers
 const authRoutes = require('./routes/authRoutes');
