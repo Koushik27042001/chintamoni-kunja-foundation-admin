@@ -4,12 +4,13 @@ const helmet = require('helmet');
 const compression = require('compression');
 const dotenv = require('dotenv');
 const connectDB = require('./config/db');
+const { checkHealth } = require('./controllers/healthController');
 
 // Load environment variables
 dotenv.config();
 
 // Connect to MongoDB Atlas
-connectDB();
+const databaseStartup = connectDB();
 
 const app = express();
 
@@ -90,7 +91,6 @@ const handleHealthCheck = (req, res) => {
 };
 
 app.get('/health', handleHealthCheck);
-app.get('/api/health', require('./controllers/healthController').getHealth);
 
 // Route Controllers
 const authRoutes = require('./routes/authRoutes');
@@ -173,7 +173,6 @@ app.get('/', (req, res) => {
     name: 'Sri Sri Chintamoni Kunja Foundation API',
     status: 'active',
     version: '1.0.0',
-    documentation: '/api/health',
   });
 });
 
@@ -206,8 +205,23 @@ const server = app.listen(PORT, HOST, () => {
   console.log(`🌿 Environment: ${process.env.NODE_ENV || 'production'}`);
 });
 
+async function logHealthReport() {
+  try {
+    const report = await checkHealth();
+    const log = report.status === 'healthy' ? console.log : console.warn;
+    log('[Health]', JSON.stringify(report));
+  } catch {
+    console.error('[Health] Could not generate the health report.');
+  }
+}
+
+databaseStartup.then(logHealthReport);
+const healthReportTimer = setInterval(logHealthReport, 5 * 60 * 1000);
+healthReportTimer.unref();
+
 // Graceful Shutdown for zero-downtime rolling deploys on Render
 const handleGracefulShutdown = (signal) => {
+  clearInterval(healthReportTimer);
   console.log(`\n🛑 Received ${signal}. Starting graceful shutdown...`);
   server.close(async () => {
     console.log('🔒 Closed remaining HTTP connections.');

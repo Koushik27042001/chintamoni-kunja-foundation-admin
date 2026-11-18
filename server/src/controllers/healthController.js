@@ -45,10 +45,9 @@ async function boundedCheck(operation, timeoutMs) {
   }
 }
 
-function createHealthHandler({ connection = mongoose.connection, env = process.env,
+function createHealthCheck({ connection = mongoose.connection, env = process.env,
   getModel = name => require(`../models/${name}`), timeoutMs = 2000 } = {}) {
-  return async (req, res) => {
-    res.set('Cache-Control', 'no-store');
+  return async () => {
     const started = Date.now();
     const connected = connection.readyState === 1;
     const databaseUp = connected && await boundedCheck(
@@ -76,7 +75,7 @@ function createHealthHandler({ connection = mongoose.connection, env = process.e
       }];
     }));
     const healthy = databaseUp && Object.values(features).every(feature => feature.statusCode === 200);
-    res.status(healthy ? 200 : 503).json({
+    return {
       status: healthy ? 'healthy' : 'unhealthy',
       statusCode: healthy ? 200 : 503,
       timestamp: new Date().toISOString(),
@@ -85,8 +84,8 @@ function createHealthHandler({ connection = mongoose.connection, env = process.e
       database: result(databaseUp, databaseUp ? 'Database ping succeeded.' : 'Database is unavailable.'),
       features,
       checkScope: 'Read-only database probes and required configuration checks. External providers and write operations are not tested.',
-    });
+    };
   };
 }
 
-module.exports = { getHealth: createHealthHandler(), createHealthHandler };
+module.exports = { checkHealth: createHealthCheck(), createHealthCheck };

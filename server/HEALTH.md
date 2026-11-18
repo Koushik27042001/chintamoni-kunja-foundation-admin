@@ -1,9 +1,7 @@
-Open `BACKEND_URL/api/health` in a browser to view the JSON health report. No login is required and no frontend changes are needed.
+Open the backend service's Logs tab in Render and filter for [Health]. The server writes the detailed JSON report after the initial database connection attempt and every five minutes while the service runs. Each of the 18 feature entries includes its API path, status, statusCode, and a safe explanation.
 
-The HTTP response is `200` when all checks pass, or `503` when any feature is unavailable. Each of the 18 feature entries includes its API path, `up`/`down` status, `statusCode`, and a safe explanation. Responses are not cached.
+Checks ping MongoDB and perform a bounded, read-only query against each required collection. Empty collections are healthy. Authentication, payments, and AI also require their respective JWT, Razorpay, and OpenAI configuration. A passing check indicates dependency readiness. External provider credentials and write operations are outside the scope of these checks.
 
-Checks ping MongoDB and perform a bounded, read-only query against each required collection. Empty collections are healthy. Authentication, payments, and AI also require their respective JWT, Razorpay, and OpenAI configuration. These checks do not validate credentials with external providers or exercise writes or complete business workflows. A passing check therefore indicates dependency readiness, not a guarantee that every operation succeeds.
+The public /health route is the lightweight liveness probe for Render and the frontend. The detailed report is available in the service logs.
 
-The existing `/health` route remains a lightweight process liveness probe for Render. Use `/api/health` for feature monitoring. If the backend process itself is offline, this endpoint cannot respond; an external uptime monitor must detect the connection failure.
-
-Run health checks with `node --test test/health.test.js` from the `server` directory.
+Run the health tests with `node --test test/health.test.js` from the server directory.

@@ -477,21 +477,17 @@ export const INITIAL_GALLERY = [
   },
 ];
 
-// Helper to check server connectivity (supports Render cold-start wake-up with dual /api/health and /health probes)
+// Check connectivity using the backend's lightweight liveness probe.
 export async function checkServerStatus() {
-  const rootHealth = API_BASE.replace(/\/api$/, '') + '/health';
-  const apiHealth = `${API_BASE}/health`;
-
-  for (const url of [apiHealth, rootHealth]) {
-    try {
-      const res = await fetch(url, { signal: AbortSignal.timeout(15000) });
-      if (res.ok) {
-        const data = await res.json();
-        return { online: true, database: data.database };
-      }
-    } catch (e) {
-      // try next probe
+  const url = API_BASE.replace(/\/api$/, '') + '/health';
+  try {
+    const res = await fetch(url, { signal: AbortSignal.timeout(30000) });
+    if (res.ok) {
+      const data = await res.json();
+      return { online: true, database: data.database };
     }
+  } catch {
+    // Fall back to offline when the probe cannot be reached.
   }
   return { online: false, database: 'offline' };
 }
