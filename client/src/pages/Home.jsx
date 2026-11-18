@@ -1,36 +1,36 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence, useScroll, useTransform, useInView, useReducedMotion, animate } from "framer-motion";
-import { getGalleryAPI } from "../services/api";
 
 /* ==================================================================
    Sri Sri Chintamoni Kunja Foundation – Cinematic Heritage Home Page
    Needs:  npm i framer-motion      (React 18 + Tailwind v3)
-   Images: client/public/assets/*.png  (served from /assets/...)
+   Photos: client/public/assets/home_page
    Fonts (index.html <head>):
    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600&family=Noto+Serif+Devanagari:wght@500;600&family=Noto+Serif+Bengali:wght@500;600&display=swap" rel="stylesheet">
    Palette: Ivory #FFF9ED · Gold #C59A52 · Maroon #78372B · Saffron #D98232 · Brown #39251D · Sand #EDE0C9
 ================================================================== */
 const asset = (n) => encodeURI(`/assets/${n}`); // handles spaces + the ’ in file names
-const A = {
-  golden: asset("Krishna’s Golden Riverside Devotion.png"),
-  radhaKrishna: asset("Radha and Krishna by the Riverside.png"),
-  altar: asset("Opulent Gaura-Nitai and Madan Mohan Altar.png"),
-  temple: asset("Nabadwip Dham Temple in Sunshine.png"),
-  kirtan: asset("Golden Kirtan by the Sacred Ghats.png"),
-  procession: asset("Devotional Procession Before Lord Jagannath.png"),
-  separation: asset("seperation-image.png"),
-  work: asset("work-image.png"),
-  students: asset("students.png"),
+const HOME_PHOTOS = {
+  shrine: asset("home_page/web/shrine.jpg"),
+  heritageShrine: asset("home_page/web/heritage-shrine.jpg"),
+  altar: asset("home_page/web/altar.jpg"),
+  gathering: asset("home_page/web/devotional-gathering.jpg"),
 };
+const PORTRAITS = [
+  { src: asset("home_page/_MG_8082-removebg-preview.png"), alt: "Portrait of a man wearing a flower garland", fit: "object-contain object-bottom" },
+  { src: asset("home_page/1.jpg"), alt: "Man seated in saffron and white robes", fit: "object-cover" },
+  { src: asset("home_page/2.jpg"), alt: "Framed portrait of a man seated in white", fit: "object-contain" },
+  { src: asset("home_page/3.jpg"), alt: "Portrait of a man wearing glasses", fit: "object-cover object-top" },
+];
 
 /* Editable content – confirm every figure and name with the Foundation */
 const STATS = [[100000, "+", "Meals served"], [2000, "+", "Students supported"]]; // foundation-provided figures
 const LINEAGE = [
-  { name: "Sri Krishna Chaitanya", role: "Mahaprabhu of Nabadwip", img: A.golden },
-  { name: "Sri Gadadhar Pandit Prabhu", role: "Beloved associate of Mahaprabhu", img: A.altar },
-  { name: "Sri Ramsundar Vidyalankar", role: "Sri Chintamoni Goswami, founder (1809)", img: A.temple },
-  { name: "Succession of Revered Acharyas", role: "Sacred Lineage & Gurus of the Pariwar", img: "" },
+  { name: "Sri Krishna Chaitanya", role: "Mahaprabhu of Nabadwip" },
+  { name: "Sri Gadadhar Pandit Prabhu", role: "Beloved associate of Mahaprabhu" },
+  { name: "Sri Ramsundar Vidyalankar", role: "Sri Chintamoni Goswami, founder (1809)" },
+  { name: "Succession of Revered Acharyas", role: "Sacred Lineage & Gurus of the Pariwar" },
 ];
 const EVENTS = [["Janmashtami", "Date to be announced"], ["Gaur Purnima", "Date to be announced"], ["Rath Yatra", "Date to be announced"]];
 
@@ -126,7 +126,7 @@ const Cta = ({ href, children, solid }) => (
 
 /* ---------- 01 cinematic opening ---------- */
 function Hero() {
-  const slides = [A.golden, A.temple, A.radhaKrishna];
+  const slides = [HOME_PHOTOS.shrine, HOME_PHOTOS.heritageShrine, HOME_PHOTOS.altar];
   const [i, setI] = useState(0);
   const calm = useReducedMotion();
   const ref = useRef(null);
@@ -141,7 +141,7 @@ function Hero() {
     <section id="top" ref={ref} className="relative flex min-h-[92vh] items-center justify-center overflow-hidden bg-[#39251D] text-center text-[#FFF9ED]">
       <motion.div style={{ y }} className="absolute inset-0">
         {slides.map((s, k) => (
-          <img key={s} src={s} alt="" className={`absolute inset-0 h-full w-full scale-110 object-cover transition-opacity duration-[2000ms] ${k === i ? "opacity-100" : "opacity-0"}`} />
+          <img key={s} src={s} alt="" fetchpriority={k === 0 ? "high" : "low"} className={`absolute inset-0 h-full w-full scale-110 object-cover transition-opacity duration-[2000ms] ${k === i ? "opacity-100" : "opacity-0"}`} />
         ))}
       </motion.div>
       <div className="absolute inset-0 bg-gradient-to-b from-[#39251D]/70 via-[#39251D]/45 to-[#39251D]/85" />
@@ -200,7 +200,7 @@ function History() {
       <Om pos="-left-10 top-0" />
       <div className="relative mx-auto max-w-6xl px-5">
         <div className="grid items-center gap-12 lg:grid-cols-2">
-          <Reveal><Parallax src={A.temple} alt="Nabadwip Dham temple in sunshine" className="aspect-[4/5] rounded-xl border border-[#C59A52] shadow-[0_0_0_6px_#FFF9ED,0_0_0_7px_rgba(197,154,82,.6)]" /></Reveal>
+          <Reveal><Parallax src={HOME_PHOTOS.heritageShrine} alt="Flower offerings arranged around a carved wooden shrine" className="aspect-[4/5] rounded-xl border border-[#C59A52] shadow-[0_0_0_6px_#FFF9ED,0_0_0_7px_rgba(197,154,82,.6)]" /></Reveal>
           <Reveal delay={0.1}>
             <Eyebrow n="02">Our history</Eyebrow>
             <h2 className="mt-3 text-4xl font-bold text-[#78372B] sm:text-5xl" style={serif}>A Journey Since 1809</h2>
@@ -310,7 +310,7 @@ function Philosophy() {
           <div className="mt-7"><a href="#art" className="inline-block rounded-full border-2 border-[#E3B873] px-7 py-3 font-[Inter] text-sm font-semibold text-[#E3B873] hover:bg-[#E3B873] hover:text-[#39251D]">Explore Our Philosophy</a></div>
         </Reveal>
         <Reveal delay={0.1} className="order-1 lg:order-2">
-          <Frame className="mx-auto max-w-sm bg-[#78372B]"><Parallax src={A.radhaKrishna} alt="Radha and Krishna by the riverside" speed={30} className="aspect-[4/5] rounded-t-[999px] rounded-b-md" /></Frame>
+          <Frame className="mx-auto max-w-sm bg-[#78372B]"><Parallax src={HOME_PHOTOS.altar} alt="Deities dressed in embroidered garments and floral garlands" objectPosition="object-top" speed={30} className="aspect-[4/5] rounded-t-[999px] rounded-b-md" /></Frame>
         </Reveal>
       </div>
     </section>
@@ -365,14 +365,14 @@ function SpiritualAspects() {
             <div className="relative mx-auto max-w-md">
               <div className="overflow-hidden rounded-2xl border border-[#C59A52] bg-white p-2 shadow-[0_0_0_6px_#FFF9ED,0_0_0_8px_rgba(197,154,82,.6)]">
                 <img
-                  src={A.separation}
-                  alt="Our spiritual aspects - social equality and mass education"
+                  src={HOME_PHOTOS.gathering}
+                  alt="Group gathered on stage around a seated guest"
                   loading="lazy"
                   className="aspect-[4/3] w-full rounded-xl object-cover"
                 />
               </div>
               <p className="mt-3 text-center font-serif text-xs italic text-[#78372B]">
-                Sacred assembly depicting unity, non-sectarian devotion & universal equality
+                A gathering from the Foundation?s photo collection
               </p>
             </div>
           </Reveal>
@@ -390,23 +390,27 @@ function Guru() {
         <Reveal>
           <Eyebrow n="04">Our devotional lineage</Eyebrow>
           <h2 className="mt-3 text-4xl font-bold text-[#78372B] sm:text-5xl" style={serif}>Guru Pranali</h2>
-          <p className="mx-auto mt-4 max-w-xl font-[Inter] text-[#39251D]/80">Scroll sideways through the line of teachers. Only foundation-approved lineage information is to be published here.</p>
+          <p className="mx-auto mt-4 max-w-xl font-[Inter] text-[#39251D]/80">The teachers and acharyas of the Foundation?s devotional tradition.</p>
         </Reveal>
       </div>
-      <div className="mt-12 flex snap-x snap-mandatory gap-8 overflow-x-auto scroll-smooth px-[max(1.25rem,calc((100vw-72rem)/2))] pb-6">
-        {LINEAGE.map((g, k) => (
-          <Reveal key={g.name} delay={k * 0.1} className="w-64 shrink-0 snap-center text-center">
-            <Frame>
-              <div className="relative aspect-[3/4] overflow-hidden rounded-t-[999px] rounded-b-md bg-[#EDE0C9]">
-                {g.img ? <img src={g.img} alt={g.name} loading="lazy" className="h-full w-full object-cover" /> : <span className="grid h-full place-items-center text-5xl text-[#C59A52]/60" style={deva}>ॐ</span>}
-              </div>
-            </Frame>
-            <p className="mt-6 text-sm font-semibold text-[#D98232]">{String(k + 1).padStart(2, "0")}</p>
-            <h3 className="mt-1 text-2xl font-bold text-[#78372B]" style={serif}>{g.name}</h3>
-            <p className="mt-1 font-[Inter] text-sm text-[#39251D]/75">{g.role}</p>
+      <div className="mx-auto mt-10 grid max-w-6xl gap-4 px-5 sm:grid-cols-2 lg:grid-cols-4">
+        {LINEAGE.map((teacher, index) => (
+          <Reveal key={teacher.name} delay={index * 0.08} className="rounded-xl border border-[#C59A52]/50 bg-[#EDE0C9]/30 p-5 text-center">
+            <h3 className="text-2xl font-bold text-[#78372B]" style={serif}>{teacher.name}</h3>
+            <p className="mt-1 text-sm text-[#39251D]/75">{teacher.role}</p>
           </Reveal>
         ))}
       </div>
+      <Reveal className="mx-auto mt-10 max-w-5xl px-5">
+        <h3 className="text-center text-3xl font-bold text-[#78372B]" style={serif}>Portraits from the Foundation</h3>
+        <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-5">
+          {PORTRAITS.map(({ src, alt, fit }) => (
+            <figure key={src} className="aspect-[4/5] overflow-hidden rounded-xl border border-[#C59A52]/50 bg-[#EDE0C9]">
+              <img src={src} alt={alt} loading="lazy" decoding="async" className={`h-full w-full ${fit}`} />
+            </figure>
+          ))}
+        </div>
+      </Reveal>
       <div className="mt-8 text-center"><Cta href="#contact">Explore Guru Parampara</Cta></div>
     </section>
   );
@@ -419,13 +423,6 @@ function ArtOfLiving() {
     <section id="art" className="relative overflow-hidden bg-[#EDE0C9]/60 py-24">
       <Mandala spin className="absolute -right-40 top-10 h-[520px] opacity-[.15]" />
       <div className="relative mx-auto max-w-6xl px-5">
-        <Parallax
-          src={A.kirtan}
-          alt="Golden kirtan by the sacred ghats"
-          speed={20}
-          objectPosition="object-top"
-          className="mb-14 h-[340px] sm:h-[460px] md:h-[540px] lg:h-[600px] w-full rounded-2xl border border-[#C59A52] shadow-[0_0_0_6px_#FFF9ED,0_0_0_7px_rgba(197,154,82,.6)]"
-        />
         <Reveal className="text-center">
           <Eyebrow n="05">Art of living</Eyebrow>
           <h2 className="mt-3 text-4xl font-bold text-[#78372B] sm:text-5xl" style={serif}>A Spiritual Way of Life</h2>
@@ -455,8 +452,6 @@ function Movements() {
       title: "Zero Starvation Movement",
       subtitle: "Universal Food Security & Healthcare Regardless of Caste, Class, or Religion",
       desc: "We work hard through the Zero Starvation Movement to ensure that no neighbour goes hungry, completely regardless of Caste, Class, or Religion. Along with daily food relief and prasadam distribution, we also work actively for the native healthcare and academic sectors to bring healing, medicines, and dignity to every family.",
-      img: A.work,
-      caption: "Community relief seva & healthcare distribution by our dedicated volunteers",
       statNumber: 100000,
       statSuffix: "+",
       statLabel: "Meals Served to Date",
@@ -467,8 +462,6 @@ function Movements() {
       title: "Academic Help for Students",
       subtitle: "Mass Education as Sacred Sadhana & Youth Upliftment",
       desc: "To date, we have served more than 2,000 students with academic help. Inspired by founder Ramsundar Vidyalankar's mission of mass education, our educational outreach provides books, scholarship assistance, mentorship, and free learning centers so every child can thrive.",
-      img: A.students,
-      caption: "Distributing books, study kits & academic assistance to rural students",
       statNumber: 2000,
       statSuffix: "+",
       statLabel: "Students Supported with Academic Help",
@@ -479,7 +472,6 @@ function Movements() {
   const [paused, setPaused] = useState(false);
   const calm = useReducedMotion();
 
-  // Auto-cycle every 5 seconds so images disappear and transition
   useEffect(() => {
     if (calm || paused) return;
     const timer = setInterval(() => {
@@ -523,36 +515,20 @@ function Movements() {
           ))}
         </div>
 
-        {/* Interactive Showcase with Disappear & Appear Image Transition */}
         <div
           className="mt-10 grid items-center gap-10 rounded-3xl border border-[#C59A52]/60 bg-[#FFF9ED] p-6 shadow-xl lg:grid-cols-12 lg:p-10"
           onMouseEnter={() => setPaused(true)}
           onMouseLeave={() => setPaused(false)}
         >
-          {/* Animated Cross-Fade Image Area */}
-          <div className="relative lg:col-span-6">
-            <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl border border-[#C59A52] bg-[#39251D] p-2 shadow-[0_0_0_6px_#FFF9ED,0_0_0_8px_rgba(197,154,82,.6)]">
-              <AnimatePresence mode="wait">
-                <motion.img
-                  key={active.img}
-                  src={active.img}
-                  alt={active.title}
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 1.05 }}
-                  transition={{ duration: 0.65, ease: "easeInOut" }}
-                  className="h-full w-full rounded-xl object-cover"
-                />
-              </AnimatePresence>
-            </div>
-
-            <p className="mt-3 text-center font-serif text-xs italic text-[#78372B]">
-              {active.caption}
+          <div className="rounded-2xl border border-[#C59A52]/50 bg-[#EDE0C9]/45 p-8 text-center lg:col-span-5">
+            <p className="text-5xl font-bold text-[#78372B] sm:text-7xl" style={serif}>
+              <Counter to={active.statNumber} suffix={active.statSuffix} />
             </p>
+            <p className="mt-2 text-sm font-medium text-[#54382B]">{active.statLabel}</p>
           </div>
 
           {/* Description Content */}
-          <div className="lg:col-span-6">
+          <div className="lg:col-span-7">
             <AnimatePresence mode="wait">
               <motion.div
                 key={active.id}
@@ -576,16 +552,6 @@ function Movements() {
                 <p className="mt-4 font-[Inter] text-sm leading-relaxed text-[#39251D]/90 sm:text-base">
                   {active.desc}
                 </p>
-
-                {/* Counter Metric */}
-                <div className="mt-6 rounded-xl border border-[#C59A52]/40 bg-[#EDE0C9]/45 p-4">
-                  <p className="font-serif text-4xl font-bold text-[#78372B]">
-                    <Counter to={active.statNumber} suffix={active.statSuffix} />
-                  </p>
-                  <p className="mt-1 font-[Inter] text-xs font-medium uppercase tracking-wider text-[#54382B]">
-                    {active.statLabel}
-                  </p>
-                </div>
 
                 <div className="mt-6 flex flex-wrap items-center gap-4">
                   <Link
@@ -663,48 +629,6 @@ function Seva() {
 
 /* ---------- 07 devotional life & festivals ---------- */
 function Events() {
-  const defaultGallery = [
-    [A.procession, "Procession before Lord Jagannath"],
-    [A.altar, "Gaura-Nitai & Madan Mohan altar"],
-    [A.kirtan, "Kirtan by the ghats"],
-    [A.golden, "Golden riverside devotion"],
-    [A.radhaKrishna, "Radha and Krishna"],
-    [A.temple, "Nabadwip Dham temple"]
-  ];
-  const [gallery, setGallery] = useState(defaultGallery);
-
-  useEffect(() => {
-    let isMounted = true;
-    async function loadDynamicGallery() {
-      try {
-        const dynamicItems = await getGalleryAPI();
-        if (isMounted) {
-          const deletedSet = new Set(JSON.parse(localStorage.getItem("ckf_deleted_gallery_ids") || "[]"));
-          const formatted = (dynamicItems || [])
-            .filter((item) => !item.image?.endsWith(".mp4") && !item.src?.endsWith(".mp4"))
-            .map((item) => [item.image || item.src, item.title]);
-
-          // Take latest photos from admin, filling remaining slots up to 6 from defaults (excluding any deleted ones)
-          const existingSrcs = new Set(formatted.map(([s]) => s));
-          const fillDefaults = defaultGallery.filter(([s, title]) =>
-            !existingSrcs.has(s) &&
-            !deletedSet.has(s) &&
-            !deletedSet.has(title.toLowerCase().trim())
-          );
-          const combined = [...formatted, ...fillDefaults].slice(0, 6);
-          setGallery(combined);
-        }
-      } catch (e) {}
-    }
-    loadDynamicGallery();
-
-    const handleUpdate = () => loadDynamicGallery();
-    window.addEventListener("ckf_gallery_updated", handleUpdate);
-    return () => {
-      isMounted = false;
-      window.removeEventListener("ckf_gallery_updated", handleUpdate);
-    };
-  }, []);
   return (
     <section id="events" className="relative overflow-hidden bg-[#FFF9ED] py-24">
       <Om pos="-right-10 top-10" />
@@ -714,7 +638,7 @@ function Events() {
           <h2 className="mt-3 text-4xl font-bold text-[#78372B] sm:text-5xl" style={serif}>Kirtan, Festivals & Gatherings</h2>
         </Reveal>
         <div className="mt-12 grid items-start gap-10 lg:grid-cols-[1.2fr_.8fr]">
-          <Reveal><Parallax src={A.procession} alt="Devotional procession before Lord Jagannath" speed={40} className="aspect-[4/3] rounded-xl border border-[#C59A52] shadow-[0_0_0_6px_#FFF9ED,0_0_0_7px_rgba(197,154,82,.6)]" /></Reveal>
+          <Reveal><Parallax src={HOME_PHOTOS.gathering} alt="Group gathered on stage around a seated guest" speed={40} className="aspect-[4/3] rounded-xl border border-[#C59A52] shadow-[0_0_0_6px_#FFF9ED,0_0_0_7px_rgba(197,154,82,.6)]" /></Reveal>
           <Reveal delay={0.1}>
             <h3 className="text-3xl font-bold text-[#78372B]" style={serif}>Upcoming Events</h3>
             <ul className="mt-4 divide-y divide-[#C59A52]/40 border-y border-[#C59A52]/40">
@@ -735,15 +659,10 @@ function Events() {
             </div>
           </Reveal>
         </div>
-        <div className="mt-14 grid grid-cols-2 gap-4 md:grid-cols-3">
-          {gallery.map(([s, c], k) => (
-            <Reveal key={c} delay={k * 0.07}>
-              <figure className="group relative aspect-[4/3] overflow-hidden rounded-lg border border-[#C59A52]/60">
-                <img src={s} alt={c} loading="lazy" className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110 motion-reduce:transition-none" />
-                <figcaption className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-[#39251D]/85 to-transparent p-3 font-[Inter] text-xs text-[#FFF9ED]">{c}</figcaption>
-              </figure>
-            </Reveal>
-          ))}
+        <div className="mt-10 text-center">
+          <Link to="/gallery" className="inline-block rounded-full border border-[#78372B] px-6 py-3 text-sm font-semibold text-[#78372B] hover:bg-[#78372B] hover:text-[#FFF9ED]">
+            View the full gallery
+          </Link>
         </div>
       </div>
     </section>
@@ -756,7 +675,7 @@ function Invitation() {
   const [amt, setAmt] = useState(1100);
   return (
     <section id="donate" className="relative overflow-hidden bg-[#78372B] py-24 text-[#FFF9ED]">
-      <Parallax src={A.golden} alt="" speed={60} className="absolute inset-0 opacity-20" />
+      <Parallax src={HOME_PHOTOS.shrine} alt="" speed={60} className="absolute inset-0 opacity-20" />
       <div className="relative mx-auto grid max-w-5xl items-center gap-10 px-5 md:grid-cols-2">
         <Reveal>
           <Eyebrow n="08" light>Final spiritual invitation</Eyebrow>
