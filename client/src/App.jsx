@@ -25,16 +25,16 @@ const AdminPanel = lazy(() => import('./pages/AdminPanel.jsx'))
 
 function PageLoader() {
   return (
-    <div className="flex min-h-[60vh] flex-col items-center justify-center bg-[#FFF9ED] px-4 text-center">
-      <div className="relative flex items-center justify-center">
-        <div className="h-16 w-16 animate-spin rounded-full border-2 border-[#C59A52]/30 border-t-[#971515]" />
-        <span
-          className="absolute select-none font-serif text-2xl text-[#C59A52]"
-          style={{ fontFamily: "'Noto Serif Devanagari', serif" }}
-          aria-hidden="true"
-        >
-          ॐ
-        </span>
+    <div role="status" className="flex min-h-[60vh] flex-col items-center justify-center bg-[#FFF9ED] px-4 text-center">
+      <div className="relative grid h-20 w-20 place-items-center" aria-hidden="true">
+        <div className="absolute inset-0 rounded-full border-2 border-[#C59A52]/30 border-t-[#971515] motion-safe:animate-spin" />
+        <img
+          src="/assets/Minimalist%20U-Shaped%20Loader%20Icon.png"
+          alt=""
+          width={78}
+          height={52}
+          className="h-[52px] w-[78px] select-none"
+        />
       </div>
       <p className="mt-4 font-serif text-sm tracking-widest text-[#78372B]">
         LOADING SACRED PAGES...

@@ -427,20 +427,6 @@ Sound is the subtle blueprint of consciousness. When divine vibration permeates 
 
 export const INITIAL_GALLERY = [
   {
-    _id: "gal-1",
-    title: "Krishna's Golden Riverside Devotion",
-    category: "River Ghats & Dham",
-    image: "/assets/Krishna’s Golden Riverside Devotion.png",
-    caption: "Sacred pastimes on the consecrated banks of Bhagirathi river in Nabadwip Dham.",
-  },
-  {
-    _id: "gal-2",
-    title: "Radha & Krishna by the Riverside",
-    category: "Temple & Altar",
-    image: "/assets/Radha and Krishna by the Riverside.png",
-    caption: "Divine love of Sri Sri Radha-Madhava amidst the lush groves of Bengal.",
-  },
-  {
     _id: "gal-3",
     title: "Opulent Gaura-Nitai & Madan Mohan Altar",
     category: "Temple & Altar",
@@ -468,14 +454,14 @@ export const INITIAL_GALLERY = [
     image: "/assets/Devotional Procession Before Lord Jagannath.png",
     caption: "Festive Rath Yatra and sankirtan processions in holy Nabadwip.",
   },
-  {
-    _id: "gal-7",
-    title: "Sacred Temple Interaction & Parikrama",
-    category: "Videos",
-    image: "/assets/interaction-video.mp4",
-    caption: "Immersive video capturing devotional interactions and sacred moments at the Kunja.",
-  },
 ];
+
+const retiredGalleryIds = new Set(['gal-1', 'gal-2', 'gal-7', 'init-1', 'init-2', 'init-7']);
+
+export function readCachedGalleryItems() {
+  const items = JSON.parse(localStorage.getItem("ckf_gallery") || "[]");
+  return items.filter((item) => !retiredGalleryIds.has(item._id || item.id));
+}
 
 // Check connectivity using the backend's lightweight liveness probe.
 export async function checkServerStatus() {
@@ -846,7 +832,7 @@ export async function getGalleryAPI() {
   }
 
   // Combine server items with local storage
-  const local = JSON.parse(localStorage.getItem("ckf_gallery") || "[]");
+  const local = readCachedGalleryItems();
   const rawList = fetchedItems ? [...fetchedItems, ...local] : (local.length > 0 ? local : INITIAL_GALLERY);
 
   // Filter out any deleted items permanently

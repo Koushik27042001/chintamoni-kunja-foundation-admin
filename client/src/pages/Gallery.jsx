@@ -1,26 +1,10 @@
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowLeft, Play, X, HeartHandshake, Sparkles, Filter } from 'lucide-react'
-import { getGalleryAPI, deduplicateGalleryItems, sortGalleryItemsLatestFirst } from '../services/api'
+import { getGalleryAPI, readCachedGalleryItems, deduplicateGalleryItems, sortGalleryItemsLatestFirst } from '../services/api'
 
 // Foundation Baseline Heritage Media
 const INITIAL_ASSETS = [
-  {
-    _id: "init-1",
-    title: "Krishna's Golden Riverside Devotion",
-    desc: "Sacred pastimes on the consecrated banks of Bhagirathi river in Nabadwip Dham.",
-    src: "/assets/Krishna’s Golden Riverside Devotion.png",
-    type: "image",
-    category: "River Ghats & Dham",
-  },
-  {
-    _id: "init-2",
-    title: "Radha & Krishna by the Riverside",
-    desc: "Divine love of Sri Sri Radha-Madhava amidst the lush groves of Bengal.",
-    src: "/assets/Radha and Krishna by the Riverside.png",
-    type: "image",
-    category: "Temple & Altar",
-  },
   {
     _id: "init-3",
     title: "Opulent Gaura-Nitai & Madan Mohan Altar",
@@ -53,14 +37,6 @@ const INITIAL_ASSETS = [
     type: "image",
     category: "Festivals & Utsavs",
   },
-  {
-    _id: "init-7",
-    title: "Sacred Temple Interaction & Parikrama",
-    desc: "Immersive video capturing devotional interactions and sacred moments at the Kunja.",
-    src: "/assets/interaction-video.mp4",
-    type: "video",
-    category: "Videos",
-  },
 ];
 
 const CATEGORIES = [
@@ -76,7 +52,7 @@ const CATEGORIES = [
 const getInitialCleanAssets = () => {
   try {
     const deletedSet = new Set(JSON.parse(localStorage.getItem("ckf_deleted_gallery_ids") || "[]"));
-    const local = JSON.parse(localStorage.getItem("ckf_gallery") || "[]");
+    const local = readCachedGalleryItems();
     const base = local.length > 0 ? local : INITIAL_ASSETS;
     const clean = base
       .filter((item) => {
