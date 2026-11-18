@@ -1281,7 +1281,7 @@ export default function AdminPanel() {
   };
 
   return (
-    <div className="relative min-h-screen bg-[#0C0807] text-[#EDE0C9] font-[Inter] antialiased selection:bg-[#971515] selection:text-[#FFF9ED]">
+    <div className="admin-panel relative min-h-screen bg-[#0C0807] text-[#EDE0C9] antialiased selection:bg-[#971515] selection:text-[#FFF9ED]">
       {/* Decorative Golden Mandala & Radial Ambiance */}
       <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden" aria-hidden="true">
         <div className="absolute -top-32 left-1/2 h-[550px] w-[950px] -translate-x-1/2 bg-[radial-gradient(ellipse_at_center,rgba(197,154,82,0.16),transparent_70%)]" />
@@ -1317,7 +1317,7 @@ export default function AdminPanel() {
       {/* Standalone Dark Top Navigation Bar */}
       <header className="no-print sticky top-0 z-50 flex min-h-[64px] items-center border-b border-[#C59A52]/40 bg-[#140E0C]/95 px-4 sm:px-6 py-2.5 shadow-2xl backdrop-blur-xl">
         <div className="mx-auto flex w-full items-center justify-between gap-3">
-          <div className="flex items-center gap-2.5 sm:gap-3">
+          <div className="flex min-w-0 items-center gap-2 sm:gap-3">
             {isAuthenticated && (
               <>
                 {/* Mobile Drawer Hamburger */}
@@ -1353,23 +1353,22 @@ export default function AdminPanel() {
             <div className="hidden sm:block h-4 w-px bg-[#C59A52]/30" />
             <div className="flex items-center gap-2">
               <span
-                className="font-serif text-base sm:text-lg font-bold text-[#E8B94F]"
-                style={{ fontFamily: "'Cormorant Garamond', serif" }}
+                className="text-sm font-semibold leading-tight text-[#E8B94F] sm:text-base"
               >
                 Sri Sri Chintamoni Kunja
               </span>
-              <span className="hidden rounded-full border border-[#971515]/60 bg-[#971515]/30 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#FFBABA] md:inline-block">
+              <span className="hidden rounded-full border border-[#971515]/60 bg-[#971515]/30 px-2.5 py-0.5 text-xs font-bold uppercase tracking-normal text-[#FFBABA] md:inline-block">
                 Central Portal
               </span>
             </div>
 
             {isAuthenticated && (
-              <div className="hidden xl:flex items-center gap-1.5 rounded-lg border border-[#C59A52]/20 bg-[#1A1210] px-2.5 py-1 text-xs text-[#EDE0C9]/70">
-                <span className="text-[11px] text-[#EDE0C9]/40">Active Section:</span>
+              <div className="hidden 2xl:flex items-center gap-1.5 rounded-lg border border-[#C59A52]/20 bg-[#1A1210] px-2.5 py-1 text-xs text-[#EDE0C9]/70">
+                <span className="text-xs text-[#EDE0C9]/75">Active Section:</span>
                 <span className="font-bold text-[#E8B94F]">{currentTabObj.label}</span>
               </div>
             )}
-            <span className="hidden lg:inline-flex items-center gap-1 rounded-full border border-emerald-500/30 bg-emerald-950/50 px-2.5 py-0.5 text-[10px] font-mono font-bold text-emerald-300">
+            <span className="hidden xl:inline-flex items-center gap-1 rounded-full border border-emerald-500/30 bg-emerald-950/50 px-2.5 py-0.5 text-xs font-semibold text-emerald-300">
               <Lock size={10} className="text-emerald-400" />
               <span>Private Gateway Active</span>
             </span>
@@ -1377,13 +1376,13 @@ export default function AdminPanel() {
 
           <div className="flex items-center gap-2.5 sm:gap-3">
             {serverState.online ? (
-              <span className="flex items-center gap-1.5 rounded-full border border-emerald-500/40 bg-emerald-950/70 px-2.5 sm:px-3 py-1 text-[11px] sm:text-xs font-bold text-emerald-300 shadow-sm">
+              <span className="flex items-center gap-1.5 rounded-full border border-emerald-500/40 bg-emerald-950/70 px-2.5 sm:px-3 py-1 text-xs font-bold text-emerald-300 shadow-sm">
                 <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-400" />
                 <span className="hidden sm:inline">API: Connected ({serverState.database})</span>
                 <span className="sm:hidden">Connected</span>
               </span>
             ) : (
-              <span className="flex items-center gap-1.5 rounded-full border border-amber-500/40 bg-amber-950/70 px-2.5 sm:px-3 py-1 text-[11px] sm:text-xs font-bold text-amber-300 shadow-sm">
+              <span className="flex items-center gap-1.5 rounded-full border border-amber-500/40 bg-amber-950/70 px-2.5 sm:px-3 py-1 text-xs font-bold text-amber-300 shadow-sm">
                 <WifiOff size={12} className="text-amber-400" />
                 <span className="hidden sm:inline">Offline Resilient</span>
                 <span className="sm:hidden">Offline</span>
@@ -1449,8 +1448,7 @@ export default function AdminPanel() {
                 <Lock size={28} />
               </div>
               <h2
-                className="mt-4 font-serif text-2xl font-bold tracking-wide text-[#E8B94F]"
-                style={{ fontFamily: "'Cormorant Garamond', serif" }}
+                className="mt-4 text-2xl leading-tight tracking-tight font-bold text-[#E8B94F]"
               >
                 Admin Authentication
               </h2>
@@ -1479,7 +1477,7 @@ export default function AdminPanel() {
               )}
 
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-[#E8B94F]">
+                <label className="block text-xs font-bold text-[#E8B94F]">
                   Admin Email Address
                 </label>
                 <input
@@ -1488,12 +1486,12 @@ export default function AdminPanel() {
                   value={loginEmail}
                   onChange={(e) => setLoginEmail(e.target.value)}
                   placeholder="admin@xyz.org"
-                  className="mt-1.5 w-full rounded-xl border border-[#C59A52]/40 bg-[#0E0A09] p-3 text-xs font-semibold text-[#FFF9ED] placeholder-[#EDE0C9]/30 transition focus:border-[#E8B94F] focus:outline-none focus:ring-1 focus:ring-[#E8B94F]/50"
+                  className="mt-1.5 w-full rounded-xl border border-[#C59A52]/40 bg-[#0E0A09] p-3 text-sm font-semibold text-[#FFF9ED] placeholder-[#EDE0C9]/70 transition focus:border-[#E8B94F] focus:outline-none focus:ring-1 focus:ring-[#E8B94F]/50"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-[#E8B94F]">
+                <label className="block text-xs font-bold text-[#E8B94F]">
                   Password
                 </label>
                 <input
@@ -1502,20 +1500,20 @@ export default function AdminPanel() {
                   value={loginPassword}
                   onChange={(e) => setLoginPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="mt-1.5 w-full rounded-xl border border-[#C59A52]/40 bg-[#0E0A09] p-3 text-xs font-semibold text-[#FFF9ED] placeholder-[#EDE0C9]/30 transition focus:border-[#E8B94F] focus:outline-none focus:ring-1 focus:ring-[#E8B94F]/50"
+                  className="mt-1.5 w-full rounded-xl border border-[#C59A52]/40 bg-[#0E0A09] p-3 text-sm font-semibold text-[#FFF9ED] placeholder-[#EDE0C9]/70 transition focus:border-[#E8B94F] focus:outline-none focus:ring-1 focus:ring-[#E8B94F]/50"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={isLoggingIn}
-                className="w-full rounded-xl border border-[#C59A52]/50 bg-gradient-to-r from-[#971515] to-[#78372B] py-3.5 text-xs font-bold uppercase tracking-widest text-[#FFF9ED] shadow-xl shadow-[#971515]/30 transition hover:from-[#B01818] hover:to-[#971515] disabled:opacity-50"
+                className="w-full rounded-xl border border-[#C59A52]/50 bg-gradient-to-r from-[#971515] to-[#78372B] py-3.5 text-xs font-bold text-[#FFF9ED] shadow-xl shadow-[#971515]/30 transition hover:from-[#B01818] hover:to-[#971515] disabled:opacity-50"
               >
                 {isLoggingIn ? "Verifying Credentials..." : "Access Seva Admin Portal"}
               </button>
             </form>
 
-            <div className="mt-5 flex items-center justify-center gap-1.5 border-t border-[#C59A52]/15 pt-3.5 text-[11px] font-mono text-[#EDE0C9]/60">
+            <div className="mt-5 flex items-center justify-center gap-1.5 border-t border-[#C59A52]/15 pt-3.5 text-xs font-mono text-[#EDE0C9]/75">
               <ShieldCheck size={13} className="text-emerald-400" />
               <span>Confidential URL Gateway • Brute-Force Rate Protected</span>
             </div>
@@ -1554,10 +1552,10 @@ export default function AdminPanel() {
                 </div>
                 {!sidebarCollapsed && (
                   <div className="truncate">
-                    <h3 className="font-serif text-sm font-bold text-[#E8B94F] leading-tight">
+                    <h3 className="text-sm font-bold text-[#E8B94F] leading-tight">
                       Chintamoni Kunja
                     </h3>
-                    <p className="text-[10px] font-semibold text-[#EDE0C9]/60 uppercase tracking-widest">
+                    <p className="text-xs font-semibold text-[#EDE0C9]/75 uppercase tracking-normal">
                       Admin Suite
                     </p>
                   </div>
@@ -1595,7 +1593,7 @@ export default function AdminPanel() {
                   }`}
                 >
                   {!sidebarCollapsed ? (
-                    <div className="px-2.5 pb-1.5 mb-1 border-b border-[#C59A52]/20 text-[10px] font-bold uppercase tracking-wider text-[#E8B94F]/85">
+                    <div className="px-2.5 pb-1.5 mb-1 border-b border-[#C59A52]/20 text-xs font-bold uppercase tracking-normal text-[#E8B94F]/85">
                       {sec.group}
                     </div>
                   ) : (
@@ -1616,7 +1614,7 @@ export default function AdminPanel() {
                         className={`group relative flex w-full items-center gap-3 rounded-xl border transition-all duration-200 ${
                           sidebarCollapsed
                             ? "justify-center p-3"
-                            : "px-3.5 py-2.5 text-xs font-semibold"
+                            : "px-3.5 py-2.5 text-sm font-medium"
                         } ${
                           active
                             ? "border-[#E8B94F]/75 bg-gradient-to-r from-[#971515] to-[#78372B] text-[#FFF9ED] shadow-md shadow-[#971515]/25"
@@ -1630,11 +1628,11 @@ export default function AdminPanel() {
                           }`}
                         />
                         {!sidebarCollapsed && (
-                          <div className="flex flex-1 items-center justify-between overflow-hidden">
-                            <span className="truncate text-left">{tab.label}</span>
+                          <div className="flex min-w-0 flex-1 items-center justify-between">
+                            <span className="text-left leading-snug">{tab.label}</span>
                             {typeof tab.badge !== "undefined" && tab.badge > 0 && (
                               <span
-                                className={`ml-2 rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                                className={`ml-2 rounded-full px-2 py-0.5 text-xs font-bold ${
                                   active
                                     ? "bg-[#FFF9ED]/20 text-[#FFF9ED]"
                                     : "bg-[#2A1C18] text-[#E8B94F] border border-[#C59A52]/50"
@@ -1646,7 +1644,7 @@ export default function AdminPanel() {
                           </div>
                         )}
                         {sidebarCollapsed && typeof tab.badge !== "undefined" && tab.badge > 0 && (
-                          <span className="absolute top-1 right-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-[#971515] px-1 text-[9px] font-bold text-white shadow">
+                          <span className="absolute top-1 right-1 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-[#971515] px-1 text-xs font-bold text-white shadow">
                             {tab.badge}
                           </span>
                         )}
@@ -1673,7 +1671,7 @@ export default function AdminPanel() {
                       <p className="text-xs font-bold text-[#FFF9ED] truncate">
                         {currentUser?.name || "Administrator"}
                       </p>
-                      <p className="text-[10px] text-emerald-400 font-semibold flex items-center gap-1">
+                      <p className="text-xs text-emerald-400 font-semibold flex items-center gap-1">
                         <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
                         Online &amp; Active
                       </p>
@@ -1706,12 +1704,11 @@ export default function AdminPanel() {
               <div className="flex flex-col justify-between gap-4 rounded-2xl border border-[#C59A52]/50 bg-[#16100E]/95 p-5 sm:p-6 shadow-xl sm:flex-row sm:items-center">
                 <div>
                   <h2
-                    className="font-serif text-2xl font-bold text-[#E8B94F]"
-                    style={{ fontFamily: "'Cormorant Garamond', serif" }}
+                    className="text-2xl leading-tight tracking-tight font-bold text-[#E8B94F]"
                   >
                     Executive Seva Dashboard &amp; Analytics
                   </h2>
-                  <p className="mt-0.5 text-xs text-[#EDE0C9]/65">
+                  <p className="mt-0.5 text-xs text-[#EDE0C9]/75">
                     Real-time metrics across Registered Members, Financial Receipts, Field Agents &amp; Foundation Inventory
                   </p>
                 </div>
@@ -1725,7 +1722,7 @@ export default function AdminPanel() {
                 {/* Total Members */}
                 <div className="rounded-2xl border border-[#C59A52]/50 bg-[#16100E]/90 p-5 shadow-xl backdrop-blur-md">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold uppercase tracking-wider text-[#E8B94F]/80">
+                    <span className="text-xs font-bold uppercase tracking-normal text-[#E8B94F]/80">
                       Registered Members
                     </span>
                     <div className="rounded-xl border border-[#C59A52]/50 bg-[#251B17] p-2.5 text-[#E8B94F]">
@@ -1733,16 +1730,16 @@ export default function AdminPanel() {
                     </div>
                   </div>
                   <div className="mt-4 flex items-baseline gap-2">
-                    <span className="font-serif text-3xl font-bold text-[#FFF9ED]">{members.length}</span>
+                    <span className="text-3xl font-bold tabular-nums text-[#FFF9ED]">{members.length}</span>
                     <span className="text-xs font-semibold text-emerald-400">100% Active</span>
                   </div>
-                  <p className="mt-1 text-xs text-[#EDE0C9]/50">12-column certified directory</p>
+                  <p className="mt-1 text-xs text-[#EDE0C9]/75">12-column certified directory</p>
                 </div>
 
                 {/* Total Collections */}
                 <div className="rounded-2xl border border-[#C59A52]/50 bg-[#16100E]/90 p-5 shadow-xl backdrop-blur-md">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold uppercase tracking-wider text-[#E8B94F]/80">
+                    <span className="text-xs font-bold uppercase tracking-normal text-[#E8B94F]/80">
                       Total Seva Collections
                     </span>
                     <div className="rounded-xl border border-emerald-500/30 bg-emerald-950/60 p-2.5 text-emerald-400">
@@ -1750,17 +1747,17 @@ export default function AdminPanel() {
                     </div>
                   </div>
                   <div className="mt-4 flex items-baseline gap-2">
-                    <span className="font-serif text-3xl font-bold text-[#E8B94F]">
+                    <span className="text-3xl font-bold tabular-nums text-[#E8B94F]">
                       ₹{totalDonationAmount.toLocaleString("en-IN")}
                     </span>
                   </div>
-                  <p className="mt-1 text-xs text-[#EDE0C9]/50">{receipts.length} Official Receipts Issued</p>
+                  <p className="mt-1 text-xs text-[#EDE0C9]/75">{receipts.length} Official Receipts Issued</p>
                 </div>
 
                 {/* Walk-in vs Field vs Online */}
                 <div className="rounded-2xl border border-[#C59A52]/50 bg-[#16100E]/90 p-5 shadow-xl backdrop-blur-md">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold uppercase tracking-wider text-[#E8B94F]/80">
+                    <span className="text-xs font-bold uppercase tracking-normal text-[#E8B94F]/80">
                       Walk-in vs Field
                     </span>
                     <div className="rounded-xl border border-amber-500/30 bg-amber-950/60 p-2.5 text-amber-400">
@@ -1769,15 +1766,15 @@ export default function AdminPanel() {
                   </div>
                   <div className="mt-4 space-y-1 text-xs font-semibold">
                     <div className="flex justify-between">
-                      <span className="text-[#EDE0C9]/60">Office Walk-in:</span>
+                      <span className="text-[#EDE0C9]/75">Office Walk-in:</span>
                       <span className="font-bold text-[#FFF9ED]">₹{walkInDonationAmount.toLocaleString("en-IN")}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-[#EDE0C9]/60">Field Doorstep:</span>
+                      <span className="text-[#EDE0C9]/75">Field Doorstep:</span>
                       <span className="font-bold text-[#E8B94F]">₹{fieldDonationAmount.toLocaleString("en-IN")}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-[#EDE0C9]/60">Online Portal:</span>
+                      <span className="text-[#EDE0C9]/75">Online Portal:</span>
                       <span className="font-bold text-emerald-400">₹{onlineDonationAmount.toLocaleString("en-IN")}</span>
                     </div>
                   </div>
@@ -1786,7 +1783,7 @@ export default function AdminPanel() {
                 {/* Pending Agent Settlement */}
                 <div className="rounded-2xl border border-rose-500/30 bg-[#1A0E0C]/90 p-5 shadow-xl backdrop-blur-md">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold uppercase tracking-wider text-rose-300">
+                    <span className="text-xs font-bold uppercase tracking-normal text-rose-300">
                       Pending Field Deposit
                     </span>
                     <div className="rounded-xl border border-rose-500/30 bg-rose-950/60 p-2.5 text-rose-400">
@@ -1794,7 +1791,7 @@ export default function AdminPanel() {
                     </div>
                   </div>
                   <div className="mt-4 flex items-baseline gap-2">
-                    <span className="font-serif text-3xl font-bold text-rose-300">
+                    <span className="text-3xl font-bold tabular-nums text-rose-300">
                       ₹{pendingFieldSettlement.toLocaleString("en-IN")}
                     </span>
                   </div>
@@ -1811,18 +1808,18 @@ export default function AdminPanel() {
               <div className="rounded-2xl border border-[#C59A52]/50 bg-[#16100E]/90 p-6 shadow-xl backdrop-blur-md">
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                   <div>
-                    <span className="text-xs font-bold uppercase tracking-wider text-[#E8B94F]">
+                    <span className="text-xs font-bold uppercase tracking-normal text-[#E8B94F]">
                       Monthly Seva Fund Target
                     </span>
-                    <h3 className="font-serif text-xl font-bold text-[#FFF9ED]">
-                      ₹7,48,500 <span className="text-sm font-normal text-[#EDE0C9]/60">collected of ₹10,00,000 target</span>
+                    <h3 className="text-xl font-bold text-[#FFF9ED]">
+                      ₹7,48,500 <span className="text-sm font-normal text-[#EDE0C9]/75">collected of ₹10,00,000 target</span>
                     </h3>
                   </div>
                   <div className="flex items-center gap-3">
                     <span className="rounded-full border border-emerald-500/40 bg-emerald-950/60 px-3 py-1 font-mono text-xs font-bold text-emerald-300">
                       74.85% Achieved
                     </span>
-                    <span className="text-xs text-[#EDE0C9]/60">23 Days Remaining</span>
+                    <span className="text-xs text-[#EDE0C9]/75">23 Days Remaining</span>
                   </div>
                 </div>
 
@@ -1863,16 +1860,16 @@ export default function AdminPanel() {
                     <div>
                       <div className="flex items-center gap-2">
                         <TrendingUp size={18} className="text-[#E8B94F]" />
-                        <h3 className="font-serif text-lg font-bold text-[#E8B94F]">
+                        <h3 className="text-lg font-bold text-[#E8B94F]">
                           Seva Donation Volume & Growth Trajectory
                         </h3>
                       </div>
-                      <p className="mt-0.5 text-xs text-[#EDE0C9]/60">
+                      <p className="mt-0.5 text-xs text-[#EDE0C9]/75">
                         Monthly aggregated collections across Walk-in, Field, and Online gateways
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="rounded-lg border border-[#C59A52]/50 bg-[#251A16] px-2.5 py-1 text-[11px] font-bold text-[#E8B94F]">
+                      <span className="rounded-lg border border-[#C59A52]/50 bg-[#251A16] px-2.5 py-1 text-xs font-bold text-[#E8B94F]">
                         May – Nov 2026
                       </span>
                     </div>
@@ -1892,10 +1889,10 @@ export default function AdminPanel() {
                           </linearGradient>
                         </defs>
                         <CartesianGrid strokeDasharray="3 3" stroke="rgba(197, 154, 82, 0.15)" />
-                        <XAxis dataKey="month" stroke="#B89F82" fontSize={11} tickLine={false} />
+                        <XAxis dataKey="month" stroke="#B89F82" fontSize={12} tickLine={false} />
                         <YAxis
                           stroke="#B89F82"
-                          fontSize={11}
+                          fontSize={12}
                           tickLine={false}
                           tickFormatter={(val) => `₹${val / 1000}k`}
                         />
@@ -1953,9 +1950,9 @@ export default function AdminPanel() {
                   <div>
                     <div className="flex items-center gap-2 border-b border-[#C59A52]/20 pb-4">
                       <PieChartIcon size={18} className="text-[#E8B94F]" />
-                      <h3 className="font-serif text-lg font-bold text-[#E8B94F]">Seva Purpose Share</h3>
+                      <h3 className="text-lg font-bold text-[#E8B94F]">Seva Purpose Share</h3>
                     </div>
-                    <p className="mt-1 text-xs text-[#EDE0C9]/60">
+                    <p className="mt-1 text-xs text-[#EDE0C9]/75">
                       Breakdown of devotee offerings across Vedic causes
                     </p>
 
@@ -1979,8 +1976,8 @@ export default function AdminPanel() {
                         </PieChart>
                       </ResponsiveContainer>
                       <div className="pointer-events-none absolute text-center">
-                        <span className="font-serif text-xl font-bold text-[#E8B94F]">₹7.48L</span>
-                        <span className="block text-[10px] text-[#EDE0C9]/60">Total Raised</span>
+                        <span className="text-xl font-bold text-[#E8B94F]">₹7.48L</span>
+                        <span className="block text-xs text-[#EDE0C9]/75">Total Raised</span>
                       </div>
                     </div>
                   </div>
@@ -1994,7 +1991,7 @@ export default function AdminPanel() {
                           <span className="text-[#EDE0C9]">{p.name}</span>
                         </div>
                         <div className="flex items-center gap-2 font-mono">
-                          <span className="text-[#EDE0C9]/60">₹{(p.amount / 1000).toFixed(0)}k</span>
+                          <span className="text-[#EDE0C9]/75">₹{(p.amount / 1000).toFixed(0)}k</span>
                           <span className="font-bold text-[#E8B94F]">{p.value}%</span>
                         </div>
                       </div>
@@ -2011,15 +2008,15 @@ export default function AdminPanel() {
                     <div>
                       <div className="flex items-center gap-2">
                         <BarChart3 size={18} className="text-[#E8B94F]" />
-                        <h3 className="font-serif text-lg font-bold text-[#E8B94F]">
+                        <h3 className="text-lg font-bold text-[#E8B94F]">
                           Collection Channel Performance
                         </h3>
                       </div>
-                      <p className="mt-0.5 text-xs text-[#EDE0C9]/60">
+                      <p className="mt-0.5 text-xs text-[#EDE0C9]/75">
                         Monthly comparison between Walk-in, Field Agents, and Online
                       </p>
                     </div>
-                    <span className="rounded-lg border border-[#C59A52]/50 bg-[#251A16] px-2.5 py-1 text-[11px] font-bold text-[#E8B94F]">
+                    <span className="rounded-lg border border-[#C59A52]/50 bg-[#251A16] px-2.5 py-1 text-xs font-bold text-[#E8B94F]">
                       Channel Comparison
                     </span>
                   </div>
@@ -2028,10 +2025,10 @@ export default function AdminPanel() {
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={DONATION_TRENDS_DATA} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
                         <CartesianGrid strokeDasharray="3 3" stroke="rgba(197, 154, 82, 0.15)" />
-                        <XAxis dataKey="month" stroke="#B89F82" fontSize={11} tickLine={false} />
+                        <XAxis dataKey="month" stroke="#B89F82" fontSize={12} tickLine={false} />
                         <YAxis
                           stroke="#B89F82"
-                          fontSize={11}
+                          fontSize={12}
                           tickLine={false}
                           tickFormatter={(val) => `₹${val / 1000}k`}
                         />
@@ -2064,11 +2061,11 @@ export default function AdminPanel() {
                   <div>
                     <div className="flex items-center gap-2 border-b border-[#C59A52]/20 pb-4">
                       <SlidersHorizontal size={18} className="text-[#E8B94F]" />
-                      <h3 className="font-serif text-lg font-bold text-[#E8B94F]">
+                      <h3 className="text-lg font-bold text-[#E8B94F]">
                         Operational Health & Progress
                       </h3>
                     </div>
-                    <p className="mt-1 text-xs text-[#EDE0C9]/60">
+                    <p className="mt-1 text-xs text-[#EDE0C9]/75">
                       Key administrative efficiency and settlement ratios
                     </p>
 
@@ -2082,7 +2079,7 @@ export default function AdminPanel() {
                         <div className="mt-1.5 h-2.5 w-full overflow-hidden rounded-full bg-[#201512]">
                           <div className="h-full rounded-full bg-emerald-500" style={{ width: "94.2%" }} />
                         </div>
-                        <p className="mt-1 text-[11px] text-[#EDE0C9]/50">Target: &gt;90% daily clearance</p>
+                        <p className="mt-1 text-xs text-[#EDE0C9]/75">Target: &gt;90% daily clearance</p>
                       </div>
 
                       {/* Metric 2 */}
@@ -2095,7 +2092,7 @@ export default function AdminPanel() {
                           <div className="h-full bg-[#E8B94F]" style={{ width: "48%" }} />
                           <div className="h-full bg-[#971515]" style={{ width: "52%" }} />
                         </div>
-                        <p className="mt-1 text-[11px] text-[#EDE0C9]/50">Gold: UPI/Online • Maroon: Cash</p>
+                        <p className="mt-1 text-xs text-[#EDE0C9]/75">Gold: UPI/Online • Maroon: Cash</p>
                       </div>
 
                       {/* Metric 3 */}
@@ -2107,7 +2104,7 @@ export default function AdminPanel() {
                         <div className="mt-1.5 h-2.5 w-full overflow-hidden rounded-full bg-[#201512]">
                           <div className="h-full rounded-full bg-amber-500" style={{ width: "82.6%" }} />
                         </div>
-                        <p className="mt-1 text-[11px] text-[#EDE0C9]/50">342 active recurring life patrons</p>
+                        <p className="mt-1 text-xs text-[#EDE0C9]/75">342 active recurring life patrons</p>
                       </div>
 
                       {/* Metric 4 */}
@@ -2119,7 +2116,7 @@ export default function AdminPanel() {
                         <div className="mt-1.5 h-2.5 w-full overflow-hidden rounded-full bg-[#201512]">
                           <div className="h-full rounded-full bg-emerald-400" style={{ width: "100%" }} />
                         </div>
-                        <p className="mt-1 text-[11px] text-[#EDE0C9]/50">All receipts stamped with IT 80G code</p>
+                        <p className="mt-1 text-xs text-[#EDE0C9]/75">All receipts stamped with IT 80G code</p>
                       </div>
                     </div>
                   </div>
@@ -2138,7 +2135,7 @@ export default function AdminPanel() {
 
               {/* Quick Action Buttons */}
               <div className="rounded-2xl border border-[#C59A52]/50 bg-[#18110F]/80 p-6 shadow-xl backdrop-blur-md">
-                <h3 className="font-serif text-lg font-bold text-[#E8B94F]">Quick Administrative Actions</h3>
+                <h3 className="text-lg font-bold text-[#E8B94F]">Quick Administrative Actions</h3>
                 <div className="mt-4 flex flex-wrap gap-3">
                   <button
                     onClick={() => setActiveTab("receipt")}
@@ -2188,14 +2185,14 @@ export default function AdminPanel() {
               {/* Recent Collections Table */}
               <div className="rounded-2xl border border-[#C59A52]/50 bg-[#16100E]/90 p-6 shadow-xl">
                 <div className="flex items-center justify-between border-b border-[#C59A52]/20 pb-3">
-                  <h3 className="font-serif text-lg font-bold text-[#E8B94F]">Recent Official Receipts</h3>
+                  <h3 className="text-lg font-bold text-[#E8B94F]">Recent Official Receipts</h3>
                   <button onClick={() => setActiveTab("history")} className="text-xs font-bold text-[#E8B94F] hover:underline">
                     View All ({receipts.length}) →
                   </button>
                 </div>
                 <div className="mt-4 overflow-x-auto">
-                  <table className="w-full text-left text-xs">
-                    <thead className="border-b border-[#C59A52]/25 bg-[#201512] text-[#E8B94F] uppercase font-bold tracking-wider">
+                  <table className="w-full text-left text-sm">
+                    <thead className="border-b border-[#C59A52]/25 bg-[#201512] text-[#E8B94F] font-bold">
                       <tr>
                         <th className="p-3">Receipt No</th>
                         <th className="p-3">Donor Name</th>
@@ -2211,7 +2208,7 @@ export default function AdminPanel() {
                           <td className="p-3 font-semibold text-[#FFF9ED]">{r.donorName}</td>
                           <td className="p-3">
                             <span
-                              className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${r.channel === "Online Donation"
+                              className={`rounded-full px-2 py-0.5 text-xs font-bold ${r.channel === "Online Donation"
                                 ? "bg-emerald-950 text-emerald-300 border border-emerald-500/40"
                                 : r.channel === "Field Collection"
                                   ? "bg-amber-950 text-amber-300 border border-amber-500/40"
@@ -2221,7 +2218,7 @@ export default function AdminPanel() {
                               {r.channel}
                             </span>
                           </td>
-                          <td className="p-3 text-[#EDE0C9]/60">{r.paymentMode}</td>
+                          <td className="p-3 text-[#EDE0C9]/75">{r.paymentMode}</td>
                           <td className="p-3 text-right font-bold text-[#E8B94F]">
                             ₹{Number(r.amount).toLocaleString("en-IN")}
                           </td>
@@ -2245,13 +2242,12 @@ export default function AdminPanel() {
                   <div className="flex items-center gap-2">
                     <Activity size={24} className="text-[#E8B94F]" />
                     <h2
-                      className="font-serif text-2xl font-bold text-[#E8B94F]"
-                      style={{ fontFamily: "'Cormorant Garamond', serif" }}
+                      className="text-2xl leading-tight tracking-tight font-bold text-[#E8B94F]"
                     >
                       Website & Devotee Page Engagement Analytics
                     </h2>
                   </div>
-                  <p className="mt-1 text-xs text-[#EDE0C9]/60">
+                  <p className="mt-1 text-xs text-[#EDE0C9]/75">
                     Real-time metrics on which pages devotees stay longer, dwell duration, and page transition connectivity.
                   </p>
                 </div>
@@ -2276,7 +2272,7 @@ export default function AdminPanel() {
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 <div className="rounded-2xl border border-[#C59A52]/50 bg-[#16100E]/90 p-5 shadow-xl backdrop-blur-md">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold uppercase tracking-wider text-[#E8B94F]/80">
+                    <span className="text-xs font-bold uppercase tracking-normal text-[#E8B94F]/80">
                       Total Devotee Visits
                     </span>
                     <div className="rounded-xl border border-[#C59A52]/50 bg-[#251B17] p-2.5 text-[#E8B94F]">
@@ -2284,15 +2280,15 @@ export default function AdminPanel() {
                     </div>
                   </div>
                   <div className="mt-4 flex items-baseline gap-2">
-                    <span className="font-serif text-3xl font-bold text-[#FFF9ED]">45,860</span>
+                    <span className="text-3xl font-bold tabular-nums text-[#FFF9ED]">45,860</span>
                     <span className="text-xs font-semibold text-emerald-400">+18.4% MoM</span>
                   </div>
-                  <p className="mt-1 text-xs text-[#EDE0C9]/50">Across all public foundation pages</p>
+                  <p className="mt-1 text-xs text-[#EDE0C9]/75">Across all public foundation pages</p>
                 </div>
 
                 <div className="rounded-2xl border border-[#C59A52]/50 bg-[#16100E]/90 p-5 shadow-xl backdrop-blur-md">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold uppercase tracking-wider text-[#E8B94F]/80">
+                    <span className="text-xs font-bold uppercase tracking-normal text-[#E8B94F]/80">
                       Unique Devotee Sessions
                     </span>
                     <div className="rounded-xl border border-[#C59A52]/50 bg-[#251B17] p-2.5 text-[#E8B94F]">
@@ -2300,15 +2296,15 @@ export default function AdminPanel() {
                     </div>
                   </div>
                   <div className="mt-4 flex items-baseline gap-2">
-                    <span className="font-serif text-3xl font-bold text-[#E8B94F]">28,940</span>
+                    <span className="text-3xl font-bold tabular-nums text-[#E8B94F]">28,940</span>
                     <span className="text-xs font-semibold text-emerald-400">63% Direct</span>
                   </div>
-                  <p className="mt-1 text-xs text-[#EDE0C9]/50">Unique spiritual seekers & donors</p>
+                  <p className="mt-1 text-xs text-[#EDE0C9]/75">Unique spiritual seekers & donors</p>
                 </div>
 
                 <div className="rounded-2xl border border-emerald-500/30 bg-[#16100E]/90 p-5 shadow-xl backdrop-blur-md">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold uppercase tracking-wider text-emerald-300">
+                    <span className="text-xs font-bold uppercase tracking-normal text-emerald-300">
                       Average Dwell Duration
                     </span>
                     <div className="rounded-xl border border-emerald-500/30 bg-emerald-950/60 p-2.5 text-emerald-400">
@@ -2316,15 +2312,15 @@ export default function AdminPanel() {
                     </div>
                   </div>
                   <div className="mt-4 flex items-baseline gap-2">
-                    <span className="font-serif text-3xl font-bold text-emerald-300">4m 38s</span>
+                    <span className="text-3xl font-bold tabular-nums text-emerald-300">4m 38s</span>
                     <span className="text-xs font-semibold text-emerald-400">High Retention</span>
                   </div>
-                  <p className="mt-1 text-xs text-[#EDE0C9]/50">Global average time per session</p>
+                  <p className="mt-1 text-xs text-[#EDE0C9]/75">Global average time per session</p>
                 </div>
 
                 <div className="rounded-2xl border border-amber-500/30 bg-[#1A120E]/90 p-5 shadow-xl backdrop-blur-md">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold uppercase tracking-wider text-amber-300">
+                    <span className="text-xs font-bold uppercase tracking-normal text-amber-300">
                       Most Engaging Page
                     </span>
                     <div className="rounded-xl border border-amber-500/30 bg-amber-950/60 p-2.5 text-amber-400">
@@ -2332,10 +2328,10 @@ export default function AdminPanel() {
                     </div>
                   </div>
                   <div className="mt-4">
-                    <span className="font-serif text-xl font-bold text-[#E8B94F]">Sri Guru Pranali</span>
+                    <span className="text-xl font-bold text-[#E8B94F]">Sri Guru Pranali</span>
                     <span className="block text-xs font-semibold text-emerald-400 mt-0.5">6m 12s average stay</span>
                   </div>
-                  <p className="mt-1 text-xs text-[#EDE0C9]/50">Followed closely by /diksha (5m 24s)</p>
+                  <p className="mt-1 text-xs text-[#EDE0C9]/75">Followed closely by /diksha (5m 24s)</p>
                 </div>
               </div>
 
@@ -2347,15 +2343,15 @@ export default function AdminPanel() {
                     <div>
                       <div className="flex items-center gap-2">
                         <Timer size={18} className="text-[#E8B94F]" />
-                        <h3 className="font-serif text-lg font-bold text-[#E8B94F]">
+                        <h3 className="text-lg font-bold text-[#E8B94F]">
                           Which Pages Devotees Stay On The Longest (Average Dwell Time)
                         </h3>
                       </div>
-                      <p className="mt-0.5 text-xs text-[#EDE0C9]/60">
+                      <p className="mt-0.5 text-xs text-[#EDE0C9]/75">
                         Ranked duration in seconds/minutes showing user interest and content engagement
                       </p>
                     </div>
-                    <span className="rounded-lg border border-[#C59A52]/50 bg-[#251A16] px-2.5 py-1 text-[11px] font-bold text-emerald-400">
+                    <span className="rounded-lg border border-[#C59A52]/50 bg-[#251A16] px-2.5 py-1 text-xs font-bold text-emerald-400">
                       Top Retention Pages
                     </span>
                   </div>
@@ -2371,7 +2367,7 @@ export default function AdminPanel() {
                         <XAxis
                           type="number"
                           stroke="#B89F82"
-                          fontSize={11}
+                          fontSize={12}
                           tickLine={false}
                           tickFormatter={(val) => `${Math.floor(val / 60)}m ${val % 60 ? `${val % 60}s` : ""}`}
                         />
@@ -2379,7 +2375,7 @@ export default function AdminPanel() {
                           type="category"
                           dataKey="title"
                           stroke="#E8B94F"
-                          fontSize={11}
+                          fontSize={12}
                           tickLine={false}
                           width={110}
                         />
@@ -2426,9 +2422,9 @@ export default function AdminPanel() {
                   <div>
                     <div className="flex items-center gap-2 border-b border-[#C59A52]/20 pb-4">
                       <PieChartIcon size={18} className="text-[#E8B94F]" />
-                      <h3 className="font-serif text-lg font-bold text-[#E8B94F]">Device Distribution</h3>
+                      <h3 className="text-lg font-bold text-[#E8B94F]">Device Distribution</h3>
                     </div>
-                    <p className="mt-1 text-xs text-[#EDE0C9]/60">
+                    <p className="mt-1 text-xs text-[#EDE0C9]/75">
                       Devotee client devices accessing the portal
                     </p>
 
@@ -2452,8 +2448,8 @@ export default function AdminPanel() {
                         </PieChart>
                       </ResponsiveContainer>
                       <div className="pointer-events-none absolute text-center">
-                        <span className="font-serif text-xl font-bold text-[#E8B94F]">64%</span>
-                        <span className="block text-[10px] text-[#EDE0C9]/60">Mobile Web</span>
+                        <span className="text-xl font-bold text-[#E8B94F]">64%</span>
+                        <span className="block text-xs text-[#EDE0C9]/75">Mobile Web</span>
                       </div>
                     </div>
                   </div>
@@ -2492,15 +2488,15 @@ export default function AdminPanel() {
                     <div>
                       <div className="flex items-center gap-2">
                         <Clock size={18} className="text-[#E8B94F]" />
-                        <h3 className="font-serif text-lg font-bold text-[#E8B94F]">
+                        <h3 className="text-lg font-bold text-[#E8B94F]">
                           24-Hour Devotee Traffic & Aarti Rhythm
                         </h3>
                       </div>
-                      <p className="mt-0.5 text-xs text-[#EDE0C9]/60">
+                      <p className="mt-0.5 text-xs text-[#EDE0C9]/75">
                         Peak hours coincide with Sandhya Aarti (18:00) and Morning Darshan (08:00)
                       </p>
                     </div>
-                    <span className="rounded-lg border border-[#C59A52]/50 bg-[#251A16] px-2.5 py-1 text-[11px] font-bold text-[#E8B94F]">
+                    <span className="rounded-lg border border-[#C59A52]/50 bg-[#251A16] px-2.5 py-1 text-xs font-bold text-[#E8B94F]">
                       IST Timezone
                     </span>
                   </div>
@@ -2515,8 +2511,8 @@ export default function AdminPanel() {
                           </linearGradient>
                         </defs>
                         <CartesianGrid strokeDasharray="3 3" stroke="rgba(197, 154, 82, 0.15)" />
-                        <XAxis dataKey="hour" stroke="#B89F82" fontSize={11} tickLine={false} />
-                        <YAxis stroke="#B89F82" fontSize={11} tickLine={false} />
+                        <XAxis dataKey="hour" stroke="#B89F82" fontSize={12} tickLine={false} />
+                        <YAxis stroke="#B89F82" fontSize={12} tickLine={false} />
                         <RechartsTooltip content={<CustomSacredTooltip />} />
                         <Area
                           type="monotone"
@@ -2542,11 +2538,11 @@ export default function AdminPanel() {
                   <div>
                     <div className="flex items-center gap-2 border-b border-[#C59A52]/20 pb-4">
                       <Sparkles size={18} className="text-[#E8B94F]" />
-                      <h3 className="font-serif text-lg font-bold text-[#E8B94F]">
+                      <h3 className="text-lg font-bold text-[#E8B94F]">
                         Page Connectivity & Journey Paths
                       </h3>
                     </div>
-                    <p className="mt-1 text-xs text-[#EDE0C9]/60">
+                    <p className="mt-1 text-xs text-[#EDE0C9]/75">
                       Most frequent devotee transition pathways from page to page
                     </p>
 
@@ -2555,11 +2551,11 @@ export default function AdminPanel() {
                       <div className="rounded-xl border border-[#C59A52]/20 bg-[#221613] p-3 text-xs">
                         <div className="flex items-center justify-between font-bold text-[#E8B94F]">
                           <span>Initiation & Seva Journey</span>
-                          <span className="rounded bg-emerald-950 px-2 py-0.5 text-[10px] text-emerald-300">
+                          <span className="rounded bg-emerald-950 px-2 py-0.5 text-xs text-emerald-300">
                             38% of Visitors
                           </span>
                         </div>
-                        <div className="mt-2 flex items-center gap-1.5 text-[11px] font-medium text-[#FFF9ED] flex-wrap">
+                        <div className="mt-2 flex items-center gap-1.5 text-xs font-medium text-[#FFF9ED] flex-wrap">
                           <span className="rounded bg-[#2D1E1A] px-2 py-1">Home (/)</span>
                           <ArrowRight size={12} className="text-[#C59A52]" />
                           <span className="rounded bg-[#2D1E1A] px-2 py-1">/diksha</span>
@@ -2574,11 +2570,11 @@ export default function AdminPanel() {
                       <div className="rounded-xl border border-[#C59A52]/20 bg-[#221613] p-3 text-xs">
                         <div className="flex items-center justify-between font-bold text-[#E8B94F]">
                           <span>Festival Offering Pathway</span>
-                          <span className="rounded bg-emerald-950 px-2 py-0.5 text-[10px] text-emerald-300">
+                          <span className="rounded bg-emerald-950 px-2 py-0.5 text-xs text-emerald-300">
                             44% Conversion
                           </span>
                         </div>
-                        <div className="mt-2 flex items-center gap-1.5 text-[11px] font-medium text-[#FFF9ED] flex-wrap">
+                        <div className="mt-2 flex items-center gap-1.5 text-xs font-medium text-[#FFF9ED] flex-wrap">
                           <span className="rounded bg-[#2D1E1A] px-2 py-1">/events</span>
                           <ArrowRight size={12} className="text-[#C59A52]" />
                           <span className="rounded bg-emerald-900/60 px-2 py-1 text-emerald-200">/donate</span>
@@ -2589,11 +2585,11 @@ export default function AdminPanel() {
                       <div className="rounded-xl border border-[#C59A52]/20 bg-[#221613] p-3 text-xs">
                         <div className="flex items-center justify-between font-bold text-[#E8B94F]">
                           <span>Spiritual Katha Reader Journey</span>
-                          <span className="rounded bg-amber-950 px-2 py-0.5 text-[10px] text-amber-300">
+                          <span className="rounded bg-amber-950 px-2 py-0.5 text-xs text-amber-300">
                             29% Offering
                           </span>
                         </div>
-                        <div className="mt-2 flex items-center gap-1.5 text-[11px] font-medium text-[#FFF9ED] flex-wrap">
+                        <div className="mt-2 flex items-center gap-1.5 text-xs font-medium text-[#FFF9ED] flex-wrap">
                           <span className="rounded bg-[#2D1E1A] px-2 py-1">/blog</span>
                           <ArrowRight size={12} className="text-[#C59A52]" />
                           <span className="rounded bg-[#2D1E1A] px-2 py-1">/guru-pranali</span>
@@ -2604,7 +2600,7 @@ export default function AdminPanel() {
                     </div>
                   </div>
 
-                  <p className="mt-3 text-[11px] text-[#EDE0C9]/50 italic text-center">
+                  <p className="mt-3 text-xs text-[#EDE0C9]/75 italic text-center">
                     High connectivity between Guru Pranali &amp; Seva Fund signifies strong spiritual trust
                   </p>
                 </div>
@@ -2614,10 +2610,10 @@ export default function AdminPanel() {
               <div className="rounded-2xl border border-[#C59A52]/50 bg-[#16100E]/90 p-6 shadow-xl backdrop-blur-md">
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-b border-[#C59A52]/20 pb-4">
                   <div>
-                    <h3 className="font-serif text-lg font-bold text-[#E8B94F]">
+                    <h3 className="text-lg font-bold text-[#E8B94F]">
                       Page Dwell &amp; Retention Leaderboard
                     </h3>
-                    <p className="mt-0.5 text-xs text-[#EDE0C9]/60">
+                    <p className="mt-0.5 text-xs text-[#EDE0C9]/75">
                       Complete directory of foundation pages sorted by average devotee stay duration
                     </p>
                   </div>
@@ -2633,8 +2629,8 @@ export default function AdminPanel() {
                 </div>
 
                 <div className="mt-4 overflow-x-auto">
-                  <table className="w-full text-left text-xs">
-                    <thead className="border-b border-[#C59A52]/25 bg-[#201512] text-[#E8B94F] uppercase font-bold tracking-wider">
+                  <table className="w-full text-left text-sm">
+                    <thead className="border-b border-[#C59A52]/25 bg-[#201512] text-[#E8B94F] font-bold">
                       <tr>
                         <th className="p-3">Rank</th>
                         <th className="p-3">Page Route</th>
@@ -2657,10 +2653,10 @@ export default function AdminPanel() {
                             <td className="p-3 font-mono font-bold text-[#C59A52]">#{idx + 1}</td>
                             <td className="p-3 font-semibold text-[#FFF9ED]">
                               <div className="font-bold text-[#FFF9ED]">{page.title}</div>
-                              <div className="font-mono text-[11px] text-[#EDE0C9]/50">{page.path}</div>
+                              <div className="font-mono text-xs text-[#EDE0C9]/75">{page.path}</div>
                             </td>
                             <td className="p-3">
-                              <span className="rounded-full border border-[#C59A52]/50 bg-[#251B17] px-2.5 py-0.5 text-[10px] font-bold text-[#E8B94F]">
+                              <span className="rounded-full border border-[#C59A52]/50 bg-[#251B17] px-2.5 py-0.5 text-xs font-bold text-[#E8B94F]">
                                 {page.category}
                               </span>
                             </td>
@@ -2691,13 +2687,13 @@ export default function AdminPanel() {
                                   page.nextPages.map((np) => (
                                     <span
                                       key={np.path}
-                                      className="rounded bg-[#291B17] px-2 py-0.5 text-[10px] text-[#E8B94F] border border-[#C59A52]/20"
+                                      className="rounded bg-[#291B17] px-2 py-0.5 text-xs text-[#E8B94F] border border-[#C59A52]/20"
                                     >
                                       {np.path} ({np.share})
                                     </span>
                                   ))
                                 ) : (
-                                  <span className="text-[10px] text-[#EDE0C9]/40">—</span>
+                                  <span className="text-xs text-[#EDE0C9]/75">—</span>
                                 )}
                               </div>
                             </td>
@@ -2721,13 +2717,12 @@ export default function AdminPanel() {
                   <div className="flex items-center gap-2">
                     <KanbanIcon size={24} className="text-[#E8B94F]" />
                     <h2
-                      className="font-serif text-2xl font-bold text-[#E8B94F]"
-                      style={{ fontFamily: "'Cormorant Garamond', serif" }}
+                      className="text-2xl leading-tight tracking-tight font-bold text-[#E8B94F]"
                     >
                       Field Collections &amp; Devotee Pipeline Kanban
                     </h2>
                   </div>
-                  <p className="mt-1 text-xs text-[#EDE0C9]/60">
+                  <p className="mt-1 text-xs text-[#EDE0C9]/75">
                     Track field agent doorstep collections, cash handover custody, office audits, and bank settlements.
                   </p>
                 </div>
@@ -2746,14 +2741,14 @@ export default function AdminPanel() {
               <div className="rounded-2xl border border-[#C59A52]/50 bg-[#16100E]/90 p-5 shadow-xl backdrop-blur-md">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div>
-                    <span className="text-xs font-bold uppercase tracking-wider text-[#E8B94F]">
+                    <span className="text-xs font-bold uppercase tracking-normal text-[#E8B94F]">
                       Active Pipeline Value
                     </span>
                     <div className="flex items-baseline gap-2 mt-0.5">
-                      <span className="font-serif text-2xl font-bold text-[#FFF9ED]">
+                      <span className="text-2xl font-bold text-[#FFF9ED]">
                         ₹{kanbanCards.reduce((acc, c) => acc + (Number(c.amount) || 0), 0).toLocaleString("en-IN")}
                       </span>
-                      <span className="text-xs text-[#EDE0C9]/60">across {kanbanCards.length} tasks</span>
+                      <span className="text-xs text-[#EDE0C9]/75">across {kanbanCards.length} tasks</span>
                     </div>
                   </div>
 
@@ -2769,7 +2764,7 @@ export default function AdminPanel() {
                         >
                           <span className="font-bold">{col.label.split(" ")[0]}:</span>
                           <span className="font-mono font-bold">₹{(colTotal / 1000).toFixed(1)}k</span>
-                          <span className="rounded-full bg-black/40 px-1.5 py-0.2 text-[10px]">
+                          <span className="rounded-full bg-black/40 px-1.5 py-0.2 text-xs">
                             {colCards.length}
                           </span>
                         </div>
@@ -2808,7 +2803,7 @@ export default function AdminPanel() {
                     value={kanbanSearch}
                     onChange={(e) => setKanbanSearch(e.target.value)}
                     placeholder="Search by donor or task ID..."
-                    className="w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] py-2 pl-9 pr-3 text-xs font-medium text-[#FFF9ED] placeholder-[#EDE0C9]/40 focus:border-[#E8B94F] focus:outline-none"
+                    className="w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] py-2 pl-9 pr-3 text-sm font-medium text-[#FFF9ED] placeholder-[#EDE0C9]/70 focus:border-[#E8B94F] focus:outline-none"
                   />
                 </div>
 
@@ -2818,7 +2813,7 @@ export default function AdminPanel() {
                   <select
                     value={kanbanFilterAgent}
                     onChange={(e) => setKanbanFilterAgent(e.target.value)}
-                    className="rounded-xl border border-[#C59A52]/50 bg-[#16100E] p-2 text-xs font-semibold text-[#E8B94F] focus:outline-none"
+                    className="rounded-xl border border-[#C59A52]/50 bg-[#16100E] p-2 text-sm font-semibold text-[#E8B94F] focus:outline-none"
                   >
                     <option value="All">All Field Collectors</option>
                     <option value="Subrata Mondal">Subrata Mondal</option>
@@ -2858,7 +2853,7 @@ export default function AdminPanel() {
                             className="h-2.5 w-2.5 rounded-full"
                             style={{ backgroundColor: col.accent }}
                           />
-                          <h4 className="font-serif text-sm font-bold text-[#E8B94F]">{col.label}</h4>
+                          <h4 className="text-sm font-bold text-[#E8B94F]">{col.label}</h4>
                         </div>
                         <span className="rounded-full bg-[#241714] px-2 py-0.5 font-mono text-xs font-bold text-[#EDE0C9]">
                           {filteredCards.length}
@@ -2866,7 +2861,7 @@ export default function AdminPanel() {
                       </div>
 
                       {/* Sub-header with column value */}
-                      <div className="mt-2 text-[11px] text-[#EDE0C9]/60 flex justify-between">
+                      <div className="mt-2 text-xs text-[#EDE0C9]/75 flex justify-between">
                         <span>Total in stage:</span>
                         <span className="font-mono font-bold text-[#FFF9ED]">
                           ₹{stageTotal.toLocaleString("en-IN")}
@@ -2876,7 +2871,7 @@ export default function AdminPanel() {
                       {/* Cards Container */}
                       <div className="mt-3 flex-1 space-y-3 overflow-y-auto max-h-[600px] pr-1">
                         {filteredCards.length === 0 ? (
-                          <div className="rounded-xl border border-dashed border-[#C59A52]/20 p-6 text-center text-xs text-[#EDE0C9]/40">
+                          <div className="rounded-xl border border-dashed border-[#C59A52]/20 p-6 text-center text-xs text-[#EDE0C9]/75">
                             No assignments in this stage
                           </div>
                         ) : (
@@ -2886,16 +2881,16 @@ export default function AdminPanel() {
                               className="group rounded-xl border border-[#C59A52]/50 bg-[#1D1411] p-3.5 shadow-md transition hover:border-[#E8B94F]/60 hover:bg-[#251A16]"
                             >
                               {/* Card Top: ID & Date */}
-                              <div className="flex items-center justify-between text-[11px]">
+                              <div className="flex items-center justify-between text-xs">
                                 <span className="font-mono font-bold text-[#C59A52]">{card.id}</span>
-                                <span className="text-[#EDE0C9]/50">{card.date}</span>
+                                <span className="text-[#EDE0C9]/75">{card.date}</span>
                               </div>
 
                               {/* Donor & Member */}
                               <div className="mt-1.5">
                                 <h5 className="font-bold text-[#FFF9ED] text-sm">{card.donorName}</h5>
                                 {card.memberId && (
-                                  <span className="inline-block mt-0.5 rounded bg-[#2D1E1A] px-1.5 py-0.2 font-mono text-[10px] text-[#E8B94F]">
+                                  <span className="inline-block mt-0.5 rounded bg-[#2D1E1A] px-1.5 py-0.2 font-mono text-xs text-[#E8B94F]">
                                     {card.memberId}
                                   </span>
                                 )}
@@ -2903,16 +2898,16 @@ export default function AdminPanel() {
 
                               {/* Amount & Mode */}
                               <div className="mt-2 flex items-baseline justify-between border-t border-[#C59A52]/15 pt-2">
-                                <span className="font-serif text-lg font-bold text-[#E8B94F]">
+                                <span className="text-lg font-bold text-[#E8B94F]">
                                   ₹{Number(card.amount).toLocaleString("en-IN")}
                                 </span>
-                                <span className="rounded bg-black/40 px-2 py-0.5 text-[10px] font-bold text-[#EDE0C9]">
+                                <span className="rounded bg-black/40 px-2 py-0.5 text-xs font-bold text-[#EDE0C9]">
                                   {card.paymentMode}
                                 </span>
                               </div>
 
                               {/* Purpose & Area */}
-                              <div className="mt-1 text-[11px] text-[#EDE0C9]/70">
+                              <div className="mt-1 text-xs text-[#EDE0C9]/70">
                                 <div><strong>Seva:</strong> {card.purpose}</div>
                                 <div><strong>Area:</strong> {card.area}</div>
                                 <div><strong>Agent:</strong> {card.agentName}</div>
@@ -2920,7 +2915,7 @@ export default function AdminPanel() {
 
                               {/* Notes */}
                               {card.notes && (
-                                <p className="mt-1.5 rounded bg-[#160E0C] p-1.5 text-[10px] italic text-[#EDE0C9]/60 border border-[#C59A52]/10">
+                                <p className="mt-1.5 rounded bg-[#160E0C] p-1.5 text-xs italic text-[#EDE0C9]/75 border border-[#C59A52]/10">
                                   "{card.notes}"
                                 </p>
                               )}
@@ -2930,21 +2925,21 @@ export default function AdminPanel() {
                                 <button
                                   onClick={() => handleMoveKanban(card.id, "prev")}
                                   disabled={card.status === "scheduled"}
-                                  className="flex items-center gap-1 rounded bg-[#2A1B17] px-2 py-1 text-[11px] font-bold text-[#EDE0C9] transition hover:bg-[#38231E] hover:text-white disabled:opacity-30 disabled:pointer-events-none"
+                                  className="flex items-center gap-1 rounded bg-[#2A1B17] px-2 py-1 text-xs font-bold text-[#EDE0C9] transition hover:bg-[#38231E] hover:text-white disabled:opacity-30 disabled:pointer-events-none"
                                 >
                                   <ChevronLeft size={13} />
                                   <span>Prev</span>
                                 </button>
                                 <button
                                   onClick={() => handleDeleteKanbanCard(card.id)}
-                                  className="text-[10px] text-rose-400 hover:underline"
+                                  className="text-xs text-rose-400 hover:underline"
                                 >
                                   Remove
                                 </button>
                                 <button
                                   onClick={() => handleMoveKanban(card.id, "next")}
                                   disabled={card.status === "settled"}
-                                  className="flex items-center gap-1 rounded bg-[#971515] px-2 py-1 text-[11px] font-bold text-white transition hover:bg-[#B01818] disabled:opacity-30 disabled:pointer-events-none"
+                                  className="flex items-center gap-1 rounded bg-[#971515] px-2 py-1 text-xs font-bold text-white transition hover:bg-[#B01818] disabled:opacity-30 disabled:pointer-events-none"
                                 >
                                   <span>Advance</span>
                                   <ChevronRight size={13} />
@@ -2963,10 +2958,10 @@ export default function AdminPanel() {
               {newKanbanModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
                   <div className="relative w-full max-w-md rounded-3xl border border-[#C59A52]/40 bg-[#16100E] p-6 shadow-2xl">
-                    <h3 className="font-serif text-xl font-bold text-[#E8B94F]">
+                    <h3 className="text-xl font-bold text-[#E8B94F]">
                       New Field Collection Assignment
                     </h3>
-                    <p className="mt-0.5 text-xs text-[#EDE0C9]/60">
+                    <p className="mt-0.5 text-xs text-[#EDE0C9]/75">
                       Assign doorstep seva collection or follow-up to a verified field collector.
                     </p>
 
@@ -2979,7 +2974,7 @@ export default function AdminPanel() {
                           value={newKanbanForm.donorName}
                           onChange={(e) => setNewKanbanForm({ ...newKanbanForm, donorName: e.target.value })}
                           placeholder="e.g. Radhamadhav Das"
-                          className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-xs text-[#FFF9ED] focus:outline-none"
+                          className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-sm text-[#FFF9ED] focus:outline-none"
                         />
                       </div>
 
@@ -2991,7 +2986,7 @@ export default function AdminPanel() {
                             value={newKanbanForm.memberId}
                             onChange={(e) => setNewKanbanForm({ ...newKanbanForm, memberId: e.target.value })}
                             placeholder="e.g. CKF-M-003"
-                            className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-xs font-mono text-[#E8B94F] focus:outline-none"
+                            className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-sm font-mono text-[#E8B94F] focus:outline-none"
                           />
                         </div>
                         <div>
@@ -3002,7 +2997,7 @@ export default function AdminPanel() {
                             min="1"
                             value={newKanbanForm.amount}
                             onChange={(e) => setNewKanbanForm({ ...newKanbanForm, amount: e.target.value })}
-                            className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-xs font-bold text-[#E8B94F] focus:outline-none"
+                            className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-sm font-bold text-[#E8B94F] focus:outline-none"
                           />
                         </div>
                       </div>
@@ -3012,7 +3007,7 @@ export default function AdminPanel() {
                         <select
                           value={newKanbanForm.purpose}
                           onChange={(e) => setNewKanbanForm({ ...newKanbanForm, purpose: e.target.value })}
-                          className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-xs text-[#FFF9ED] focus:outline-none"
+                          className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-sm text-[#FFF9ED] focus:outline-none"
                         >
                           <option value="Daily Anna Daan Seva">Daily Anna Daan Seva</option>
                           <option value="Temple Renovation Seva">Temple Renovation Seva</option>
@@ -3028,7 +3023,7 @@ export default function AdminPanel() {
                           <select
                             value={newKanbanForm.agentName}
                             onChange={(e) => setNewKanbanForm({ ...newKanbanForm, agentName: e.target.value })}
-                            className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-xs text-[#FFF9ED] focus:outline-none"
+                            className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-sm text-[#FFF9ED] focus:outline-none"
                           >
                             <option value="Subrata Mondal">Subrata Mondal</option>
                             <option value="Amitabha Roy">Amitabha Roy</option>
@@ -3040,7 +3035,7 @@ export default function AdminPanel() {
                           <select
                             value={newKanbanForm.paymentMode}
                             onChange={(e) => setNewKanbanForm({ ...newKanbanForm, paymentMode: e.target.value })}
-                            className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-xs text-[#FFF9ED] focus:outline-none"
+                            className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-sm text-[#FFF9ED] focus:outline-none"
                           >
                             <option value="Cash">Cash</option>
                             <option value="UPI / QR">UPI / QR</option>
@@ -3056,7 +3051,7 @@ export default function AdminPanel() {
                           value={newKanbanForm.area}
                           onChange={(e) => setNewKanbanForm({ ...newKanbanForm, area: e.target.value })}
                           placeholder="e.g. Nabadwip Mayapur Ghat"
-                          className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-xs text-[#FFF9ED] focus:outline-none"
+                          className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-sm text-[#FFF9ED] focus:outline-none"
                         />
                       </div>
 
@@ -3067,7 +3062,7 @@ export default function AdminPanel() {
                           value={newKanbanForm.notes}
                           onChange={(e) => setNewKanbanForm({ ...newKanbanForm, notes: e.target.value })}
                           placeholder="e.g. Call before arrival"
-                          className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-xs text-[#FFF9ED] focus:outline-none"
+                          className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-sm text-[#FFF9ED] focus:outline-none"
                         />
                       </div>
 
@@ -3103,12 +3098,11 @@ export default function AdminPanel() {
                 <div className="rounded-2xl border border-[#C59A52]/50 bg-[#16100E]/90 p-6 shadow-xl">
                   <div className="border-b border-[#C59A52]/20 pb-3">
                     <h2
-                      className="font-serif text-2xl font-bold text-[#E8B94F]"
-                      style={{ fontFamily: "'Cormorant Garamond', serif" }}
+                      className="text-2xl leading-tight tracking-tight font-bold text-[#E8B94F]"
                     >
                       New Fund Receipt
                     </h2>
-                    <p className="mt-0.5 text-xs text-[#EDE0C9]/60">
+                    <p className="mt-0.5 text-xs text-[#EDE0C9]/75">
                       Search registered member or select offline channel (Walk-in vs Field Collector).
                     </p>
                   </div>
@@ -3116,7 +3110,7 @@ export default function AdminPanel() {
                   <form onSubmit={handleGenerateReceipt} className="mt-5 space-y-4">
                     {/* Search Member */}
                     <div className="relative">
-                      <label className="block text-xs font-bold uppercase tracking-wider text-[#E8B94F]">
+                      <label className="block text-xs font-bold text-[#E8B94F]">
                         Search Member <span className="text-rose-400">*</span>
                       </label>
                       <div className="relative mt-1">
@@ -3129,7 +3123,7 @@ export default function AdminPanel() {
                             if (!e.target.value) setSelectedMemberForReceipt(null);
                           }}
                           placeholder="Type name, ID (e.g. CKF-M-001) or mobile..."
-                          className="w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] py-2.5 pl-10 pr-4 text-xs font-medium text-[#FFF9ED] placeholder-[#EDE0C9]/30 focus:border-[#E8B94F] focus:outline-none"
+                          className="w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] py-2.5 pl-10 pr-4 text-sm font-medium text-[#FFF9ED] placeholder-[#EDE0C9]/70 focus:border-[#E8B94F] focus:outline-none"
                         />
                       </div>
 
@@ -3143,11 +3137,11 @@ export default function AdminPanel() {
                             >
                               <div className="flex items-center justify-between font-bold text-[#E8B94F]">
                                 <span>{m.name}</span>
-                                <span className="rounded bg-[#281A16] px-1.5 py-0.5 font-mono text-[10px] text-[#EDE0C9]">
+                                <span className="rounded bg-[#281A16] px-1.5 py-0.5 font-mono text-xs text-[#EDE0C9]">
                                   {m.id}
                                 </span>
                               </div>
-                              <div className="mt-0.5 text-[11px] text-[#EDE0C9]/60">
+                              <div className="mt-0.5 text-xs text-[#EDE0C9]/75">
                                 Ph: {m.mobile1} • {m.city}, {m.district}
                               </div>
                             </div>
@@ -3164,14 +3158,14 @@ export default function AdminPanel() {
                             <Check size={14} className="text-emerald-400" />
                             <span>{selectedMemberForReceipt.name}</span>
                           </span>
-                          <span className="font-mono text-[11px] text-emerald-400">
+                          <span className="font-mono text-xs text-emerald-400">
                             {selectedMemberForReceipt.id}
                           </span>
                         </div>
-                        <p className="mt-1 text-[11px] text-emerald-200/80">
+                        <p className="mt-1 text-xs text-emerald-200/80">
                           {selectedMemberForReceipt.address1}, {selectedMemberForReceipt.city} – {selectedMemberForReceipt.pincode}
                         </p>
-                        <p className="mt-0.5 text-[11px] text-emerald-300/70">
+                        <p className="mt-0.5 text-xs text-emerald-300/70">
                           Mobile: {selectedMemberForReceipt.mobile1}
                         </p>
                       </div>
@@ -3185,7 +3179,7 @@ export default function AdminPanel() {
                           type="text"
                           value={receiptForm.receiptNo}
                           onChange={(e) => setReceiptForm({ ...receiptForm, receiptNo: e.target.value })}
-                          className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 font-mono text-xs font-bold text-[#E8B94F] focus:outline-none"
+                          className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 font-mono text-sm font-bold text-[#E8B94F] focus:outline-none"
                         />
                       </div>
                       <div>
@@ -3194,7 +3188,7 @@ export default function AdminPanel() {
                           type="text"
                           value={receiptForm.date}
                           onChange={(e) => setReceiptForm({ ...receiptForm, date: e.target.value })}
-                          className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-xs font-medium text-[#FFF9ED] focus:outline-none"
+                          className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-sm font-medium text-[#FFF9ED] focus:outline-none"
                         />
                       </div>
                     </div>
@@ -3226,7 +3220,7 @@ export default function AdminPanel() {
                       <select
                         value={receiptForm.channel}
                         onChange={(e) => setReceiptForm({ ...receiptForm, channel: e.target.value })}
-                        className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-xs font-semibold text-[#FFF9ED] focus:outline-none"
+                        className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-sm font-semibold text-[#FFF9ED] focus:outline-none"
                       >
                         <option value="Walk-in to Foundation" className="bg-[#16100E]">Mode A: Person comes to Foundation / Office (Nabadwip)</option>
                         <option value="Field Collection" className="bg-[#16100E]">Mode B: Field / Doorstep collection by representative</option>
@@ -3243,7 +3237,7 @@ export default function AdminPanel() {
                         <select
                           value={receiptForm.agentId}
                           onChange={(e) => setReceiptForm({ ...receiptForm, agentId: e.target.value })}
-                          className="mt-1 w-full rounded-lg border border-amber-500/40 bg-[#0E0A09] p-2 text-xs font-semibold text-amber-200 focus:outline-none"
+                          className="mt-1 w-full rounded-lg border border-amber-500/40 bg-[#0E0A09] p-2 text-sm font-semibold text-amber-200 focus:outline-none"
                         >
                           <option value="" className="bg-[#16100E]">-- Choose Assigned Agent --</option>
                           {agents.map((ag) => (
@@ -3262,7 +3256,7 @@ export default function AdminPanel() {
                         <select
                           value={receiptForm.paymentMode}
                           onChange={(e) => setReceiptForm({ ...receiptForm, paymentMode: e.target.value })}
-                          className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-xs font-medium text-[#FFF9ED] focus:outline-none"
+                          className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-sm font-medium text-[#FFF9ED] focus:outline-none"
                         >
                           <option className="bg-[#16100E]">Cash</option>
                           <option className="bg-[#16100E]">UPI</option>
@@ -3277,7 +3271,7 @@ export default function AdminPanel() {
                         <select
                           value={receiptForm.purpose}
                           onChange={(e) => setReceiptForm({ ...receiptForm, purpose: e.target.value })}
-                          className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-xs font-medium text-[#FFF9ED] focus:outline-none"
+                          className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-sm font-medium text-[#FFF9ED] focus:outline-none"
                         >
                           <option className="bg-[#16100E]">NGO Fund</option>
                           <option className="bg-[#16100E]">Daily Anna Daan Seva</option>
@@ -3293,7 +3287,7 @@ export default function AdminPanel() {
                     <div className="pt-2">
                       <button
                         type="submit"
-                        className="w-full rounded-xl border border-[#C59A52]/50 bg-gradient-to-r from-[#971515] to-[#78372B] py-3 text-xs font-bold uppercase tracking-wider text-white shadow-xl shadow-[#971515]/30 transition hover:from-[#B01818] hover:to-[#971515]"
+                        className="w-full rounded-xl border border-[#C59A52]/50 bg-gradient-to-r from-[#971515] to-[#78372B] py-3 text-xs font-bold text-white shadow-xl shadow-[#971515]/30 transition hover:from-[#B01818] hover:to-[#971515]"
                       >
                         Generate Official Dual Receipt
                       </button>
@@ -3309,7 +3303,7 @@ export default function AdminPanel() {
                     <div className="no-print flex items-center justify-between rounded-xl border border-[#C59A52]/50 bg-[#16100E] p-4">
                       <div>
                         <h4 className="font-bold text-[#E8B94F]">Dual Receipt Ready for Printing</h4>
-                        <p className="text-xs text-[#EDE0C9]/60">
+                        <p className="text-xs text-[#EDE0C9]/75">
                           Contains Donor Copy (top) and Office Copy (bottom) with perforated separator line.
                         </p>
                       </div>
@@ -3486,8 +3480,8 @@ export default function AdminPanel() {
                 ) : (
                   <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-[#C59A52]/50 bg-[#16100E]/60 p-12 text-center">
                     <Receipt size={48} className="text-[#C59A52]/50" />
-                    <h3 className="mt-4 font-serif text-xl font-bold text-[#E8B94F]">Dual Receipt Preview</h3>
-                    <p className="mt-1 max-w-sm text-xs text-[#EDE0C9]/60">
+                    <h3 className="mt-4 text-xl font-bold text-[#E8B94F]">Dual Receipt Preview</h3>
+                    <p className="mt-1 max-w-sm text-sm text-[#EDE0C9]/75">
                       Search a member on the left and enter donation amount to generate and print official Donor and Office receipts.
                     </p>
                   </div>
@@ -3504,12 +3498,11 @@ export default function AdminPanel() {
               <div className="flex flex-col justify-between gap-4 rounded-2xl border border-[#C59A52]/50 bg-[#16100E]/90 p-6 shadow-xl sm:flex-row sm:items-center">
                 <div>
                   <h2
-                    className="font-serif text-2xl font-bold text-[#E8B94F]"
-                    style={{ fontFamily: "'Cormorant Garamond', serif" }}
+                    className="text-2xl leading-tight tracking-tight font-bold text-[#E8B94F]"
                   >
                     Office Copy / Collection History
                   </h2>
-                  <p className="mt-0.5 text-xs text-[#EDE0C9]/60">
+                  <p className="mt-0.5 text-xs text-[#EDE0C9]/75">
                     Central repository of all issued receipts with segmentation filtering and CSV export.
                   </p>
                 </div>
@@ -3550,7 +3543,7 @@ export default function AdminPanel() {
                     value={historySearchQuery}
                     onChange={(e) => setHistorySearchQuery(e.target.value)}
                     placeholder="Search receipt, donor, phone..."
-                    className="w-full rounded-lg border border-[#C59A52]/50 bg-[#0E0A09] py-2 pl-9 pr-3 text-xs text-[#FFF9ED] placeholder-[#EDE0C9]/30 focus:border-[#E8B94F] focus:outline-none"
+                    className="w-full rounded-lg border border-[#C59A52]/50 bg-[#0E0A09] py-2 pl-9 pr-3 text-sm text-[#FFF9ED] placeholder-[#EDE0C9]/70 focus:border-[#E8B94F] focus:outline-none"
                   />
                 </div>
               </div>
@@ -3559,8 +3552,8 @@ export default function AdminPanel() {
               <div className="overflow-hidden rounded-2xl border border-[#C59A52]/50 bg-[#16100E]/95 shadow-xl">
                 {filteredReceipts.length > 0 ? (
                   <div className="overflow-x-auto">
-                    <table className="w-full text-left text-xs">
-                      <thead className="border-b border-[#C59A52]/25 bg-[#201512] text-[#E8B94F] uppercase font-bold tracking-wider">
+                    <table className="w-full text-left text-sm">
+                      <thead className="border-b border-[#C59A52]/25 bg-[#201512] text-[#E8B94F] font-bold">
                         <tr>
                           <th className="p-3.5">Receipt No</th>
                           <th className="p-3.5">Date</th>
@@ -3577,14 +3570,14 @@ export default function AdminPanel() {
                         {filteredReceipts.map((r) => (
                           <tr key={r.receiptNo} className="transition hover:bg-[#221613]/60">
                             <td className="p-3.5 font-mono font-bold text-[#E8B94F]">{r.receiptNo}</td>
-                            <td className="p-3.5 text-[#EDE0C9]/60">{r.date}</td>
+                            <td className="p-3.5 text-[#EDE0C9]/75">{r.date}</td>
                             <td className="p-3.5">
                               <div className="font-bold text-[#FFF9ED]">{r.donorName}</div>
-                              <div className="text-[10px] text-[#EDE0C9]/50">{r.memberId || "General Donor"}</div>
+                              <div className="text-xs text-[#EDE0C9]/75">{r.memberId || "General Donor"}</div>
                             </td>
                             <td className="p-3.5">
                               <span
-                                className={`inline-block rounded-full px-2 py-0.5 text-[10px] font-bold ${r.channel === "Online Donation"
+                                className={`inline-block rounded-full px-2 py-0.5 text-xs font-bold ${r.channel === "Online Donation"
                                   ? "bg-emerald-950 text-emerald-300 border border-emerald-500/40"
                                   : r.channel === "Field Collection"
                                     ? "bg-amber-950 text-amber-300 border border-amber-500/40"
@@ -3593,13 +3586,13 @@ export default function AdminPanel() {
                               >
                                 {r.channel}
                               </span>
-                              <div className="mt-0.5 text-[10px] text-[#EDE0C9]/50">{r.paymentMode}</div>
+                              <div className="mt-0.5 text-xs text-[#EDE0C9]/75">{r.paymentMode}</div>
                             </td>
                             <td className="p-3.5 font-medium text-[#EDE0C9]">{r.purpose}</td>
                             <td className="p-3.5 text-[#EDE0C9]/70">{r.collectedBy}</td>
                             <td className="p-3.5">
                               <span
-                                className={`rounded px-1.5 py-0.5 text-[10px] font-bold ${r.settlementStatus === "Pending Office Deposit"
+                                className={`rounded px-1.5 py-0.5 text-xs font-bold ${r.settlementStatus === "Pending Office Deposit"
                                   ? "bg-rose-950 text-rose-300 border border-rose-500/40"
                                   : "bg-emerald-950 text-emerald-300 border border-emerald-500/40"
                                   }`}
@@ -3616,7 +3609,7 @@ export default function AdminPanel() {
                                   setCurrentReceipt(r);
                                   setActiveTab("receipt");
                                 }}
-                                className="rounded-lg border border-[#C59A52]/40 bg-[#251815] px-2.5 py-1 text-[11px] font-bold text-[#E8B94F] transition hover:bg-[#971515] hover:text-white"
+                                className="rounded-lg border border-[#C59A52]/40 bg-[#251815] px-2.5 py-1 text-xs font-bold text-[#E8B94F] transition hover:bg-[#971515] hover:text-white"
                               >
                                 Reprint
                               </button>
@@ -3627,7 +3620,7 @@ export default function AdminPanel() {
                     </table>
                   </div>
                 ) : (
-                  <div className="p-12 text-center text-xs text-[#EDE0C9]/50">
+                  <div className="p-12 text-center text-xs text-[#EDE0C9]/75">
                     No saved receipts matching your filter criteria.
                   </div>
                 )}
@@ -3643,12 +3636,11 @@ export default function AdminPanel() {
               <div className="flex flex-col justify-between gap-4 rounded-2xl border border-[#C59A52]/50 bg-[#16100E]/90 p-6 shadow-xl sm:flex-row sm:items-center">
                 <div>
                   <h2
-                    className="font-serif text-2xl font-bold text-[#E8B94F]"
-                    style={{ fontFamily: "'Cormorant Garamond', serif" }}
+                    className="text-2xl leading-tight tracking-tight font-bold text-[#E8B94F]"
                   >
                     Member Database (12 Columns)
                   </h2>
-                  <p className="mt-0.5 text-xs text-[#EDE0C9]/60">
+                  <p className="mt-0.5 text-xs text-[#EDE0C9]/75">
                     Required Columns: ID, NAME, ADDRESS - 1, ADDRESS - 2, CITY, POST OFFICE, DISTRICT, STATE, PIN CODE, COUNTRY, MOBILE - 1, MOBILE - 2.
                   </p>
                 </div>
@@ -3667,7 +3659,7 @@ export default function AdminPanel() {
               {/* Form & Upload Grid */}
               <div className="grid gap-8 lg:grid-cols-12">
                 <div className="rounded-2xl border border-[#C59A52]/50 bg-[#16100E]/90 p-6 shadow-xl lg:col-span-7">
-                  <h3 className="font-serif text-lg font-bold text-[#E8B94F] border-b border-[#C59A52]/20 pb-3">
+                  <h3 className="text-lg font-bold text-[#E8B94F] border-b border-[#C59A52]/20 pb-3">
                     Add New Member Manually
                   </h3>
                   <form onSubmit={handleAddMember} className="mt-4 space-y-4">
@@ -3679,7 +3671,7 @@ export default function AdminPanel() {
                           value={newMember.id}
                           onChange={(e) => setNewMember({ ...newMember, id: e.target.value })}
                           placeholder="Auto-generated if empty"
-                          className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 font-mono text-xs font-semibold text-[#FFF9ED] focus:outline-none"
+                          className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 font-mono text-sm font-semibold text-[#FFF9ED] focus:outline-none"
                         />
                       </div>
                       <div>
@@ -3692,7 +3684,7 @@ export default function AdminPanel() {
                           value={newMember.name}
                           onChange={(e) => setNewMember({ ...newMember, name: e.target.value })}
                           placeholder="Full devotee name"
-                          className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-xs font-semibold text-[#FFF9ED] focus:outline-none"
+                          className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-sm font-semibold text-[#FFF9ED] focus:outline-none"
                         />
                       </div>
                     </div>
@@ -3705,7 +3697,7 @@ export default function AdminPanel() {
                           value={newMember.address1}
                           onChange={(e) => setNewMember({ ...newMember, address1: e.target.value })}
                           placeholder="House / Street"
-                          className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-xs text-[#FFF9ED] focus:outline-none"
+                          className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-sm text-[#FFF9ED] focus:outline-none"
                         />
                       </div>
                       <div>
@@ -3715,7 +3707,7 @@ export default function AdminPanel() {
                           value={newMember.address2}
                           onChange={(e) => setNewMember({ ...newMember, address2: e.target.value })}
                           placeholder="Landmark / Locality"
-                          className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-xs text-[#FFF9ED] focus:outline-none"
+                          className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-sm text-[#FFF9ED] focus:outline-none"
                         />
                       </div>
                     </div>
@@ -3727,7 +3719,7 @@ export default function AdminPanel() {
                           type="text"
                           value={newMember.city}
                           onChange={(e) => setNewMember({ ...newMember, city: e.target.value })}
-                          className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2 text-xs text-[#FFF9ED] focus:outline-none"
+                          className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2 text-sm text-[#FFF9ED] focus:outline-none"
                         />
                       </div>
                       <div>
@@ -3736,7 +3728,7 @@ export default function AdminPanel() {
                           type="text"
                           value={newMember.postOffice}
                           onChange={(e) => setNewMember({ ...newMember, postOffice: e.target.value })}
-                          className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2 text-xs text-[#FFF9ED] focus:outline-none"
+                          className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2 text-sm text-[#FFF9ED] focus:outline-none"
                         />
                       </div>
                       <div>
@@ -3745,7 +3737,7 @@ export default function AdminPanel() {
                           type="text"
                           value={newMember.district}
                           onChange={(e) => setNewMember({ ...newMember, district: e.target.value })}
-                          className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2 text-xs text-[#FFF9ED] focus:outline-none"
+                          className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2 text-sm text-[#FFF9ED] focus:outline-none"
                         />
                       </div>
                       <div>
@@ -3754,7 +3746,7 @@ export default function AdminPanel() {
                           type="text"
                           value={newMember.state}
                           onChange={(e) => setNewMember({ ...newMember, state: e.target.value })}
-                          className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2 text-xs text-[#FFF9ED] focus:outline-none"
+                          className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2 text-sm text-[#FFF9ED] focus:outline-none"
                         />
                       </div>
                     </div>
@@ -3766,7 +3758,7 @@ export default function AdminPanel() {
                           type="text"
                           value={newMember.pincode}
                           onChange={(e) => setNewMember({ ...newMember, pincode: e.target.value })}
-                          className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2 font-mono text-xs text-[#FFF9ED] focus:outline-none"
+                          className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2 font-mono text-sm text-[#FFF9ED] focus:outline-none"
                         />
                       </div>
                       <div>
@@ -3775,7 +3767,7 @@ export default function AdminPanel() {
                           type="text"
                           value={newMember.country}
                           onChange={(e) => setNewMember({ ...newMember, country: e.target.value })}
-                          className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2 text-xs text-[#FFF9ED] focus:outline-none"
+                          className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2 text-sm text-[#FFF9ED] focus:outline-none"
                         />
                       </div>
                       <div>
@@ -3788,7 +3780,7 @@ export default function AdminPanel() {
                           value={newMember.mobile1}
                           onChange={(e) => setNewMember({ ...newMember, mobile1: e.target.value })}
                           placeholder="10-digit mobile"
-                          className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2 font-mono text-xs text-[#FFF9ED] focus:outline-none"
+                          className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2 font-mono text-sm text-[#FFF9ED] focus:outline-none"
                         />
                       </div>
                       <div>
@@ -3798,7 +3790,7 @@ export default function AdminPanel() {
                           value={newMember.mobile2}
                           onChange={(e) => setNewMember({ ...newMember, mobile2: e.target.value })}
                           placeholder="Secondary mobile"
-                          className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2 font-mono text-xs text-[#FFF9ED] focus:outline-none"
+                          className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2 font-mono text-sm text-[#FFF9ED] focus:outline-none"
                         />
                       </div>
                     </div>
@@ -3806,7 +3798,7 @@ export default function AdminPanel() {
                     <div className="pt-2">
                       <button
                         type="submit"
-                        className="w-full rounded-xl border border-[#C59A52]/50 bg-gradient-to-r from-[#971515] to-[#78372B] py-2.5 text-xs font-bold uppercase tracking-wider text-white shadow-lg transition hover:from-[#B01818] hover:to-[#971515]"
+                        className="w-full rounded-xl border border-[#C59A52]/50 bg-gradient-to-r from-[#971515] to-[#78372B] py-2.5 text-xs font-bold text-white shadow-lg transition hover:from-[#B01818] hover:to-[#971515]"
                       >
                         Add Member
                       </button>
@@ -3817,10 +3809,10 @@ export default function AdminPanel() {
                 {/* Bulk Excel Upload */}
                 <div className="space-y-6 lg:col-span-5">
                   <div className="rounded-2xl border border-[#C59A52]/50 bg-[#16100E]/90 p-6 shadow-xl">
-                    <h3 className="font-serif text-lg font-bold text-[#E8B94F] border-b border-[#C59A52]/20 pb-3">
+                    <h3 className="text-lg font-bold text-[#E8B94F] border-b border-[#C59A52]/20 pb-3">
                       Bulk Add / Upload Excel or CSV
                     </h3>
-                    <p className="mt-2 text-xs text-[#EDE0C9]/60">
+                    <p className="mt-2 text-xs text-[#EDE0C9]/75">
                       Upload your updated member list whenever you add or change members.
                     </p>
 
@@ -3840,12 +3832,12 @@ export default function AdminPanel() {
                         <Upload size={14} />
                         <span>Choose Excel / CSV File</span>
                       </label>
-                      <p className="mt-2 text-[11px] text-[#EDE0C9]/50">Supports CSV, XLS, XLSX formats</p>
+                      <p className="mt-2 text-xs text-[#EDE0C9]/75">Supports CSV, XLS, XLSX formats</p>
                     </div>
                   </div>
 
                   <div className="rounded-2xl border border-[#C59A52]/50 bg-[#16100E]/90 p-6 shadow-xl">
-                    <h3 className="font-serif text-lg font-bold text-[#E8B94F] border-b border-[#C59A52]/20 pb-3">
+                    <h3 className="text-lg font-bold text-[#E8B94F] border-b border-[#C59A52]/20 pb-3">
                       Bulk Selection & Cleanup
                     </h3>
                     <div className="mt-4 flex flex-wrap items-center gap-3">
@@ -3873,7 +3865,7 @@ export default function AdminPanel() {
               {/* Table */}
               <div className="overflow-hidden rounded-2xl border border-[#C59A52]/50 bg-[#16100E]/95 shadow-xl">
                 <div className="flex flex-col justify-between gap-3 border-b border-[#C59A52]/20 p-4 sm:flex-row sm:items-center">
-                  <span className="font-serif text-lg font-bold text-[#E8B94F]">
+                  <span className="text-lg font-bold text-[#E8B94F]">
                     Member Directory ({filteredMembers.length} records)
                   </span>
                   <div className="relative w-full sm:w-72">
@@ -3883,14 +3875,14 @@ export default function AdminPanel() {
                       value={memberSearchQuery}
                       onChange={(e) => setMemberSearchQuery(e.target.value)}
                       placeholder="Search by name, ID, phone, city..."
-                      className="w-full rounded-lg border border-[#C59A52]/50 bg-[#0E0A09] py-2 pl-9 pr-3 text-xs text-[#FFF9ED] placeholder-[#EDE0C9]/30 focus:border-[#E8B94F] focus:outline-none"
+                      className="w-full rounded-lg border border-[#C59A52]/50 bg-[#0E0A09] py-2 pl-9 pr-3 text-sm text-[#FFF9ED] placeholder-[#EDE0C9]/70 focus:border-[#E8B94F] focus:outline-none"
                     />
                   </div>
                 </div>
 
                 <div className="overflow-x-auto">
-                  <table className="w-full text-left text-xs">
-                    <thead className="border-b border-[#C59A52]/25 bg-[#201512] text-[#E8B94F] uppercase font-bold tracking-wider">
+                  <table className="w-full text-left text-sm">
+                    <thead className="border-b border-[#C59A52]/25 bg-[#201512] text-[#E8B94F] font-bold">
                       <tr>
                         <th className="w-10 p-3 text-center">
                           <input
@@ -3941,7 +3933,7 @@ export default function AdminPanel() {
                             <td className="p-3 font-mono text-[#EDE0C9]/80">{m.pincode}</td>
                             <td className="p-3 font-mono">
                               <div className="text-[#FFF9ED]">{m.mobile1}</div>
-                              {m.mobile2 && <div className="text-[10px] text-[#EDE0C9]/50">{m.mobile2}</div>}
+                              {m.mobile2 && <div className="text-xs text-[#EDE0C9]/75">{m.mobile2}</div>}
                             </td>
                             <td className="p-3 text-right">
                               <button
@@ -3949,7 +3941,7 @@ export default function AdminPanel() {
                                   handleSelectMemberForReceipt(m);
                                   setActiveTab("receipt");
                                 }}
-                                className="rounded-lg border border-[#C59A52]/40 bg-gradient-to-r from-[#971515] to-[#78372B] px-2.5 py-1 text-[11px] font-bold text-white shadow hover:from-[#B01818] hover:to-[#971515]"
+                                className="rounded-lg border border-[#C59A52]/40 bg-gradient-to-r from-[#971515] to-[#78372B] px-2.5 py-1 text-xs font-bold text-white shadow hover:from-[#B01818] hover:to-[#971515]"
                               >
                                 New Receipt
                               </button>
@@ -3972,12 +3964,11 @@ export default function AdminPanel() {
               <div className="flex flex-col justify-between gap-4 rounded-2xl border border-[#C59A52]/50 bg-[#16100E]/90 p-6 shadow-xl sm:flex-row sm:items-center">
                 <div>
                   <h2
-                    className="font-serif text-2xl font-bold text-[#E8B94F]"
-                    style={{ fontFamily: "'Cormorant Garamond', serif" }}
+                    className="text-2xl leading-tight tracking-tight font-bold text-[#E8B94F]"
                   >
                     Field Collection Representatives
                   </h2>
-                  <p className="mt-0.5 text-xs text-[#EDE0C9]/60">
+                  <p className="mt-0.5 text-xs text-[#EDE0C9]/75">
                     Manage doorstep donation collectors, track assigned areas, and settle collection batches with central office.
                   </p>
                 </div>
@@ -3985,7 +3976,7 @@ export default function AdminPanel() {
 
               <div className="grid gap-8 lg:grid-cols-12">
                 <div className="rounded-2xl border border-[#C59A52]/50 bg-[#16100E]/90 p-6 shadow-xl lg:col-span-4">
-                  <h3 className="font-serif text-lg font-bold text-[#E8B94F] border-b border-[#C59A52]/20 pb-3">
+                  <h3 className="text-lg font-bold text-[#E8B94F] border-b border-[#C59A52]/20 pb-3">
                     Register Field Agent
                   </h3>
                   <form onSubmit={handleAddAgent} className="mt-4 space-y-4">
@@ -3996,7 +3987,7 @@ export default function AdminPanel() {
                         value={newAgent.agentCode}
                         onChange={(e) => setNewAgent({ ...newAgent, agentCode: e.target.value })}
                         placeholder="e.g. AGT-004 (Auto if blank)"
-                        className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 font-mono text-xs text-[#FFF9ED] focus:outline-none"
+                        className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 font-mono text-sm text-[#FFF9ED] focus:outline-none"
                       />
                     </div>
                     <div>
@@ -4007,7 +3998,7 @@ export default function AdminPanel() {
                         value={newAgent.name}
                         onChange={(e) => setNewAgent({ ...newAgent, name: e.target.value })}
                         placeholder="Representative Name"
-                        className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-xs font-semibold text-[#FFF9ED] focus:outline-none"
+                        className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-sm font-semibold text-[#FFF9ED] focus:outline-none"
                       />
                     </div>
                     <div>
@@ -4018,7 +4009,7 @@ export default function AdminPanel() {
                         value={newAgent.phone}
                         onChange={(e) => setNewAgent({ ...newAgent, phone: e.target.value })}
                         placeholder="Primary contact"
-                        className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 font-mono text-xs text-[#FFF9ED] focus:outline-none"
+                        className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 font-mono text-sm text-[#FFF9ED] focus:outline-none"
                       />
                     </div>
                     <div>
@@ -4028,12 +4019,12 @@ export default function AdminPanel() {
                         value={newAgent.assignedArea}
                         onChange={(e) => setNewAgent({ ...newAgent, assignedArea: e.target.value })}
                         placeholder="e.g. Nabadwip Ghats & Market"
-                        className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-xs text-[#FFF9ED] focus:outline-none"
+                        className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-sm text-[#FFF9ED] focus:outline-none"
                       />
                     </div>
                     <button
                       type="submit"
-                      className="w-full rounded-xl border border-[#C59A52]/50 bg-gradient-to-r from-[#971515] to-[#78372B] py-2.5 text-xs font-bold uppercase tracking-wider text-white shadow hover:from-[#B01818] hover:to-[#971515]"
+                      className="w-full rounded-xl border border-[#C59A52]/50 bg-gradient-to-r from-[#971515] to-[#78372B] py-2.5 text-xs font-bold text-white shadow hover:from-[#B01818] hover:to-[#971515]"
                     >
                       Add Representative
                     </button>
@@ -4041,12 +4032,12 @@ export default function AdminPanel() {
                 </div>
 
                 <div className="rounded-2xl border border-[#C59A52]/50 bg-[#16100E]/90 p-6 shadow-xl lg:col-span-8">
-                  <h3 className="font-serif text-lg font-bold text-[#E8B94F] border-b border-[#C59A52]/20 pb-3">
+                  <h3 className="text-lg font-bold text-[#E8B94F] border-b border-[#C59A52]/20 pb-3">
                     Active Collectors & Office Settlement Status
                   </h3>
                   <div className="mt-4 overflow-x-auto">
-                    <table className="w-full text-left text-xs">
-                      <thead className="border-b border-[#C59A52]/25 bg-[#201512] text-[#E8B94F] uppercase font-bold tracking-wider">
+                    <table className="w-full text-left text-sm">
+                      <thead className="border-b border-[#C59A52]/25 bg-[#201512] text-[#E8B94F] font-bold">
                         <tr>
                           <th className="p-3">Agent Code</th>
                           <th className="p-3">Name & Phone</th>
@@ -4062,7 +4053,7 @@ export default function AdminPanel() {
                             <td className="p-3 font-mono font-bold text-[#E8B94F]">{ag.agentCode}</td>
                             <td className="p-3">
                               <div className="font-bold text-[#FFF9ED]">{ag.name}</div>
-                              <div className="font-mono text-[10px] text-[#EDE0C9]/50">{ag.phone}</div>
+                              <div className="font-mono text-xs text-[#EDE0C9]/75">{ag.phone}</div>
                             </td>
                             <td className="p-3 text-[#EDE0C9]/70">{ag.assignedArea}</td>
                             <td className="p-3 text-right font-bold text-[#E8B94F]">
@@ -4075,12 +4066,12 @@ export default function AdminPanel() {
                               {ag.pendingSettlement > 0 ? (
                                 <button
                                   onClick={() => handleSettleAgent(ag)}
-                                  className="rounded-lg border border-emerald-500/40 bg-emerald-950 px-3 py-1 text-[11px] font-bold text-emerald-200 shadow hover:bg-emerald-900"
+                                  className="rounded-lg border border-emerald-500/40 bg-emerald-950 px-3 py-1 text-xs font-bold text-emerald-200 shadow hover:bg-emerald-900"
                                 >
                                   Settle Deposit
                                 </button>
                               ) : (
-                                <span className="text-[11px] font-semibold text-emerald-400">✓ Settled</span>
+                                <span className="text-xs font-semibold text-emerald-400">✓ Settled</span>
                               )}
                             </td>
                           </tr>
@@ -4101,12 +4092,11 @@ export default function AdminPanel() {
               <div className="flex flex-col justify-between gap-4 rounded-2xl border border-[#C59A52]/50 bg-[#16100E]/90 p-6 shadow-xl sm:flex-row sm:items-center">
                 <div>
                   <h2
-                    className="font-serif text-2xl font-bold text-[#E8B94F]"
-                    style={{ fontFamily: "'Cormorant Garamond', serif" }}
+                    className="text-2xl leading-tight tracking-tight font-bold text-[#E8B94F]"
                   >
                     Upcoming Events & Utsavs CMS
                   </h2>
-                  <p className="mt-0.5 text-xs text-[#EDE0C9]/60">
+                  <p className="mt-0.5 text-xs text-[#EDE0C9]/75">
                     Control festivals and special seva days displayed on the website's public Events page.
                   </p>
                 </div>
@@ -4114,7 +4104,7 @@ export default function AdminPanel() {
 
               <div className="grid gap-8 lg:grid-cols-12">
                 <div className="rounded-2xl border border-[#C59A52]/50 bg-[#16100E]/90 p-6 shadow-xl lg:col-span-5">
-                  <h3 className="font-serif text-lg font-bold text-[#E8B94F] border-b border-[#C59A52]/20 pb-3">
+                  <h3 className="text-lg font-bold text-[#E8B94F] border-b border-[#C59A52]/20 pb-3">
                     Post New Festival / Seva
                   </h3>
                   <form onSubmit={handleAddEvent} className="mt-4 space-y-4">
@@ -4126,7 +4116,7 @@ export default function AdminPanel() {
                         value={newEvent.title}
                         onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })}
                         placeholder="e.g. Sri Radhashtami Mahotsav"
-                        className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-xs font-semibold text-[#FFF9ED] focus:outline-none"
+                        className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-sm font-semibold text-[#FFF9ED] focus:outline-none"
                       />
                     </div>
                     <div className="grid grid-cols-2 gap-3">
@@ -4137,7 +4127,7 @@ export default function AdminPanel() {
                           value={newEvent.bengali}
                           onChange={(e) => setNewEvent({ ...newEvent, bengali: e.target.value })}
                           placeholder="শ্রী রাধাষ্টমী উৎসব"
-                          className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-xs text-[#FFF9ED] focus:outline-none"
+                          className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-sm text-[#FFF9ED] focus:outline-none"
                         />
                       </div>
                       <div>
@@ -4145,7 +4135,7 @@ export default function AdminPanel() {
                         <select
                           value={newEvent.category}
                           onChange={(e) => setNewEvent({ ...newEvent, category: e.target.value })}
-                          className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-xs text-[#FFF9ED] focus:outline-none"
+                          className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-sm text-[#FFF9ED] focus:outline-none"
                         >
                           <option className="bg-[#16100E]">Major Utsav</option>
                           <option className="bg-[#16100E]">Pariwar Seva</option>
@@ -4162,7 +4152,7 @@ export default function AdminPanel() {
                           value={newEvent.season}
                           onChange={(e) => setNewEvent({ ...newEvent, season: e.target.value })}
                           placeholder="e.g. Bhadra Shukla Ashtami"
-                          className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-xs text-[#FFF9ED] focus:outline-none"
+                          className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-sm text-[#FFF9ED] focus:outline-none"
                         />
                       </div>
                       <div>
@@ -4172,7 +4162,7 @@ export default function AdminPanel() {
                           value={newEvent.time}
                           onChange={(e) => setNewEvent({ ...newEvent, time: e.target.value })}
                           placeholder="e.g. 12:00 PM Midday Abhishek"
-                          className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-xs text-[#FFF9ED] focus:outline-none"
+                          className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-sm text-[#FFF9ED] focus:outline-none"
                         />
                       </div>
                     </div>
@@ -4183,7 +4173,7 @@ export default function AdminPanel() {
                         value={newEvent.seva}
                         onChange={(e) => setNewEvent({ ...newEvent, seva: e.target.value })}
                         placeholder="e.g. Anna Daan & Pushpa Abhishek"
-                        className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-xs text-[#FFF9ED] focus:outline-none"
+                        className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-sm text-[#FFF9ED] focus:outline-none"
                       />
                     </div>
                     <div>
@@ -4194,7 +4184,7 @@ export default function AdminPanel() {
                         value={newEvent.desc}
                         onChange={(e) => setNewEvent({ ...newEvent, desc: e.target.value })}
                         placeholder="Details of rituals, parikrama, kirtan, prasadam distribution..."
-                        className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-xs text-[#FFF9ED] focus:outline-none"
+                        className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-sm text-[#FFF9ED] focus:outline-none"
                       />
                     </div>
                     {/* Event Banner Media Upload */}
@@ -4212,7 +4202,7 @@ export default function AdminPanel() {
                       {eventFilePreview ? (
                         <div className="mt-1 relative overflow-hidden rounded-xl border border-[#C59A52]/40 bg-[#0E0A09] p-2">
                           <img src={eventFilePreview} alt="Event Preview" className="h-28 w-full rounded-lg object-cover" />
-                          <div className="mt-2 flex items-center justify-between text-[11px] text-[#EDE0C9]/80">
+                          <div className="mt-2 flex items-center justify-between text-xs text-[#EDE0C9]/80">
                             <span className="truncate max-w-[200px]">{eventFileInfo?.name}</span>
                             <button
                               type="button"
@@ -4241,7 +4231,7 @@ export default function AdminPanel() {
                     </div>
                     <button
                       type="submit"
-                      className="w-full rounded-xl border border-[#C59A52]/50 bg-gradient-to-r from-[#971515] to-[#78372B] py-2.5 text-xs font-bold uppercase tracking-wider text-white shadow hover:from-[#B01818] hover:to-[#971515]"
+                      className="w-full rounded-xl border border-[#C59A52]/50 bg-gradient-to-r from-[#971515] to-[#78372B] py-2.5 text-xs font-bold text-white shadow hover:from-[#B01818] hover:to-[#971515]"
                     >
                       Publish to Website Events
                     </button>
@@ -4249,7 +4239,7 @@ export default function AdminPanel() {
                 </div>
 
                 <div className="space-y-4 lg:col-span-7">
-                  <h3 className="font-serif text-lg font-bold text-[#E8B94F]">Scheduled Festivals ({events.length})</h3>
+                  <h3 className="text-lg font-bold text-[#E8B94F]">Scheduled Festivals ({events.length})</h3>
                   <div className="space-y-3">
                     {events.map((ev) => (
                       <div
@@ -4258,14 +4248,14 @@ export default function AdminPanel() {
                       >
                         <div className="space-y-1">
                           <div className="flex items-center gap-2">
-                            <span className="font-serif text-base font-bold text-[#E8B94F]">{ev.title}</span>
-                            {ev.bengali && <span className="font-serif text-xs text-rose-300">{ev.bengali}</span>}
+                            <span className="text-base font-bold text-[#E8B94F]">{ev.title}</span>
+                            {ev.bengali && <span className="text-xs text-rose-300">{ev.bengali}</span>}
                           </div>
-                          <div className="text-xs text-[#EDE0C9]/60">
+                          <div className="text-xs text-[#EDE0C9]/75">
                             {ev.season} • {ev.time}
                           </div>
-                          <p className="mt-1 line-clamp-2 max-w-lg text-xs text-[#EDE0C9]/80">{ev.desc}</p>
-                          <div className="mt-2 inline-block rounded-md border border-[#C59A52]/50 bg-[#251714] px-2 py-0.5 text-[10px] font-bold text-[#E8B94F]">
+                          <p className="mt-1 line-clamp-2 max-w-lg text-sm text-[#EDE0C9]/80">{ev.desc}</p>
+                          <div className="mt-2 inline-block rounded-md border border-[#C59A52]/50 bg-[#251714] px-2 py-0.5 text-xs font-bold text-[#E8B94F]">
                             Seva: {ev.seva}
                           </div>
                         </div>
@@ -4292,12 +4282,11 @@ export default function AdminPanel() {
               <div className="flex flex-col justify-between gap-4 rounded-2xl border border-[#C59A52]/50 bg-[#16100E]/90 p-6 shadow-xl sm:flex-row sm:items-center">
                 <div>
                   <h2
-                    className="font-serif text-2xl font-bold text-[#E8B94F]"
-                    style={{ fontFamily: "'Cormorant Garamond', serif" }}
+                    className="text-2xl leading-tight tracking-tight font-bold text-[#E8B94F]"
                   >
                     Spiritual Katha & Blog CMS
                   </h2>
-                  <p className="mt-0.5 text-xs text-[#EDE0C9]/60">
+                  <p className="mt-0.5 text-xs text-[#EDE0C9]/75">
                     Publish philosophical discourses, history of Sri Chintamoni Kunja, and Gaudiya Vaishnav katha.
                   </p>
                 </div>
@@ -4305,7 +4294,7 @@ export default function AdminPanel() {
 
               <div className="grid gap-8 lg:grid-cols-12">
                 <div className="rounded-2xl border border-[#C59A52]/50 bg-[#16100E]/90 p-6 shadow-xl lg:col-span-6">
-                  <h3 className="font-serif text-lg font-bold text-[#E8B94F] border-b border-[#C59A52]/20 pb-3">
+                  <h3 className="text-lg font-bold text-[#E8B94F] border-b border-[#C59A52]/20 pb-3">
                     Write Spiritual Article
                   </h3>
                   <form onSubmit={handleAddBlog} className="mt-4 space-y-4">
@@ -4317,7 +4306,7 @@ export default function AdminPanel() {
                         value={newBlog.title}
                         onChange={(e) => setNewBlog({ ...newBlog, title: e.target.value })}
                         placeholder="Title of discourse or article"
-                        className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-xs font-semibold text-[#FFF9ED] focus:outline-none"
+                        className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-sm font-semibold text-[#FFF9ED] focus:outline-none"
                       />
                     </div>
                     <div className="grid grid-cols-2 gap-3">
@@ -4328,7 +4317,7 @@ export default function AdminPanel() {
                           value={newBlog.bengali}
                           onChange={(e) => setNewBlog({ ...newBlog, bengali: e.target.value })}
                           placeholder="বাংলায় শিরোনাম"
-                          className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-xs text-[#FFF9ED] focus:outline-none"
+                          className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-sm text-[#FFF9ED] focus:outline-none"
                         />
                       </div>
                       <div>
@@ -4336,7 +4325,7 @@ export default function AdminPanel() {
                         <select
                           value={newBlog.category}
                           onChange={(e) => setNewBlog({ ...newBlog, category: e.target.value })}
-                          className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-xs text-[#FFF9ED] focus:outline-none"
+                          className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-sm text-[#FFF9ED] focus:outline-none"
                         >
                           <option className="bg-[#16100E]">Heritage & History</option>
                           <option className="bg-[#16100E]">Vaishnav Philosophy</option>
@@ -4355,7 +4344,7 @@ export default function AdminPanel() {
                         value={newBlog.excerpt}
                         onChange={(e) => setNewBlog({ ...newBlog, excerpt: e.target.value })}
                         placeholder="Short synopsis shown on the blog cards..."
-                        className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-xs text-[#FFF9ED] focus:outline-none"
+                        className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-sm text-[#FFF9ED] focus:outline-none"
                       />
                     </div>
                     <div>
@@ -4366,7 +4355,7 @@ export default function AdminPanel() {
                         value={newBlog.content}
                         onChange={(e) => setNewBlog({ ...newBlog, content: e.target.value })}
                         placeholder="Spiritual text, verses, commentary, historical citations..."
-                        className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-xs text-[#FFF9ED] focus:outline-none"
+                        className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-sm text-[#FFF9ED] focus:outline-none"
                       />
                     </div>
                     {/* SEO & Meta Tags Suite for Search Engine Friendliness */}
@@ -4378,14 +4367,14 @@ export default function AdminPanel() {
                           </div>
                           <div>
                             <h4 className="text-xs font-bold text-[#FFF9ED]">SEO &amp; Meta Tags Configuration</h4>
-                            <p className="text-[10px] text-[#EDE0C9]/60">Google SERP snippet &amp; social card optimization</p>
+                            <p className="text-xs text-[#EDE0C9]/75">Google SERP snippet &amp; social card optimization</p>
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
                           <button
                             type="button"
                             onClick={handleAutoGenerateBlogSEO}
-                            className="inline-flex items-center gap-1 rounded-lg border border-[#C59A52]/40 bg-[#251A16] px-2.5 py-1 text-[11px] font-bold text-[#E8B94F] transition hover:bg-[#971515] hover:text-white"
+                            className="inline-flex items-center gap-1 rounded-lg border border-[#C59A52]/40 bg-[#251A16] px-2.5 py-1 text-xs font-bold text-[#E8B94F] transition hover:bg-[#971515] hover:text-white"
                             title="Auto-generate SEO fields from Title and Excerpt"
                           >
                             <Sparkles size={12} />
@@ -4410,12 +4399,12 @@ export default function AdminPanel() {
                                 Meta Title (SEO Title)
                               </label>
                               <span
-                                className={`font-mono text-[10px] font-bold ${
+                                className={`font-mono text-xs font-bold ${
                                   (newBlog.metaTitle || "").length >= 35 && (newBlog.metaTitle || "").length <= 60
                                     ? "text-emerald-400"
                                     : (newBlog.metaTitle || "").length > 60
                                     ? "text-amber-400"
-                                    : "text-[#EDE0C9]/50"
+                                    : "text-[#EDE0C9]/75"
                                 }`}
                               >
                                 {(newBlog.metaTitle || "").length}/60 chars (Optimal 50-60)
@@ -4426,9 +4415,9 @@ export default function AdminPanel() {
                               value={newBlog.metaTitle}
                               onChange={(e) => setNewBlog({ ...newBlog, metaTitle: e.target.value })}
                               placeholder={newBlog.title ? `${newBlog.title} | Sri Sri Chintamoni Kunja` : "e.g. History of Sri Chintamoni Kunja | Gaudiya Vaishnav Heritage"}
-                              className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#16100E] p-2.5 text-xs text-[#FFF9ED] placeholder-[#EDE0C9]/30 focus:border-[#E8B94F] focus:outline-none"
+                              className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#16100E] p-2.5 text-sm text-[#FFF9ED] placeholder-[#EDE0C9]/70 focus:border-[#E8B94F] focus:outline-none"
                             />
-                            <p className="mt-1 text-[10px] text-[#EDE0C9]/50">
+                            <p className="mt-1 text-xs text-[#EDE0C9]/75">
                               Headline shown as the clickable title in Google search results and browser tab.
                             </p>
                           </div>
@@ -4440,12 +4429,12 @@ export default function AdminPanel() {
                                 Meta Description
                               </label>
                               <span
-                                className={`font-mono text-[10px] font-bold ${
+                                className={`font-mono text-xs font-bold ${
                                   (newBlog.metaDescription || "").length >= 100 && (newBlog.metaDescription || "").length <= 160
                                     ? "text-emerald-400"
                                     : (newBlog.metaDescription || "").length > 160
                                     ? "text-amber-400"
-                                    : "text-[#EDE0C9]/50"
+                                    : "text-[#EDE0C9]/75"
                                 }`}
                               >
                                 {(newBlog.metaDescription || "").length}/160 chars (Optimal 120-160)
@@ -4456,9 +4445,9 @@ export default function AdminPanel() {
                               value={newBlog.metaDescription}
                               onChange={(e) => setNewBlog({ ...newBlog, metaDescription: e.target.value })}
                               placeholder={newBlog.excerpt || "e.g. Explore historical documents and Vaishnav philosophy dating back to 1809 at Sri Sri Chintamoni Kunja, holy Nabadwip Dham."}
-                              className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#16100E] p-2.5 text-xs text-[#FFF9ED] placeholder-[#EDE0C9]/30 focus:border-[#E8B94F] focus:outline-none"
+                              className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#16100E] p-2.5 text-sm text-[#FFF9ED] placeholder-[#EDE0C9]/70 focus:border-[#E8B94F] focus:outline-none"
                             />
-                            <p className="mt-1 text-[10px] text-[#EDE0C9]/50">
+                            <p className="mt-1 text-xs text-[#EDE0C9]/75">
                               Appears as the preview summary snippet below the title in search engines.
                             </p>
                           </div>
@@ -4469,14 +4458,14 @@ export default function AdminPanel() {
                               <label className="text-xs font-bold text-[#E8B94F]">
                                 Meta Keywords &amp; Topic Tags
                               </label>
-                              <span className="text-[10px] text-[#EDE0C9]/50">Comma-separated</span>
+                              <span className="text-xs text-[#EDE0C9]/75">Comma-separated</span>
                             </div>
                             <input
                               type="text"
                               value={newBlog.metaKeywords}
                               onChange={(e) => setNewBlog({ ...newBlog, metaKeywords: e.target.value })}
                               placeholder="e.g. Vaishnav Philosophy, Nabadwip Dham, Chaitanya Mahaprabhu, Bhakti, Seva"
-                              className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#16100E] p-2.5 text-xs text-[#FFF9ED] placeholder-[#EDE0C9]/30 focus:border-[#E8B94F] focus:outline-none"
+                              className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#16100E] p-2.5 text-sm text-[#FFF9ED] placeholder-[#EDE0C9]/70 focus:border-[#E8B94F] focus:outline-none"
                             />
                             {/* Live Keyword Tag Chips */}
                             {newBlog.metaKeywords && (
@@ -4488,7 +4477,7 @@ export default function AdminPanel() {
                                   .map((tag, idx) => (
                                     <span
                                       key={idx}
-                                      className="inline-flex items-center gap-1 rounded-md border border-[#C59A52]/50 bg-[#251A16] px-2 py-0.5 text-[10px] font-semibold text-[#E8B94F]"
+                                      className="inline-flex items-center gap-1 rounded-md border border-[#C59A52]/50 bg-[#251A16] px-2 py-0.5 text-xs font-semibold text-[#E8B94F]"
                                     >
                                       <Tag size={10} />
                                       <span>{tag}</span>
@@ -4503,7 +4492,7 @@ export default function AdminPanel() {
                             <div>
                               <label className="block text-xs font-bold text-[#E8B94F]">URL Slug / Permalink</label>
                               <div className="mt-1 flex items-center rounded-xl border border-[#C59A52]/50 bg-[#16100E] px-2.5 py-1.5 text-xs text-[#FFF9ED]">
-                                <span className="text-[10px] text-[#EDE0C9]/50">/blog/</span>
+                                <span className="text-xs text-[#EDE0C9]/75">/blog/</span>
                                 <input
                                   type="text"
                                   value={newBlog.slug}
@@ -4514,7 +4503,7 @@ export default function AdminPanel() {
                                     })
                                   }
                                   placeholder="custom-article-slug"
-                                  className="ml-1 w-full bg-transparent font-mono text-xs text-[#E8B94F] placeholder-[#EDE0C9]/30 focus:outline-none"
+                                  className="ml-1 w-full bg-transparent font-mono text-sm text-[#E8B94F] placeholder-[#EDE0C9]/70 focus:outline-none"
                                 />
                               </div>
                             </div>
@@ -4525,7 +4514,7 @@ export default function AdminPanel() {
                                 value={newBlog.canonicalUrl}
                                 onChange={(e) => setNewBlog({ ...newBlog, canonicalUrl: e.target.value })}
                                 placeholder="https://chintamonikunja.org/blog/..."
-                                className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#16100E] p-2.5 text-xs text-[#FFF9ED] placeholder-[#EDE0C9]/30 focus:border-[#E8B94F] focus:outline-none font-mono text-[11px]"
+                                className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#16100E] p-2.5 text-sm text-[#FFF9ED] placeholder-[#EDE0C9]/70 focus:border-[#E8B94F] focus:outline-none font-mono text-sm"
                               />
                             </div>
                           </div>
@@ -4533,17 +4522,17 @@ export default function AdminPanel() {
                           {/* Live Google Search Engine (SERP) Preview */}
                           <div className="mt-3 rounded-xl border border-[#C59A52]/50 bg-[#140F0D] p-3.5 shadow-sm">
                             <div className="flex items-center justify-between border-b border-[#C59A52]/20 pb-2">
-                              <span className="flex items-center gap-1.5 text-[11px] font-bold text-[#E8B94F]">
+                              <span className="flex items-center gap-1.5 text-xs font-bold text-[#E8B94F]">
                                 <Search size={12} />
                                 <span>Google Search Result (SERP) Preview</span>
                               </span>
-                              <span className="rounded-full bg-emerald-950 px-2 py-0.5 text-[9px] font-bold text-emerald-300 border border-emerald-500/30">
+                              <span className="rounded-full bg-emerald-950 px-2 py-0.5 text-xs font-bold text-emerald-300 border border-emerald-500/30">
                                 Live Simulation
                               </span>
                             </div>
                             <div className="mt-2.5 space-y-1">
-                              <div className="flex items-center gap-1.5 text-[11px] text-[#EDE0C9]/60">
-                                <span className="inline-block h-3.5 w-3.5 rounded-full bg-[#971515] text-center text-[9px] font-bold leading-3.5 text-white">
+                              <div className="flex items-center gap-1.5 text-xs text-[#EDE0C9]/75">
+                                <span className="inline-block h-3.5 w-3.5 rounded-full bg-[#971515] text-center text-xs font-bold leading-3.5 text-white">
                                   ॐ
                                 </span>
                                 <span className="text-[#EDE0C9]/80 truncate">
@@ -4560,13 +4549,13 @@ export default function AdminPanel() {
                                   </strong>
                                 </span>
                               </div>
-                              <h5 className="font-serif text-sm font-bold text-[#8AB4F8] hover:underline cursor-pointer truncate">
+                              <h5 className="text-sm font-bold text-[#8AB4F8] hover:underline cursor-pointer truncate">
                                 {newBlog.metaTitle ||
                                   (newBlog.title
                                     ? `${newBlog.title} | Sri Sri Chintamoni Kunja`
                                     : "Article Title Preview | Sri Sri Chintamoni Kunja")}
                               </h5>
-                              <p className="line-clamp-2 text-[11px] leading-relaxed text-[#BDC1C6]">
+                              <p className="line-clamp-2 text-xs leading-relaxed text-[#BDC1C6]">
                                 {newBlog.metaDescription ||
                                   newBlog.excerpt ||
                                   (newBlog.content
@@ -4594,7 +4583,7 @@ export default function AdminPanel() {
                       {blogFilePreview ? (
                         <div className="mt-1 relative overflow-hidden rounded-xl border border-[#C59A52]/40 bg-[#0E0A09] p-2">
                           <img src={blogFilePreview} alt="Blog Cover Preview" className="h-28 w-full rounded-lg object-cover" />
-                          <div className="mt-2 flex items-center justify-between text-[11px] text-[#EDE0C9]/80">
+                          <div className="mt-2 flex items-center justify-between text-xs text-[#EDE0C9]/80">
                             <span className="truncate max-w-[200px]">{blogFileInfo?.name}</span>
                             <button
                               type="button"
@@ -4623,7 +4612,7 @@ export default function AdminPanel() {
                     </div>
                     <button
                       type="submit"
-                      className="w-full rounded-xl border border-[#C59A52]/50 bg-gradient-to-r from-[#971515] to-[#78372B] py-2.5 text-xs font-bold uppercase tracking-wider text-white shadow hover:from-[#B01818] hover:to-[#971515]"
+                      className="w-full rounded-xl border border-[#C59A52]/50 bg-gradient-to-r from-[#971515] to-[#78372B] py-2.5 text-xs font-bold text-white shadow hover:from-[#B01818] hover:to-[#971515]"
                     >
                       Publish Article to Website
                     </button>
@@ -4632,8 +4621,8 @@ export default function AdminPanel() {
 
                 <div className="space-y-4 lg:col-span-6">
                   <div className="flex items-center justify-between">
-                    <h3 className="font-serif text-lg font-bold text-[#E8B94F]">Published Articles ({blogs.length})</h3>
-                    <span className="text-[11px] text-[#EDE0C9]/60">Live on /blog</span>
+                    <h3 className="text-lg font-bold text-[#E8B94F]">Published Articles ({blogs.length})</h3>
+                    <span className="text-xs text-[#EDE0C9]/75">Live on /blog</span>
                   </div>
                   <div className="space-y-3">
                     {blogs.map((b) => {
@@ -4650,16 +4639,16 @@ export default function AdminPanel() {
                           <div className="flex items-start justify-between gap-3">
                             <div>
                               <div className="flex items-center gap-1.5">
-                                <span className="rounded border border-[#C59A52]/50 bg-[#251714] px-2 py-0.5 text-[10px] font-bold text-[#E8B94F]">
+                                <span className="rounded border border-[#C59A52]/50 bg-[#251714] px-2 py-0.5 text-xs font-bold text-[#E8B94F]">
                                   {b.category}
                                 </span>
-                                <span className="inline-flex items-center gap-1 rounded bg-emerald-950/80 px-2 py-0.5 text-[9px] font-bold text-emerald-300 border border-emerald-500/30">
+                                <span className="inline-flex items-center gap-1 rounded bg-emerald-950/80 px-2 py-0.5 text-xs font-bold text-emerald-300 border border-emerald-500/30">
                                   <Globe size={10} />
                                   <span>SEO Ready</span>
                                 </span>
                               </div>
-                              <h4 className="mt-1 font-serif text-base font-bold text-[#FFF9ED]">{b.title}</h4>
-                              <div className="mt-0.5 text-[11px] text-[#EDE0C9]/50">
+                              <h4 className="mt-1 text-base font-bold text-[#FFF9ED]">{b.title}</h4>
+                              <div className="mt-0.5 text-xs text-[#EDE0C9]/75">
                                 By {b.author || "Sri Sri Chintamoni Kunja"} • {b.readTime || "5 min read"}
                               </div>
                             </div>
@@ -4686,13 +4675,13 @@ export default function AdminPanel() {
                               {keywordsList.slice(0, 4).map((kw, i) => (
                                 <span
                                   key={i}
-                                  className="rounded bg-[#251A16] px-1.5 py-0.5 text-[9px] font-semibold text-[#E8B94F]/90"
+                                  className="rounded bg-[#251A16] px-1.5 py-0.5 text-xs font-semibold text-[#E8B94F]/90"
                                 >
                                   #{kw}
                                 </span>
                               ))}
                               {keywordsList.length > 4 && (
-                                <span className="text-[9px] text-[#EDE0C9]/50 self-center">
+                                <span className="text-xs text-[#EDE0C9]/75 self-center">
                                   +{keywordsList.length - 4} more tags
                                 </span>
                               )}
@@ -4721,10 +4710,10 @@ export default function AdminPanel() {
                           <Globe size={18} />
                         </div>
                         <div>
-                          <h3 className="font-serif text-lg font-bold text-[#E8B94F]">
+                          <h3 className="text-lg font-bold text-[#E8B94F]">
                             SEO &amp; Meta Tags Inspection
                           </h3>
-                          <p className="text-xs text-[#EDE0C9]/60">{viewingBlogSeoModal.title}</p>
+                          <p className="text-xs text-[#EDE0C9]/75">{viewingBlogSeoModal.title}</p>
                         </div>
                       </div>
                       <button
@@ -4738,11 +4727,11 @@ export default function AdminPanel() {
                     <div className="mt-4 space-y-4 text-xs">
                       {/* Live SERP Simulation */}
                       <div className="rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-3.5">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-[#E8B94F]">
+                        <span className="text-xs font-bold uppercase tracking-normal text-[#E8B94F]">
                           Google Search Result Preview
                         </span>
                         <div className="mt-2 space-y-1">
-                          <div className="text-[11px] text-[#EDE0C9]/60 truncate">
+                          <div className="text-xs text-[#EDE0C9]/75 truncate">
                             https://chintamonikunja.org › blog ›{" "}
                             <span className="text-[#E8B94F]">
                               {viewingBlogSeoModal.slug ||
@@ -4753,11 +4742,11 @@ export default function AdminPanel() {
                                   .slice(0, 30)}
                             </span>
                           </div>
-                          <h5 className="font-serif text-sm font-bold text-[#8AB4F8] hover:underline cursor-pointer truncate">
+                          <h5 className="text-sm font-bold text-[#8AB4F8] hover:underline cursor-pointer truncate">
                             {viewingBlogSeoModal.metaTitle ||
                               `${viewingBlogSeoModal.title} | Sri Sri Chintamoni Kunja`}
                           </h5>
-                          <p className="line-clamp-2 text-[11px] text-[#BDC1C6]">
+                          <p className="line-clamp-2 text-xs text-[#BDC1C6]">
                             {viewingBlogSeoModal.metaDescription ||
                               viewingBlogSeoModal.excerpt ||
                               viewingBlogSeoModal.content.slice(0, 150)}
@@ -4796,7 +4785,7 @@ export default function AdminPanel() {
                         {viewingBlogSeoModal.canonicalUrl && (
                           <div>
                             <span className="font-bold text-[#E8B94F]">Canonical URL: </span>
-                            <span className="font-mono text-[11px] text-[#EDE0C9]/70">
+                            <span className="font-mono text-xs text-[#EDE0C9]/70">
                               {viewingBlogSeoModal.canonicalUrl}
                             </span>
                           </div>
@@ -4813,7 +4802,7 @@ export default function AdminPanel() {
                             ).map((k, i) => (
                               <span
                                 key={i}
-                                className="rounded bg-[#251A16] px-2 py-0.5 text-[10px] font-semibold text-[#E8B94F] border border-[#C59A52]/50"
+                                className="rounded bg-[#251A16] px-2 py-0.5 text-xs font-semibold text-[#E8B94F] border border-[#C59A52]/50"
                               >
                                 #{k.trim ? k.trim() : k}
                               </span>
@@ -4848,13 +4837,12 @@ export default function AdminPanel() {
                   <div className="flex items-center gap-2">
                     <ImageIcon size={22} className="text-[#E8B94F]" />
                     <h2
-                      className="font-serif text-2xl font-bold text-[#E8B94F]"
-                      style={{ fontFamily: "'Cormorant Garamond', serif" }}
+                      className="text-2xl leading-tight tracking-tight font-bold text-[#E8B94F]"
                     >
                       Gallery Media &amp; Darshan Manager
                     </h2>
                   </div>
-                  <p className="mt-0.5 text-xs text-[#EDE0C9]/60">
+                  <p className="mt-0.5 text-xs text-[#EDE0C9]/75">
                     Upload sacred photographs directly from your local device or media library to display on the foundation website.
                   </p>
                 </div>
@@ -4894,8 +4882,8 @@ export default function AdminPanel() {
                 {/* Left 5 Cols: Add Photo Form with Local Device Upload Dropzone */}
                 <div className="rounded-2xl border border-[#C59A52]/50 bg-[#16100E]/90 p-6 shadow-xl lg:col-span-5">
                   <div className="flex items-center justify-between border-b border-[#C59A52]/20 pb-3">
-                    <h3 className="font-serif text-lg font-bold text-[#E8B94F]">Add Sacred Media</h3>
-                    <span className="text-[11px] font-semibold text-[#EDE0C9]/50">Photo &amp; Video Upload</span>
+                    <h3 className="text-lg font-bold text-[#E8B94F]">Add Sacred Media</h3>
+                    <span className="text-xs font-semibold text-[#EDE0C9]/75">Photo &amp; Video Upload</span>
                   </div>
 
                   <form onSubmit={handleAddGallery} className="mt-4 space-y-4">
@@ -4910,7 +4898,7 @@ export default function AdminPanel() {
                         value={newGallery.title}
                         onChange={(e) => setNewGallery({ ...newGallery, title: e.target.value })}
                         placeholder="e.g. Gaura Purnima Sandhya Darshan"
-                        className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-xs font-semibold text-[#FFF9ED] placeholder-[#EDE0C9]/30 focus:border-[#E8B94F] focus:outline-none"
+                        className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-sm font-semibold text-[#FFF9ED] placeholder-[#EDE0C9]/70 focus:border-[#E8B94F] focus:outline-none"
                       />
                     </div>
 
@@ -4920,7 +4908,7 @@ export default function AdminPanel() {
                       <select
                         value={newGallery.category}
                         onChange={(e) => setNewGallery({ ...newGallery, category: e.target.value })}
-                        className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-xs text-[#FFF9ED] focus:border-[#E8B94F] focus:outline-none"
+                        className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-sm text-[#FFF9ED] focus:border-[#E8B94F] focus:outline-none"
                       >
                         <option className="bg-[#16100E]">Temple &amp; Altar</option>
                         <option className="bg-[#16100E]">Festivals &amp; Utsavs</option>
@@ -5004,10 +4992,10 @@ export default function AdminPanel() {
                             <h4 className="mt-3 text-xs font-bold text-[#FFF9ED]">
                               Upload from your device or media
                             </h4>
-                            <p className="mt-1 text-[11px] text-[#EDE0C9]/60">
+                            <p className="mt-1 text-xs text-[#EDE0C9]/75">
                               Drag &amp; drop file here, or click to browse photos &amp; videos
                             </p>
-                            <span className="mt-2 inline-block rounded-full bg-[#1F1411] px-2.5 py-0.5 text-[10px] font-medium text-[#C59A52] border border-[#C59A52]/20">
+                            <span className="mt-2 inline-block rounded-full bg-[#1F1411] px-2.5 py-0.5 text-xs font-medium text-[#C59A52] border border-[#C59A52]/20">
                               PNG, JPG, WEBP, MP4, WEBM up to 50MB
                             </span>
                             <div className="mt-3">
@@ -5037,7 +5025,7 @@ export default function AdminPanel() {
                                 />
                               )}
                               <div className="absolute top-2 right-2 flex items-center gap-1.5">
-                                <span className="rounded-full bg-emerald-950/90 px-2.5 py-0.5 text-[10px] font-bold text-emerald-300 border border-emerald-500/40">
+                                <span className="rounded-full bg-emerald-950/90 px-2.5 py-0.5 text-xs font-bold text-emerald-300 border border-emerald-500/40">
                                   ✓ {galleryFileInfo?.isVideo ? "Video Ready" : "Image Ready"}
                                 </span>
                               </div>
@@ -5052,7 +5040,7 @@ export default function AdminPanel() {
                                     {galleryFileInfo.size}
                                   </span>
                                 </div>
-                                <div className="text-[11px] text-[#EDE0C9]/60">
+                                <div className="text-xs text-[#EDE0C9]/75">
                                   {galleryFileInfo.dimensions}
                                 </div>
                               </div>
@@ -5095,7 +5083,7 @@ export default function AdminPanel() {
                             setGalleryFilePreview(e.target.value);
                           }}
                           placeholder="/assets/image.png or https://..."
-                          className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 font-mono text-xs text-[#FFF9ED] placeholder-[#EDE0C9]/30 focus:border-[#E8B94F] focus:outline-none"
+                          className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 font-mono text-sm text-[#FFF9ED] placeholder-[#EDE0C9]/70 focus:border-[#E8B94F] focus:outline-none"
                         />
                         {newGallery.image && (
                           <div className="mt-2 overflow-hidden rounded-xl border border-[#C59A52]/50 bg-[#0E0A09]">
@@ -5118,14 +5106,14 @@ export default function AdminPanel() {
                         value={newGallery.caption}
                         onChange={(e) => setNewGallery({ ...newGallery, caption: e.target.value })}
                         placeholder="e.g. Revered devotees offering evening Aarti..."
-                        className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-xs text-[#FFF9ED] placeholder-[#EDE0C9]/30 focus:border-[#E8B94F] focus:outline-none"
+                        className="mt-1 w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] p-2.5 text-sm text-[#FFF9ED] placeholder-[#EDE0C9]/70 focus:border-[#E8B94F] focus:outline-none"
                       />
                     </div>
 
                     <button
                       type="submit"
                       disabled={!newGallery.image}
-                      className="w-full rounded-xl border border-[#C59A52]/50 bg-gradient-to-r from-[#971515] to-[#78372B] py-3 text-xs font-bold uppercase tracking-wider text-white shadow-lg transition hover:from-[#B01818] hover:to-[#971515] disabled:opacity-40 disabled:pointer-events-none"
+                      className="w-full rounded-xl border border-[#C59A52]/50 bg-gradient-to-r from-[#971515] to-[#78372B] py-3 text-xs font-bold text-white shadow-lg transition hover:from-[#B01818] hover:to-[#971515] disabled:opacity-40 disabled:pointer-events-none"
                     >
                       Upload &amp; Add To Top Of Gallery
                     </button>
@@ -5135,7 +5123,7 @@ export default function AdminPanel() {
                 {/* Right 7 Cols: Gallery Visuals Directory */}
                 <div className="rounded-2xl border border-[#C59A52]/50 bg-[#16100E]/90 p-6 shadow-xl lg:col-span-7">
                   <div className="flex items-center justify-between border-b border-[#C59A52]/20 pb-3">
-                    <h3 className="font-serif text-lg font-bold text-[#E8B94F]">
+                    <h3 className="text-lg font-bold text-[#E8B94F]">
                       Gallery Visuals ({
                         gallery.filter((g) => {
                           if (galleryFilterCategory === "All") return true;
@@ -5144,7 +5132,7 @@ export default function AdminPanel() {
                         }).length
                       })
                     </h3>
-                    <span className="text-xs text-[#EDE0C9]/60">
+                    <span className="text-xs text-[#EDE0C9]/75">
                       Category: <strong>{galleryFilterCategory}</strong>
                     </span>
                   </div>
@@ -5154,7 +5142,7 @@ export default function AdminPanel() {
                     if (galleryFilterCategory === "Videos") return g.type === "video" || g.category === "Videos" || g.image?.endsWith(".mp4");
                     return g.category === galleryFilterCategory;
                   }).length === 0 ? (
-                    <div className="p-12 text-center text-xs text-[#EDE0C9]/50">
+                    <div className="p-12 text-center text-xs text-[#EDE0C9]/75">
                       No visuals found under "{galleryFilterCategory}". Upload one from your media on the left.
                     </div>
                   ) : (
@@ -5200,11 +5188,11 @@ export default function AdminPanel() {
                                   />
                                 )}
                                 <div className="absolute top-2 left-2 flex items-center gap-1.5">
-                                  <span className="rounded-full bg-black/70 px-2.5 py-0.5 text-[10px] font-bold text-[#E8B94F] border border-[#C59A52]/50 backdrop-blur-sm">
+                                  <span className="rounded-full bg-black/70 px-2.5 py-0.5 text-xs font-bold text-[#E8B94F] border border-[#C59A52]/50 backdrop-blur-sm">
                                     {g.category}
                                   </span>
                                   {isDynamicUpload && (
-                                    <span className="rounded-full bg-emerald-950/80 px-2 py-0.5 text-[9px] font-bold text-emerald-300 border border-emerald-500/40 backdrop-blur-sm">
+                                    <span className="rounded-full bg-emerald-950/80 px-2 py-0.5 text-xs font-bold text-emerald-300 border border-emerald-500/40 backdrop-blur-sm">
                                       Top / Latest
                                     </span>
                                   )}
@@ -5231,7 +5219,7 @@ export default function AdminPanel() {
                                   </div>
                                 </div>
                                 {g.caption && (
-                                  <p className="mt-1 line-clamp-1 text-[11px] text-[#EDE0C9]/70">{g.caption}</p>
+                                  <p className="mt-1 line-clamp-1 text-xs text-[#EDE0C9]/70">{g.caption}</p>
                                 )}
                               </div>
                             </div>
@@ -5271,10 +5259,10 @@ export default function AdminPanel() {
                     <div className="mt-4 flex items-start justify-between gap-4 px-2">
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="rounded-full bg-[#971515] px-2.5 py-0.5 text-[10px] font-bold text-[#FFF9ED]">
+                          <span className="rounded-full bg-[#971515] px-2.5 py-0.5 text-xs font-bold text-[#FFF9ED]">
                             {galleryDarshanModal.category}
                           </span>
-                          <h3 className="font-serif text-lg font-bold text-[#E8B94F]">
+                          <h3 className="text-lg font-bold text-[#E8B94F]">
                             {galleryDarshanModal.title}
                           </h3>
                         </div>
@@ -5305,12 +5293,11 @@ export default function AdminPanel() {
               <div className="flex flex-col justify-between gap-4 rounded-2xl border border-[#C59A52]/50 bg-[#16100E]/90 p-6 shadow-xl sm:flex-row sm:items-center">
                 <div>
                   <h2
-                    className="font-serif text-2xl font-bold text-[#E8B94F]"
-                    style={{ fontFamily: "'Cormorant Garamond', serif" }}
+                    className="text-2xl leading-tight tracking-tight font-bold text-[#E8B94F]"
                   >
                     Devotee Contact & Seva Inquiries ({contacts.length})
                   </h2>
-                  <p className="mt-0.5 text-xs text-[#EDE0C9]/60">
+                  <p className="mt-0.5 text-xs text-[#EDE0C9]/75">
                     Messages submitted through the public Contact Us form (/contact) saved directly to the database.
                   </p>
                 </div>
@@ -5319,8 +5306,8 @@ export default function AdminPanel() {
               <div className="overflow-hidden rounded-2xl border border-[#C59A52]/50 bg-[#16100E]/95 shadow-xl">
                 {contacts.length > 0 ? (
                   <div className="overflow-x-auto">
-                    <table className="w-full text-left text-xs">
-                      <thead className="border-b border-[#C59A52]/25 bg-[#201512] text-[#E8B94F] uppercase font-bold tracking-wider">
+                    <table className="w-full text-left text-sm">
+                      <thead className="border-b border-[#C59A52]/25 bg-[#201512] text-[#E8B94F] font-bold">
                         <tr>
                           <th className="p-3.5">Name</th>
                           <th className="p-3.5">Email & Phone</th>
@@ -5337,18 +5324,18 @@ export default function AdminPanel() {
                             <td className="p-3.5 font-bold text-[#FFF9ED]">{c.name}</td>
                             <td className="p-3.5">
                               <div>{c.email}</div>
-                              {c.phone && <div className="font-mono text-[10px] text-[#EDE0C9]/50">{c.phone}</div>}
+                              {c.phone && <div className="font-mono text-xs text-[#EDE0C9]/75">{c.phone}</div>}
                             </td>
                             <td className="p-3.5 text-[#EDE0C9]/70">{c.address || "—"}</td>
                             <td className="p-3.5">
-                              <span className="rounded border border-[#C59A52]/50 bg-[#251714] px-2 py-0.5 text-[10px] font-bold text-[#E8B94F]">
+                              <span className="rounded border border-[#C59A52]/50 bg-[#251714] px-2 py-0.5 text-xs font-bold text-[#E8B94F]">
                                 {c.purpose || "General Inquiry"}
                               </span>
                             </td>
                             <td className="max-w-xs p-3.5 text-[#EDE0C9]/80">{c.message}</td>
                             <td className="p-3.5">
                               <span
-                                className={`rounded px-2 py-0.5 text-[10px] font-bold ${c.status === "Responded"
+                                className={`rounded px-2 py-0.5 text-xs font-bold ${c.status === "Responded"
                                   ? "bg-emerald-950 text-emerald-300 border border-emerald-500/40"
                                   : c.status === "Archived"
                                     ? "bg-gray-900 text-gray-300 border border-gray-700"
@@ -5362,7 +5349,7 @@ export default function AdminPanel() {
                               <select
                                 value={c.status || "New"}
                                 onChange={(e) => handleUpdateContactStatus(c._id, e.target.value)}
-                                className="rounded border border-[#C59A52]/50 bg-[#0E0A09] p-1 text-[10px] font-bold text-[#E8B94F] focus:outline-none"
+                                className="rounded border border-[#C59A52]/50 bg-[#0E0A09] p-1 text-sm font-bold text-[#E8B94F] focus:outline-none"
                               >
                                 <option value="New" className="bg-[#16100E]">New</option>
                                 <option value="In Progress" className="bg-[#16100E]">In Progress</option>
@@ -5376,7 +5363,7 @@ export default function AdminPanel() {
                     </table>
                   </div>
                 ) : (
-                  <div className="p-12 text-center text-xs text-[#EDE0C9]/50">
+                  <div className="p-12 text-center text-xs text-[#EDE0C9]/75">
                     No devotee inquiries received yet. Inquiries submitted via Contact Us form will appear here in real-time.
                   </div>
                 )}

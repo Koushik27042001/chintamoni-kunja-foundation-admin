@@ -475,7 +475,7 @@ export default function DevoteeDeskOperations() {
                 <select
                   value={devoteeStatusFilter}
                   onChange={(e) => setDevoteeStatusFilter(e.target.value)}
-                  className="rounded-xl border border-zinc-600/80 bg-[#27272a] px-3 py-1.5 text-xs text-white"
+                  className="rounded-xl border border-zinc-600/80 bg-[#27272a] px-3 py-1.5 text-sm text-white"
                 >
                   <option value="All">All Statuses</option>
                   <option value="Active">Active</option>
@@ -488,7 +488,7 @@ export default function DevoteeDeskOperations() {
                   value={devoteeSearch}
                   onChange={(e) => setDevoteeSearch(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && loadDevotees()}
-                  className="rounded-xl border border-zinc-600/80 bg-[#27272a] px-3 py-1.5 text-xs text-white placeholder-gray-400"
+                  className="rounded-xl border border-zinc-600/80 bg-[#27272a] px-3 py-1.5 text-sm text-white placeholder-gray-400"
                 />
                 <button
                   type="button"
@@ -501,8 +501,8 @@ export default function DevoteeDeskOperations() {
             </div>
 
             <div className="overflow-x-auto rounded-xl border border-zinc-600/80">
-              <table className="w-full text-left text-xs text-gray-300">
-                <thead className="bg-[#27272a] text-gray-100 uppercase tracking-wider text-[10px]">
+              <table className="w-full text-left text-sm text-gray-300">
+                <thead className="bg-[#27272a] text-gray-100 text-xs">
                   <tr>
                     <th className="p-3">Member ID</th>
                     <th className="p-3">Name</th>
@@ -524,7 +524,7 @@ export default function DevoteeDeskOperations() {
                       </td>
                       <td className="p-3">
                         <span
-                          className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                          className={`rounded-full px-2 py-0.5 text-xs font-bold ${
                             d.status === 'Active'
                               ? 'bg-emerald-500/20 text-emerald-400'
                               : d.status === 'Inactive'
@@ -581,7 +581,7 @@ export default function DevoteeDeskOperations() {
                   <button
                     type="button"
                     onClick={() => handleToggleBatch(b._id)}
-                    className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase transition ${
+                    className={`rounded-full px-2.5 py-0.5 text-xs font-bold uppercase transition ${
                       b.isActive
                         ? 'bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30'
                         : 'bg-gray-700 text-gray-400 hover:bg-gray-600'
@@ -592,23 +592,23 @@ export default function DevoteeDeskOperations() {
                 </div>
                 <div className="grid grid-cols-2 gap-2 text-xs text-gray-300">
                   <div>
-                    <span className="text-[10px] text-gray-400 uppercase">Book Range:</span>
+                    <span className="text-xs text-gray-400 uppercase">Book Range:</span>
                     <p className="font-mono font-semibold">
                       {b.batchPrefix}-{b.startBookNumber} to {b.endBookNumber}
                     </p>
                   </div>
                   <div>
-                    <span className="text-[10px] text-gray-400 uppercase">Bill Range:</span>
+                    <span className="text-xs text-gray-400 uppercase">Bill Range:</span>
                     <p className="font-mono font-semibold">
                       {b.startBillNumber} – {b.endBillNumber}
                     </p>
                   </div>
                   <div>
-                    <span className="text-[10px] text-gray-400 uppercase">Available Stock:</span>
+                    <span className="text-xs text-gray-400 uppercase">Available Stock:</span>
                     <p className="font-bold text-[#10b981] text-sm">{b.availableBooks} books</p>
                   </div>
                   <div>
-                    <span className="text-[10px] text-gray-400 uppercase">Allocated / Settled:</span>
+                    <span className="text-xs text-gray-400 uppercase">Allocated / Settled:</span>
                     <p className="font-semibold text-gray-300">
                       {b.allocatedBooks} / {b.settledBooks}
                     </p>
@@ -625,7 +625,7 @@ export default function DevoteeDeskOperations() {
                 <select
                   value={bookFilterStatus}
                   onChange={(e) => setBookFilterStatus(e.target.value)}
-                  className="rounded-xl border border-zinc-600/80 bg-[#27272a] px-3 py-1.5 text-xs text-white"
+                  className="rounded-xl border border-zinc-600/80 bg-[#27272a] px-3 py-1.5 text-sm text-white"
                 >
                   <option value="All">All Statuses</option>
                   <option value="Available">Available Only</option>
@@ -638,7 +638,7 @@ export default function DevoteeDeskOperations() {
                   value={bookSearch}
                   onChange={(e) => setBookSearch(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && loadBooks()}
-                  className="rounded-xl border border-zinc-600/80 bg-[#27272a] px-3 py-1.5 text-xs text-white placeholder-gray-400"
+                  className="rounded-xl border border-zinc-600/80 bg-[#27272a] px-3 py-1.5 text-sm text-white placeholder-gray-400"
                 />
                 <button
                   type="button"
@@ -651,8 +651,8 @@ export default function DevoteeDeskOperations() {
             </div>
 
             <div className="overflow-x-auto rounded-xl border border-zinc-600/80">
-              <table className="w-full text-left text-xs text-gray-300">
-                <thead className="bg-[#27272a] text-gray-100 uppercase tracking-wider text-[10px]">
+              <table className="w-full text-left text-sm text-gray-300">
+                <thead className="bg-[#27272a] text-gray-100 text-xs">
                   <tr>
                     <th className="p-3">Book Serial</th>
                     <th className="p-3">Batch</th>
@@ -673,7 +673,7 @@ export default function DevoteeDeskOperations() {
                       <td className="p-3 font-mono">{bk.totalPages}</td>
                       <td className="p-3">
                         <span
-                          className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                          className={`rounded-full px-2 py-0.5 text-xs font-bold ${
                             bk.status === 'Available'
                               ? 'bg-emerald-500/20 text-emerald-400'
                               : bk.status === 'Allocated'
@@ -725,7 +725,7 @@ export default function DevoteeDeskOperations() {
                 placeholder="e.g. M-1001"
                 value={issueForm.memberId}
                 onChange={(e) => setIssueForm({ ...issueForm, memberId: e.target.value })}
-                className="mt-1 w-full rounded-xl border border-zinc-600/80 bg-[#27272a] p-2.5 text-xs text-white uppercase font-mono"
+                className="mt-1 w-full rounded-xl border border-zinc-600/80 bg-[#27272a] p-2.5 text-sm text-white uppercase font-mono"
               />
             </div>
             <div>
@@ -739,7 +739,7 @@ export default function DevoteeDeskOperations() {
                 required
                 value={issueForm.quantity}
                 onChange={(e) => setIssueForm({ ...issueForm, quantity: e.target.value })}
-                className="mt-1 w-full rounded-xl border border-zinc-600/80 bg-[#27272a] p-2.5 text-xs text-white font-mono"
+                className="mt-1 w-full rounded-xl border border-zinc-600/80 bg-[#27272a] p-2.5 text-sm text-white font-mono"
               />
             </div>
             <div>
@@ -747,7 +747,7 @@ export default function DevoteeDeskOperations() {
               <select
                 value={issueForm.batchName}
                 onChange={(e) => setIssueForm({ ...issueForm, batchName: e.target.value })}
-                className="mt-1 w-full rounded-xl border border-zinc-600/80 bg-[#27272a] p-2.5 text-xs text-white"
+                className="mt-1 w-full rounded-xl border border-zinc-600/80 bg-[#27272a] p-2.5 text-sm text-white"
               >
                 <option value="">Auto (Active Batch)</option>
                 {batches.map((b) => (
@@ -770,7 +770,7 @@ export default function DevoteeDeskOperations() {
           {proposedData && (
             <div className="rounded-2xl border border-[#38bdf8]/40 bg-[#121215] p-5 space-y-4">
               <div className="border-b border-zinc-600/80 pb-3">
-                <span className="text-[10px] uppercase font-bold text-[#38bdf8]">
+                <span className="text-xs uppercase font-bold text-[#38bdf8]">
                   Allocation Proposal for:
                 </span>
                 <h4 className="text-base font-bold text-white">
@@ -796,7 +796,7 @@ export default function DevoteeDeskOperations() {
                       <button
                         type="button"
                         onClick={() => handleReplaceBook(num)}
-                        className="rounded-lg border border-[#f59e0b] px-2.5 py-1 text-[11px] font-bold text-[#f59e0b] hover:bg-[#f59e0b] hover:text-black transition"
+                        className="rounded-lg border border-[#f59e0b] px-2.5 py-1 text-xs font-bold text-[#f59e0b] hover:bg-[#f59e0b] hover:text-black transition"
                       >
                         Replace with Next Available
                       </button>
@@ -836,7 +836,7 @@ export default function DevoteeDeskOperations() {
                 placeholder="Enter Devotee Member ID..."
                 value={returnMemberId}
                 onChange={(e) => setReturnMemberId(e.target.value)}
-                className="flex-1 rounded-xl border border-zinc-600/80 bg-[#27272a] p-2.5 text-xs text-white uppercase font-mono"
+                className="flex-1 rounded-xl border border-zinc-600/80 bg-[#27272a] p-2.5 text-sm text-white uppercase font-mono"
               />
               <button
                 type="button"
@@ -890,7 +890,7 @@ export default function DevoteeDeskOperations() {
                   <select
                     value={returnReason}
                     onChange={(e) => setReturnReason(e.target.value)}
-                    className="mt-1 w-full rounded-xl border border-zinc-600/80 bg-[#27272a] p-2.5 text-xs text-white"
+                    className="mt-1 w-full rounded-xl border border-zinc-600/80 bg-[#27272a] p-2.5 text-sm text-white"
                   >
                     <option value="Address Not Found">Address Not Found</option>
                     <option value="Mobile Off / Unable to reach">Mobile Off / Unable to reach</option>
@@ -898,7 +898,7 @@ export default function DevoteeDeskOperations() {
                     <option value="Devotee Deceased">Devotee Deceased</option>
                     <option value="Other Reason">Other Reason</option>
                   </select>
-                  <p className="mt-1 text-[11px] text-amber-400">
+                  <p className="mt-1 text-xs text-amber-400">
                     {returnReason === 'Devotee Deceased'
                       ? '⚠️ Devotee status will be transitioned to "Deceased".'
                       : 'Devotee status will be transitioned to "Inactive".'}
@@ -919,8 +919,8 @@ export default function DevoteeDeskOperations() {
           <div className="rounded-2xl border border-zinc-600/80 bg-[#18181b] p-5 shadow-xl">
             <h4 className="font-bold text-white text-sm mb-3">Recent Return / Bounce Logs</h4>
             <div className="overflow-x-auto rounded-xl border border-zinc-600/80">
-              <table className="w-full text-left text-xs text-gray-300">
-                <thead className="bg-[#27272a] text-gray-100 uppercase tracking-wider text-[10px]">
+              <table className="w-full text-left text-sm text-gray-300">
+                <thead className="bg-[#27272a] text-gray-100 text-xs">
                   <tr>
                     <th className="p-3">Date</th>
                     <th className="p-3">Member ID</th>
@@ -969,7 +969,7 @@ export default function DevoteeDeskOperations() {
                 placeholder="Enter Devotee Member ID..."
                 value={settleMemberId}
                 onChange={(e) => setSettleMemberId(e.target.value)}
-                className="flex-1 rounded-xl border border-zinc-600/80 bg-[#27272a] p-2.5 text-xs text-white uppercase font-mono"
+                className="flex-1 rounded-xl border border-zinc-600/80 bg-[#27272a] p-2.5 text-sm text-white uppercase font-mono"
               />
               <button
                 type="button"
@@ -983,7 +983,7 @@ export default function DevoteeDeskOperations() {
             {settlementPreview && (
               <div className="space-y-4 rounded-2xl border border-[#8b5cf6]/40 bg-[#121215] p-5">
                 <div className="border-b border-zinc-600/80 pb-3">
-                  <span className="text-[10px] uppercase font-bold text-[#8b5cf6]">Devotee:</span>
+                  <span className="text-xs uppercase font-bold text-[#8b5cf6]">Devotee:</span>
                   <h4 className="text-base font-bold text-white">
                     {settlementPreview.devotee.name} ({settlementPreview.devotee.memberId})
                   </h4>
@@ -1009,7 +1009,7 @@ export default function DevoteeDeskOperations() {
                       value={usedPages}
                       onChange={(e) => setUsedPages(e.target.value)}
                       placeholder="Enter used pages count"
-                      className="mt-1 w-full rounded-xl border border-zinc-600/80 bg-[#27272a] p-2.5 text-xs text-white font-mono"
+                      className="mt-1 w-full rounded-xl border border-zinc-600/80 bg-[#27272a] p-2.5 text-sm text-white font-mono"
                     />
                   </div>
 
@@ -1020,7 +1020,7 @@ export default function DevoteeDeskOperations() {
                     <select
                       value={nextYearInterest}
                       onChange={(e) => setNextYearInterest(e.target.value)}
-                      className="mt-1 w-full rounded-xl border border-zinc-600/80 bg-[#27272a] p-2.5 text-xs text-white"
+                      className="mt-1 w-full rounded-xl border border-zinc-600/80 bg-[#27272a] p-2.5 text-sm text-white"
                     >
                       <option value="Yes">Yes (Confirmed)</option>
                       <option value="High Probability">High Probability</option>
@@ -1044,8 +1044,8 @@ export default function DevoteeDeskOperations() {
           <div className="rounded-2xl border border-zinc-600/80 bg-[#18181b] p-5 shadow-xl">
             <h4 className="font-bold text-white text-sm mb-3">Completed Settlements Register</h4>
             <div className="overflow-x-auto rounded-xl border border-zinc-600/80">
-              <table className="w-full text-left text-xs text-gray-300">
-                <thead className="bg-[#27272a] text-gray-100 uppercase tracking-wider text-[10px]">
+              <table className="w-full text-left text-sm text-gray-300">
+                <thead className="bg-[#27272a] text-gray-100 text-xs">
                   <tr>
                     <th className="p-3">Settlement No</th>
                     <th className="p-3">Date</th>
@@ -1095,7 +1095,7 @@ export default function DevoteeDeskOperations() {
                   placeholder="e.g. M-1001"
                   value={dispatchForm.memberId}
                   onChange={(e) => setDispatchForm({ ...dispatchForm, memberId: e.target.value })}
-                  className="mt-1 w-full rounded-xl border border-zinc-600/80 bg-[#27272a] p-2.5 text-xs text-white uppercase font-mono"
+                  className="mt-1 w-full rounded-xl border border-zinc-600/80 bg-[#27272a] p-2.5 text-sm text-white uppercase font-mono"
                 />
               </div>
 
@@ -1104,7 +1104,7 @@ export default function DevoteeDeskOperations() {
                 <select
                   value={dispatchForm.dispatchMode}
                   onChange={(e) => setDispatchForm({ ...dispatchForm, dispatchMode: e.target.value })}
-                  className="mt-1 w-full rounded-xl border border-zinc-600/80 bg-[#27272a] p-2.5 text-xs text-white"
+                  className="mt-1 w-full rounded-xl border border-zinc-600/80 bg-[#27272a] p-2.5 text-sm text-white"
                 >
                   <option value="Post">Post (Speed Post / Regd)</option>
                   <option value="Courier">Courier</option>
@@ -1124,7 +1124,7 @@ export default function DevoteeDeskOperations() {
                   onChange={(e) =>
                     setDispatchForm({ ...dispatchForm, trackingIdOrReceiver: e.target.value })
                   }
-                  className="mt-1 w-full rounded-xl border border-zinc-600/80 bg-[#27272a] p-2.5 text-xs text-white font-mono"
+                  className="mt-1 w-full rounded-xl border border-zinc-600/80 bg-[#27272a] p-2.5 text-sm text-white font-mono"
                 />
               </div>
 
@@ -1135,7 +1135,7 @@ export default function DevoteeDeskOperations() {
                   value={dispatchForm.itemDispatched}
                   onChange={(e) => setDispatchForm({ ...dispatchForm, itemDispatched: e.target.value })}
                   placeholder="Bill Books / Invitation Letter"
-                  className="mt-1 w-full rounded-xl border border-zinc-600/80 bg-[#27272a] p-2.5 text-xs text-white"
+                  className="mt-1 w-full rounded-xl border border-zinc-600/80 bg-[#27272a] p-2.5 text-sm text-white"
                 />
               </div>
 
@@ -1153,8 +1153,8 @@ export default function DevoteeDeskOperations() {
           <div className="rounded-2xl border border-zinc-600/80 bg-[#18181b] p-5 shadow-xl">
             <h4 className="font-bold text-white text-sm mb-3">Recent Dispatches</h4>
             <div className="overflow-x-auto rounded-xl border border-zinc-600/80">
-              <table className="w-full text-left text-xs text-gray-300">
-                <thead className="bg-[#27272a] text-gray-100 uppercase tracking-wider text-[10px]">
+              <table className="w-full text-left text-sm text-gray-300">
+                <thead className="bg-[#27272a] text-gray-100 text-xs">
                   <tr>
                     <th className="p-3">Date</th>
                     <th className="p-3">Member ID</th>
@@ -1178,7 +1178,7 @@ export default function DevoteeDeskOperations() {
                       <td className="p-3 font-semibold text-white">{d.devoteeName}</td>
                       <td className="p-3">{d.itemDispatched}</td>
                       <td className="p-3">
-                        <span className="rounded bg-white/10 px-2 py-0.5 text-[10px] font-bold">
+                        <span className="rounded bg-white/10 px-2 py-0.5 text-xs font-bold">
                           {d.dispatchMode}
                         </span>
                       </td>

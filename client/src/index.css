@@ -2,6 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
+.admin-panel {
+  font-family: Inter, system-ui, sans-serif;
+}
+
+.admin-panel table {
+  font-variant-numeric: tabular-nums;
+}
+
 @keyframes marquee {
   0% {
     transform: translateX(100%);

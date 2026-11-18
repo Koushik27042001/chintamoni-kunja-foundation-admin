@@ -181,10 +181,10 @@ export default function AIOperationsAssistant({ onNavigateTab }) {
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-lg font-bold text-white tracking-wide">
+              <h2 className="text-lg font-bold text-white tracking-normal">
                 DevoteeDesk AI Operations Assistant
               </h2>
-              <span className="rounded-full border border-[#38bdf8]/40 bg-[#38bdf8]/10 px-2 py-0.5 text-[10px] font-bold text-[#38bdf8] uppercase tracking-wider">
+              <span className="rounded-full border border-[#38bdf8]/40 bg-[#38bdf8]/10 px-2 py-0.5 text-xs font-bold text-[#38bdf8] uppercase tracking-normal">
                 MERN AI Engine
               </span>
             </div>
@@ -347,8 +347,8 @@ export default function AIOperationsAssistant({ onNavigateTab }) {
 
                     {m.table && (
                       <div className="mt-4 overflow-x-auto rounded-xl border border-zinc-600/80 bg-[#18181b]">
-                        <table className="w-full text-left text-xs text-gray-300">
-                          <thead className="bg-[#27272a] text-gray-100 font-semibold uppercase tracking-wider text-[10px]">
+                        <table className="w-full text-left text-sm text-gray-300">
+                          <thead className="bg-[#27272a] text-gray-100 font-semibold text-xs">
                             <tr>
                               {m.table.headers.map((h, i) => (
                                 <th key={i} className="px-3 py-2 border-b border-zinc-600/80">
@@ -361,7 +361,7 @@ export default function AIOperationsAssistant({ onNavigateTab }) {
                             {m.table.rows.map((row, rIdx) => (
                               <tr key={rIdx} className="hover:bg-white/5 transition">
                                 {row.map((col, cIdx) => (
-                                  <td key={cIdx} className="px-3 py-2 font-mono text-[11px]">
+                                  <td key={cIdx} className="px-3 py-2 font-mono text-xs">
                                     {col}
                                   </td>
                                 ))}
@@ -381,11 +381,11 @@ export default function AIOperationsAssistant({ onNavigateTab }) {
                           >
                             <div>
                               <strong className="text-[#38bdf8] font-mono">{d.memberId}</strong> — {d.name} ({d.mobile1})
-                              <div className="text-[10px] text-gray-400">
+                              <div className="text-xs text-gray-400">
                                 {d.cityVillage}, {d.district} • Status: {d.status} • Books: {d.allocatedBooksCount}
                               </div>
                             </div>
-                            <span className="rounded bg-[#38bdf8]/10 px-2 py-0.5 text-[10px] text-[#38bdf8] font-bold">
+                            <span className="rounded bg-[#38bdf8]/10 px-2 py-0.5 text-xs text-[#38bdf8] font-bold">
                               Devotee
                             </span>
                           </div>
@@ -397,11 +397,11 @@ export default function AIOperationsAssistant({ onNavigateTab }) {
                           >
                             <div>
                               <strong className="text-[#10b981] font-mono">{b.bookNumber}</strong> (Batch: {b.batchName})
-                              <div className="text-[10px] text-gray-400">
+                              <div className="text-xs text-gray-400">
                                 Status: {b.status} {b.currentDevoteeName ? `• With: ${b.currentDevoteeName}` : ''}
                               </div>
                             </div>
-                            <span className="rounded bg-[#10b981]/10 px-2 py-0.5 text-[10px] text-[#10b981] font-bold">
+                            <span className="rounded bg-[#10b981]/10 px-2 py-0.5 text-xs text-[#10b981] font-bold">
                               Book
                             </span>
                           </div>
@@ -411,7 +411,7 @@ export default function AIOperationsAssistant({ onNavigateTab }) {
 
                     {m.suggestions && m.suggestions.length > 0 && (
                       <div className="mt-4 pt-3 border-t border-zinc-600/80/40 flex flex-wrap gap-1.5">
-                        <span className="text-[10px] uppercase font-bold text-gray-400 w-full mb-1 flex items-center gap-1">
+                        <span className="text-xs uppercase font-bold text-gray-400 w-full mb-1 flex items-center gap-1">
                           <HelpCircle size={11} /> Suggested Follow-up:
                         </span>
                         {m.suggestions.map((s, sIdx) => (
@@ -592,7 +592,7 @@ export default function AIOperationsAssistant({ onNavigateTab }) {
                       <div>
                         <div className="flex items-center gap-2">
                           <span
-                            className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
+                            className={`rounded-full px-2 py-0.5 text-xs font-bold uppercase tracking-normal ${
                               ins.severity === 'Critical'
                                 ? 'bg-red-500/20 text-red-400'
                                 : ins.severity === 'Warning'
