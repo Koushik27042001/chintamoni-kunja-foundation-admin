@@ -16,12 +16,14 @@ const HOME_PHOTOS = {
   heritageShrine: asset("home_page/web/heritage-shrine.jpg"),
   altar: asset("home_page/web/altar.jpg"),
   gathering: asset("home_page/web/devotional-gathering.jpg"),
+  kirtan: asset("home_page/web/kirtan.jpg"),
 };
 const PORTRAITS = [
   { src: asset("home_page/_MG_8082-removebg-preview.png"), alt: "Portrait of a man wearing a flower garland", fit: "object-contain object-bottom" },
   { src: asset("home_page/1.jpg"), alt: "Man seated in saffron and white robes", fit: "object-cover" },
   { src: asset("home_page/2.jpg"), alt: "Framed portrait of a man seated in white", fit: "object-contain" },
   { src: asset("home_page/3.jpg"), alt: "Portrait of a man wearing glasses", fit: "object-cover object-top" },
+  { src: asset("home_page/4.JPG"), alt: "Framed portrait draped with a white flower garland", fit: "object-contain" },
 ];
 
 /* Editable content – confirm every figure and name with the Foundation */
@@ -403,7 +405,7 @@ function Guru() {
       </div>
       <Reveal className="mx-auto mt-10 max-w-5xl px-5">
         <h3 className="text-center text-3xl font-bold text-[#78372B]" style={serif}>Portraits from the Foundation</h3>
-        <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-5">
+        <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-5 sm:gap-5">
           {PORTRAITS.map(({ src, alt, fit }) => (
             <figure key={src} className="aspect-[4/5] overflow-hidden rounded-xl border border-[#C59A52]/50 bg-[#EDE0C9]">
               <img src={src} alt={alt} loading="lazy" decoding="async" className={`h-full w-full ${fit}`} />
@@ -638,7 +640,16 @@ function Events() {
           <h2 className="mt-3 text-4xl font-bold text-[#78372B] sm:text-5xl" style={serif}>Kirtan, Festivals & Gatherings</h2>
         </Reveal>
         <div className="mt-12 grid items-start gap-10 lg:grid-cols-[1.2fr_.8fr]">
-          <Reveal><Parallax src={HOME_PHOTOS.gathering} alt="Group gathered on stage around a seated guest" speed={40} className="aspect-[4/3] rounded-xl border border-[#C59A52] shadow-[0_0_0_6px_#FFF9ED,0_0_0_7px_rgba(197,154,82,.6)]" /></Reveal>
+          <Reveal className="space-y-6">
+            <Parallax src={HOME_PHOTOS.gathering} alt="Group gathered on stage around a seated guest" speed={40} className="aspect-[4/3] rounded-xl border border-[#C59A52] shadow-[0_0_0_6px_#FFF9ED,0_0_0_7px_rgba(197,154,82,.6)]" />
+            <img
+              src={HOME_PHOTOS.kirtan}
+              alt="Musicians seated with drums on either side of a decorated altar"
+              loading="lazy"
+              decoding="async"
+              className="block w-full rounded-xl border border-[#C59A52] shadow-[0_0_0_6px_#FFF9ED,0_0_0_7px_rgba(197,154,82,.6)]"
+            />
+          </Reveal>
           <Reveal delay={0.1}>
             <h3 className="text-3xl font-bold text-[#78372B]" style={serif}>Upcoming Events</h3>
             <ul className="mt-4 divide-y divide-[#C59A52]/40 border-y border-[#C59A52]/40">
