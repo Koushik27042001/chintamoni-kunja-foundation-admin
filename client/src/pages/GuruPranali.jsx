@@ -237,7 +237,7 @@ const TREE = {
               couple: ["Sri Krishnadas Goswami", "Srimati Bijan Devi"],
               children: [
                 { couple: ["Sri Dipak Kumar Chakraborty"] },
-                { couple: ["Unmarried"] },
+                { status: "Unmarried" },
               ],
             },
           ],
@@ -245,46 +245,45 @@ const TREE = {
       ],
     },
     { couple: ["Navakanta Goswami"] },
-    { couple: ["Unmarried"] },
+    { status: "Unmarried" },
   ],
 };
 
 function Branch({ node, depth = 0 }) {
-  const [a, b] = node.couple;
+  const [name, spouse] = node.couple ?? [];
+  const founder = depth === 0;
   return (
-    <li className="relative">
-      <Reveal>
-        <div
-          className={`relative rounded-xl border bg-[#FFF9ED] px-5 py-3 ${
-            depth === 0 ? "border-[#D98232] shadow-lg" : "border-[#C59A52]/60"
-          }`}
-        >
-          <span
-            className="absolute -left-[26px] top-1/2 h-3 w-3 -translate-y-1/2 rounded-full border-2 border-[#C59A52] bg-[#FFF9ED] max-md:hidden"
-            aria-hidden="true"
-          />
-          <p className="font-[Inter] text-[10px] font-semibold tracking-[0.2em] text-[#D98232]">
-            {depth === 0 ? "FOUNDER" : `GENERATION ${depth + 1}`}
+    <li className="relative min-w-0">
+      <div
+        className={`rounded-xl border px-3 py-3 sm:px-5 ${
+          founder
+            ? "border-[#C59A52] bg-[#78372B] text-center text-[#FFF9ED] shadow-lg"
+            : "border-[#C59A52]/55 bg-[#FFF9ED] text-[#78372B] shadow-sm"
+        }`}
+      >
+        <p className={`text-xs font-semibold ${founder ? "text-[#FFF9ED]/90" : "text-[#78372B]/85"}`}>
+          {founder ? "Founder · Generation 1" : `Generation ${depth + 1}`}
+        </p>
+        <p className={`mt-1 break-words font-bold leading-tight ${founder ? "text-3xl sm:text-4xl" : "text-xl sm:text-2xl"}`} style={serif}>
+          {name ?? "Name not recorded"}
+        </p>
+        {(spouse || node.status) && (
+          <p className={`mt-1 text-sm ${founder ? "text-[#FFF9ED]/90" : "text-[#39251D]"}`}>
+            {spouse ? `Spouse: ${spouse}` : node.status}
           </p>
-          <p className={`font-bold text-[#78372B] ${depth === 0 ? "text-3xl" : "text-2xl"}`} style={serif}>
-            {a}
-          </p>
-          {b && (
-            <p className="font-[Inter] text-sm text-[#39251D]/75">
-              <span className="text-[#C59A52]" aria-hidden="true">
-                ✦
-              </span>{" "}
-              with {b}
-            </p>
-          )}
-        </div>
-      </Reveal>
+        )}
+      </div>
       {node.children && (
-        <ul className="ml-3 mt-3 space-y-3 border-l border-[#C59A52]/60 pl-5 md:ml-6 md:pl-6">
-          {node.children.map((c, i) => (
-            <Branch key={i} node={c} depth={depth + 1} />
-          ))}
-        </ul>
+        <div className="ml-1 border-l-2 border-[#C59A52] pb-1 pl-3 pt-3 sm:ml-4 sm:pl-5">
+          <p className="mb-2 text-xs font-semibold leading-snug text-[#78372B]">
+            Children of {name}
+          </p>
+          <ul role="list" className={`grid gap-3 ${depth === 1 ? "lg:grid-cols-2 lg:gap-6" : ""}`}>
+            {node.children.map((child) => (
+              <Branch key={child.couple?.[0] ?? child.status} node={child} depth={depth + 1} />
+            ))}
+          </ul>
+        </div>
       )}
     </li>
   );
@@ -380,7 +379,7 @@ function Paths() {
 function Family() {
   return (
     <section id="family" className="py-24" style={dots}>
-      <div className="mx-auto max-w-4xl px-5">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <Reveal className="text-center">
           <Eyebrow>Pariwar parampara</Eyebrow>
           <H2>The Family Lineage of the Kunja</H2>
@@ -389,7 +388,7 @@ function Family() {
             who serve the Foundation today.
           </P>
         </Reveal>
-        <ul className="mt-12">
+        <ul role="list" className="mt-12">
           <Branch node={TREE} />
         </ul>
         <Reveal className="mt-10 rounded-xl border-l-4 border-[#D98232] bg-[#FFF9ED] p-5 shadow-sm">
