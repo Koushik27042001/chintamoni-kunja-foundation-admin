@@ -341,6 +341,8 @@ function CustomSacredTooltip({ active, payload, label }) {
   return null;
 }
 
+const MEMBERS_PER_PAGE = 50;
+
 export default function AdminPanel() {
   const [activeTab, setActiveTab] = useState("dashboard"); // dashboard, engagement, kanban, receipt, history, members, agents, events, blogs, gallery, inquiries
   const [serverState, setServerState] = useState({ online: false, database: "checking" });
@@ -454,6 +456,7 @@ export default function AdminPanel() {
   // Selections & filters
   const [selectedMemberIds, setSelectedMemberIds] = useState([]);
   const [memberSearchQuery, setMemberSearchQuery] = useState("");
+  const [memberPage, setMemberPage] = useState(1);
   const [historySearchQuery, setHistorySearchQuery] = useState("");
   const [historyChannelFilter, setHistoryChannelFilter] = useState("All");
 
@@ -1206,15 +1209,19 @@ export default function AdminPanel() {
   /* ---------------------------------------------------------------
      Filtered Lists
   --------------------------------------------------------------- */
-  const filteredMembers = members.filter((m) => {
-    const q = memberSearchQuery.toLowerCase();
+  const memberQuery = memberSearchQuery.toLowerCase();
+  const filteredMembers = memberQuery ? members.filter((m) => {
     return (
-      m.name.toLowerCase().includes(q) ||
-      m.id.toLowerCase().includes(q) ||
-      (m.mobile1 && m.mobile1.includes(q)) ||
-      (m.city && m.city.toLowerCase().includes(q))
+      m.name.toLowerCase().includes(memberQuery) ||
+      m.id.toLowerCase().includes(memberQuery) ||
+      (m.mobile1 && m.mobile1.includes(memberQuery)) ||
+      (m.city && m.city.toLowerCase().includes(memberQuery))
     );
-  });
+  }) : members;
+  const memberPageCount = Math.max(1, Math.ceil(filteredMembers.length / MEMBERS_PER_PAGE));
+  const currentMemberPage = Math.min(memberPage, memberPageCount);
+  const memberPageStart = (currentMemberPage - 1) * MEMBERS_PER_PAGE;
+  const visibleMembers = filteredMembers.slice(memberPageStart, memberPageStart + MEMBERS_PER_PAGE);
 
   const memberSearchResults =
     receiptSearch.trim().length > 0
@@ -3873,7 +3880,10 @@ export default function AdminPanel() {
                     <input
                       type="text"
                       value={memberSearchQuery}
-                      onChange={(e) => setMemberSearchQuery(e.target.value)}
+                      onChange={(e) => {
+                        setMemberSearchQuery(e.target.value);
+                        setMemberPage(1);
+                      }}
                       placeholder="Search by name, ID, phone, city..."
                       className="w-full rounded-lg border border-[#C59A52]/50 bg-[#0E0A09] py-2 pl-9 pr-3 text-sm text-[#FFF9ED] placeholder-[#EDE0C9]/70 focus:border-[#E8B94F] focus:outline-none"
                     />
@@ -3902,7 +3912,14 @@ export default function AdminPanel() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-[#C59A52]/15">
-                      {filteredMembers.map((m) => {
+                      {visibleMembers.length === 0 && (
+                        <tr>
+                          <td colSpan={9} className="p-6 text-center text-[#EDE0C9]/75">
+                            No matching members.
+                          </td>
+                        </tr>
+                      )}
+                      {visibleMembers.map((m) => {
                         const isSelected = selectedMemberIds.includes(m.id);
                         return (
                           <tr key={m.id} className={isSelected ? "bg-[#281A16]" : "transition hover:bg-[#221613]/50"}>
@@ -3952,6 +3969,32 @@ export default function AdminPanel() {
                     </tbody>
                   </table>
                 </div>
+                {filteredMembers.length > 0 && (
+                  <nav aria-label="Member directory pagination" className="flex flex-wrap items-center justify-between gap-3 border-t border-[#C59A52]/20 p-4 text-sm">
+                    <p aria-live="polite" className="text-[#EDE0C9]">
+                      Showing {memberPageStart + 1}–{memberPageStart + visibleMembers.length} of {filteredMembers.length}
+                    </p>
+                    <div className="flex flex-wrap items-center gap-3 text-[#EDE0C9]">
+                      <button
+                        type="button"
+                        onClick={() => setMemberPage(currentMemberPage - 1)}
+                        disabled={currentMemberPage === 1}
+                        className="rounded-lg border border-[#C59A52]/50 px-3 py-2 hover:bg-[#C59A52]/15 disabled:opacity-50"
+                      >
+                        Previous
+                      </button>
+                      <span>Page {currentMemberPage} of {memberPageCount}</span>
+                      <button
+                        type="button"
+                        onClick={() => setMemberPage(currentMemberPage + 1)}
+                        disabled={currentMemberPage === memberPageCount}
+                        className="rounded-lg border border-[#C59A52]/50 px-3 py-2 hover:bg-[#C59A52]/15 disabled:opacity-50"
+                      >
+                        Next
+                      </button>
+                    </div>
+                  </nav>
+                )}
               </div>
             </div>
           )}
