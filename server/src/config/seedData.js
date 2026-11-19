@@ -1,4 +1,3 @@
-const Member = require('../models/Member');
 const Donation = require('../models/Donation');
 const CollectionAgent = require('../models/CollectionAgent');
 const Event = require('../models/Event');
@@ -22,68 +21,6 @@ const seedInitialData = async () => {
         role: 'admin',
       });
       console.log(`🌱 Seeded default administrator (${adminEmail}) from backend .env`);
-    }
-
-    // 1. Seed Members if empty
-    const memberCount = await Member.countDocuments();
-    if (memberCount === 0) {
-      await Member.create([
-        {
-          id: 'CKF-M-001',
-          name: 'Shyamasundar Das',
-          address1: 'House 14, Harisabha Para',
-          address2: 'Near Ganga Ghat',
-          city: 'Nabadwip',
-          postOffice: 'Nabadwip',
-          district: 'Nadia',
-          state: 'West Bengal',
-          pincode: '741302',
-          country: 'India',
-          mobile1: '9832104512',
-          mobile2: '9474905910',
-          email: 'shyamasundar@example.com',
-          category: 'Life Member',
-          status: 'Active',
-          totalDonations: 11000,
-        },
-        {
-          id: 'CKF-M-002',
-          name: 'Anandamayee Devi',
-          address1: 'Bowbazar Road, Ward 5',
-          address2: 'Opposite Radha Madan Mohan Mandir',
-          city: 'Nabadwip',
-          postOffice: 'Nabadwip',
-          district: 'Nadia',
-          state: 'West Bengal',
-          pincode: '741302',
-          country: 'India',
-          mobile1: '9679014230',
-          mobile2: '',
-          email: 'anandamayee@example.com',
-          category: 'Patron',
-          status: 'Active',
-          totalDonations: 5001,
-        },
-        {
-          id: 'CKF-M-003',
-          name: 'Gouranga Charan Chakraborty',
-          address1: 'College Para, Main Road',
-          address2: 'Near Nabadwip Vidyasagar College',
-          city: 'Nabadwip',
-          postOffice: 'Nabadwip',
-          district: 'Nadia',
-          state: 'West Bengal',
-          pincode: '741302',
-          country: 'India',
-          mobile1: '9123456780',
-          mobile2: '9876543210',
-          email: 'gouranga@example.com',
-          category: 'Trustee',
-          status: 'Active',
-          totalDonations: 25000,
-        },
-      ]);
-      console.log('🌱 Seeded initial members');
     }
 
     // 2. Seed Collection Agents if empty

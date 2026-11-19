@@ -486,7 +486,7 @@ export async function getMembersAPI() {
     const res = await fetch(`${API_BASE}/members`, { signal: AbortSignal.timeout(15000) });
     if (res.ok) {
       const json = await res.json();
-      if (json.data && json.data.length > 0) {
+      if (Array.isArray(json.data)) {
         localStorage.setItem("ckf_members", JSON.stringify(json.data));
         return json.data;
       }
@@ -495,7 +495,7 @@ export async function getMembersAPI() {
     // fallback
   }
   const saved = localStorage.getItem("ckf_members");
-  return saved ? JSON.parse(saved) : INITIAL_MEMBERS;
+  return saved ? JSON.parse(saved) : [];
 }
 
 export async function createMemberAPI(member) {

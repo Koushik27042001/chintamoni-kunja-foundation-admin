@@ -115,7 +115,6 @@ import {
   getContactsAPI,
   updateContactStatusAPI,
   downloadDatabaseBackupAPI,
-  INITIAL_MEMBERS,
   INITIAL_AGENTS,
   INITIAL_RECEIPTS,
   INITIAL_EVENTS,
@@ -359,7 +358,7 @@ export default function AdminPanel() {
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
   // Core Data States
-  const [members, setMembers] = useState(INITIAL_MEMBERS);
+  const [members, setMembers] = useState([]);
   const [receipts, setReceipts] = useState(INITIAL_RECEIPTS);
   const [agents, setAgents] = useState(INITIAL_AGENTS);
   const [events, setEvents] = useState(INITIAL_EVENTS);
@@ -598,7 +597,7 @@ export default function AdminPanel() {
         getContactsAPI(),
       ]);
 
-      if (m && m.length) setMembers(m);
+      setMembers(m);
       if (r && r.length) setReceipts(r);
       if (a && a.length) setAgents(a);
       if (ev && ev.length) setEvents(ev);
