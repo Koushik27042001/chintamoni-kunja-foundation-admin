@@ -53,8 +53,6 @@ import {
   Smartphone,
   Monitor,
   Tablet,
-  ChevronRight,
-  ChevronLeft,
   SlidersHorizontal,
   Menu,
   X,
@@ -222,6 +220,8 @@ const PURPOSE_DONUT_DATA = [
   { name: "Vedic Education & Go Seva", value: 16, amount: 119000, color: "#22C55E" },
 ];
 
+const KANBAN_PAGE_SIZE = 8;
+
 const KANBAN_COLUMNS = [
   { id: "scheduled", label: "Scheduled & Follow-up", badgeColor: "border-blue-500/40 bg-blue-950/60 text-blue-300", accent: "#3B82F6" },
   { id: "collected", label: "Collected (Agent Holding)", badgeColor: "border-amber-500/40 bg-amber-950/60 text-amber-300", accent: "#F59E0B" },
@@ -368,6 +368,7 @@ export default function AdminPanel() {
   const [kanbanCards, setKanbanCards] = useState(INITIAL_KANBAN_CARDS);
   const [kanbanSearch, setKanbanSearch] = useState("");
   const [kanbanFilterAgent, setKanbanFilterAgent] = useState("All");
+  const [kanbanPages, setKanbanPages] = useState({});
   const [newKanbanModal, setNewKanbanModal] = useState(false);
   const [newKanbanForm, setNewKanbanForm] = useState({
     donorName: "",
@@ -2776,7 +2777,10 @@ export default function AdminPanel() {
                   <input
                     type="text"
                     value={kanbanSearch}
-                    onChange={(e) => setKanbanSearch(e.target.value)}
+                    onChange={(e) => {
+                      setKanbanSearch(e.target.value);
+                      setKanbanPages({});
+                    }}
                     placeholder="Search by donor or task ID..."
                     className="w-full rounded-xl border border-[#C59A52]/50 bg-[#0E0A09] py-2 pl-9 pr-3 text-sm font-medium text-[#FFF9ED] placeholder-[#EDE0C9]/70 focus:border-[#E8B94F] focus:outline-none"
                   />
@@ -2787,7 +2791,10 @@ export default function AdminPanel() {
                   <span className="text-xs text-[#EDE0C9]/70">Filter Agent:</span>
                   <select
                     value={kanbanFilterAgent}
-                    onChange={(e) => setKanbanFilterAgent(e.target.value)}
+                    onChange={(e) => {
+                      setKanbanFilterAgent(e.target.value);
+                      setKanbanPages({});
+                    }}
                     className="rounded-xl border border-[#C59A52]/50 bg-[#16100E] p-2 text-sm font-semibold text-[#E8B94F] focus:outline-none"
                   >
                     <option value="All">All Field Collectors</option>
@@ -2798,8 +2805,8 @@ export default function AdminPanel() {
                 </div>
               </div>
 
-              {/* Kanban 4-Column Board */}
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {/* Collection stages */}
+              <div className="space-y-4">
                 {KANBAN_COLUMNS.map((col) => {
                   const filteredCards = kanbanCards
                     .filter((c) => c.status === col.id)
@@ -2816,115 +2823,79 @@ export default function AdminPanel() {
 
                   const stageTotal = filteredCards.reduce((acc, c) => acc + (Number(c.amount) || 0), 0);
 
+                  const pageCount = Math.max(1, Math.ceil(filteredCards.length / KANBAN_PAGE_SIZE));
+                  const page = Math.min(kanbanPages[col.id] ?? 1, pageCount);
+                  const startIndex = (page - 1) * KANBAN_PAGE_SIZE;
+                  const visibleCards = filteredCards.slice(startIndex, startIndex + KANBAN_PAGE_SIZE);
+
                   return (
-                    <div
-                      key={col.id}
-                      className="flex flex-col rounded-2xl border border-[#C59A52]/25 bg-[#150F0D]/90 p-4 shadow-xl backdrop-blur-md"
-                    >
-                      {/* Column Header */}
-                      <div className="flex items-center justify-between border-b border-[#C59A52]/20 pb-3">
-                        <div className="flex items-center gap-2">
-                          <span
-                            className="h-2.5 w-2.5 rounded-full"
-                            style={{ backgroundColor: col.accent }}
-                          />
-                          <h4 className="text-sm font-bold text-[#E8B94F]">{col.label}</h4>
-                        </div>
-                        <span className="rounded-full bg-[#241714] px-2 py-0.5 font-mono text-xs font-bold text-[#EDE0C9]">
-                          {filteredCards.length}
-                        </span>
-                      </div>
+                    <section key={col.id} aria-labelledby={`collection-stage-${col.id}`} className="rounded-2xl border border-[#C59A52]/30 bg-[#150F0D] p-3 sm:p-4">
+                      <header className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-b border-[#C59A52]/25 pb-3">
+                        <h4 id={`collection-stage-${col.id}`} className="flex flex-wrap items-center gap-2 text-base font-bold text-[#FFF9ED]">
+                          {col.label}
+                          <span className="rounded-full bg-[#2D1E1A] px-2 py-0.5 text-sm tabular-nums text-[#EDE0C9]">{filteredCards.length}</span>
+                        </h4>
+                        <p className="text-sm text-[#EDE0C9]">
+                          Stage total <strong className="ml-1 tabular-nums text-[#E8B94F]">₹{stageTotal.toLocaleString("en-IN")}</strong>
+                        </p>
+                      </header>
 
-                      {/* Sub-header with column value */}
-                      <div className="mt-2 text-xs text-[#EDE0C9]/75 flex justify-between">
-                        <span>Total in stage:</span>
-                        <span className="font-mono font-bold text-[#FFF9ED]">
-                          ₹{stageTotal.toLocaleString("en-IN")}
-                        </span>
-                      </div>
-
-                      {/* Cards Container */}
-                      <div className="mt-3 flex-1 space-y-3 overflow-y-auto max-h-[600px] pr-1">
-                        {filteredCards.length === 0 ? (
-                          <div className="rounded-xl border border-dashed border-[#C59A52]/20 p-6 text-center text-xs text-[#EDE0C9]/75">
-                            No assignments in this stage
-                          </div>
-                        ) : (
-                          filteredCards.map((card) => (
-                            <div
-                              key={card.id}
-                              className="group rounded-xl border border-[#C59A52]/50 bg-[#1D1411] p-3.5 shadow-md transition hover:border-[#E8B94F]/60 hover:bg-[#251A16]"
-                            >
-                              {/* Card Top: ID & Date */}
-                              <div className="flex items-center justify-between text-xs">
-                                <span className="font-mono font-bold text-[#C59A52]">{card.id}</span>
-                                <span className="text-[#EDE0C9]/75">{card.date}</span>
+                      {visibleCards.length === 0 ? (
+                        <p className="py-4 text-sm text-[#EDE0C9]/80">No assignments in this stage</p>
+                      ) : (
+                        <ul className="divide-y divide-[#C59A52]/20">
+                          {visibleCards.map((card) => (
+                            <li key={card.id} className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-x-4 gap-y-2 py-3 lg:grid-cols-[minmax(0,1fr)_minmax(7rem,auto)_auto]">
+                              <div className="min-w-0 break-words">
+                                <h5 className="text-base font-semibold text-[#FFF9ED]">{card.donorName}</h5>
+                                <details className="text-sm text-[#EDE0C9]/90">
+                                  <summary className="w-fit cursor-pointer text-[#E8B94F]" aria-label={`Details for ${card.donorName}, ${card.id}`}>
+                                    {card.id} <span className="underline underline-offset-2">Details</span>
+                                  </summary>
+                                  <dl className="mt-2 space-y-1">
+                                    <div><dt className="inline font-semibold">Date </dt><dd className="inline">{card.date}</dd></div>
+                                    {card.memberId && <div><dt className="inline font-semibold">Member </dt><dd className="inline">{card.memberId}</dd></div>}
+                                    <div><dt className="inline font-semibold">Seva </dt><dd className="inline">{card.purpose}</dd></div>
+                                    <div><dt className="inline font-semibold">Area </dt><dd className="inline">{card.area}</dd></div>
+                                    <div><dt className="inline font-semibold">Agent </dt><dd className="inline">{card.agentName}</dd></div>
+                                    {card.notes && <div><dt className="inline font-semibold">Note </dt><dd className="inline">{card.notes}</dd></div>}
+                                  </dl>
+                                </details>
                               </div>
-
-                              {/* Donor & Member */}
-                              <div className="mt-1.5">
-                                <h5 className="font-bold text-[#FFF9ED] text-sm">{card.donorName}</h5>
-                                {card.memberId && (
-                                  <span className="inline-block mt-0.5 rounded bg-[#2D1E1A] px-1.5 py-0.2 font-mono text-xs text-[#E8B94F]">
-                                    {card.memberId}
-                                  </span>
-                                )}
+                              <div className="text-right">
+                                <p className="text-base font-bold tabular-nums text-[#E8B94F]">₹{Number(card.amount).toLocaleString("en-IN")}</p>
+                                <p className="text-sm text-[#EDE0C9]/90">{card.paymentMode}</p>
                               </div>
-
-                              {/* Amount & Mode */}
-                              <div className="mt-2 flex items-baseline justify-between border-t border-[#C59A52]/15 pt-2">
-                                <span className="text-lg font-bold text-[#E8B94F]">
-                                  ₹{Number(card.amount).toLocaleString("en-IN")}
-                                </span>
-                                <span className="rounded bg-black/40 px-2 py-0.5 text-xs font-bold text-[#EDE0C9]">
-                                  {card.paymentMode}
-                                </span>
-                              </div>
-
-                              {/* Purpose & Area */}
-                              <div className="mt-1 text-xs text-[#EDE0C9]/70">
-                                <div><strong>Seva:</strong> {card.purpose}</div>
-                                <div><strong>Area:</strong> {card.area}</div>
-                                <div><strong>Agent:</strong> {card.agentName}</div>
-                              </div>
-
-                              {/* Notes */}
-                              {card.notes && (
-                                <p className="mt-1.5 rounded bg-[#160E0C] p-1.5 text-xs italic text-[#EDE0C9]/75 border border-[#C59A52]/10">
-                                  "{card.notes}"
-                                </p>
-                              )}
-
-                              {/* Interactive Progression Buttons */}
-                              <div className="mt-3 flex items-center justify-between border-t border-[#C59A52]/15 pt-2 text-xs">
-                                <button
-                                  onClick={() => handleMoveKanban(card.id, "prev")}
-                                  disabled={card.status === "scheduled"}
-                                  className="flex items-center gap-1 rounded bg-[#2A1B17] px-2 py-1 text-xs font-bold text-[#EDE0C9] transition hover:bg-[#38231E] hover:text-white disabled:opacity-30 disabled:pointer-events-none"
-                                >
-                                  <ChevronLeft size={13} />
-                                  <span>Prev</span>
+                              <div className="col-span-2 flex flex-wrap gap-2 lg:col-span-1 lg:justify-end">
+                                <button type="button" onClick={() => handleMoveKanban(card.id, "prev")} disabled={card.status === KANBAN_COLUMNS[0].id} className="min-h-10 rounded-lg border border-[#C59A52]/35 px-3 text-sm font-semibold text-[#FFF9ED] hover:bg-[#38231E] disabled:opacity-40">
+                                  Prev
                                 </button>
-                                <button
-                                  onClick={() => handleDeleteKanbanCard(card.id)}
-                                  className="text-xs text-rose-400 hover:underline"
-                                >
+                                <button type="button" onClick={() => handleDeleteKanbanCard(card.id)} className="min-h-10 rounded-lg border border-rose-400/40 px-3 text-sm font-semibold text-rose-300 hover:bg-rose-950">
                                   Remove
                                 </button>
-                                <button
-                                  onClick={() => handleMoveKanban(card.id, "next")}
-                                  disabled={card.status === "settled"}
-                                  className="flex items-center gap-1 rounded bg-[#971515] px-2 py-1 text-xs font-bold text-white transition hover:bg-[#B01818] disabled:opacity-30 disabled:pointer-events-none"
-                                >
-                                  <span>Advance</span>
-                                  <ChevronRight size={13} />
+                                <button type="button" onClick={() => handleMoveKanban(card.id, "next")} disabled={card.status === KANBAN_COLUMNS[KANBAN_COLUMNS.length - 1].id} className="min-h-10 rounded-lg bg-[#E8B94F] px-3 text-sm font-bold text-[#21140E] hover:bg-[#F5CF70] disabled:opacity-40">
+                                  Advance
                                 </button>
                               </div>
-                            </div>
-                          ))
-                        )}
-                      </div>
-                    </div>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+
+                      {pageCount > 1 && (
+                        <nav aria-label={`${col.label} pages`} className="flex flex-wrap items-center justify-between gap-2 border-t border-[#C59A52]/25 pt-3 text-sm text-[#EDE0C9]">
+                          <p aria-live="polite">Showing {startIndex + 1}–{startIndex + visibleCards.length} of {filteredCards.length}</p>
+                          <div className="flex flex-wrap gap-2">
+                            <button type="button" disabled={page === 1} onClick={() => setKanbanPages((pages) => ({ ...pages, [col.id]: page - 1 }))} className="min-h-10 rounded-lg border border-[#C59A52]/35 px-3 font-semibold hover:bg-[#38231E] disabled:opacity-40">
+                              Previous page
+                            </button>
+                            <button type="button" disabled={page === pageCount} onClick={() => setKanbanPages((pages) => ({ ...pages, [col.id]: page + 1 }))} className="min-h-10 rounded-lg border border-[#C59A52]/35 px-3 font-semibold hover:bg-[#38231E] disabled:opacity-40">
+                              Next page
+                            </button>
+                          </div>
+                        </nav>
+                      )}
+                    </section>
                   );
                 })}
               </div>
