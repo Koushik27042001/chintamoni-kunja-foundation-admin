@@ -597,7 +597,8 @@ export default function AdminPanel() {
         getContactsAPI(),
       ]);
 
-      setMembers(m);
+      setMembers(m ?? []);
+      if (m === null) showAlert("Could not load the live member directory.");
       if (r && r.length) setReceipts(r);
       if (a && a.length) setAgents(a);
       if (ev && ev.length) setEvents(ev);
@@ -750,11 +751,20 @@ export default function AdminPanel() {
   const handleFileUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
+    e.target.value = "";
+    if (!/\.csv$/i.test(file.name)) {
+      showAlert("Save the workbook as CSV UTF-8 before importing it.");
+      return;
+    }
 
     const reader = new FileReader();
     reader.onload = async (evt) => {
       try {
         const text = evt.target.result;
+        if (text.startsWith("PK\x03\x04") || /[\x00-\x08\x0B\x0C\x0E-\x1F\uFFFD]/.test(text)) {
+          showAlert("This file contains binary or invalid text. Export it as CSV UTF-8.");
+          return;
+        }
         const lines = text.split(/\r?\n/).filter((l) => l.trim().length > 0);
         if (lines.length < 2) {
           alert("CSV file seems empty or missing header row.");
@@ -785,9 +795,18 @@ export default function AdminPanel() {
           }
         }
 
-        await bulkCreateMembersAPI(parsedMembers);
-        setMembers([...parsedMembers, ...members]);
-        showAlert(`Successfully imported ${parsedMembers.length} members from file!`);
+        if (parsedMembers.length === 0) {
+          showAlert("No member records found in the CSV.");
+          return;
+        }
+        const result = await bulkCreateMembersAPI(parsedMembers);
+        if (!result.success) {
+          showAlert("Could not save the import. Refresh the directory before retrying.");
+          return;
+        }
+        const imported = new Map(result.data.map((member) => [member.id, member]));
+        setMembers((current) => [...imported.values(), ...current.filter((member) => !imported.has(member.id))]);
+        showAlert(`Imported ${result.importedCount} member rows. Rejected ${result.errorsCount}.`);
       } catch (err) {
         alert("Error parsing file. Please ensure standard comma-separated format.");
       }
@@ -3812,11 +3831,11 @@ export default function AdminPanel() {
                   </form>
                 </div>
 
-                {/* Bulk Excel Upload */}
+                {/* Bulk CSV Upload */}
                 <div className="space-y-6 lg:col-span-5">
                   <div className="rounded-2xl border border-[#C59A52]/50 bg-[#16100E]/90 p-6 shadow-xl">
                     <h3 className="text-lg font-bold text-[#E8B94F] border-b border-[#C59A52]/20 pb-3">
-                      Bulk Add / Upload Excel or CSV
+                      Bulk Add / Upload CSV
                     </h3>
                     <p className="mt-2 text-xs text-[#EDE0C9]/75">
                       Upload your updated member list whenever you add or change members.
@@ -3827,7 +3846,7 @@ export default function AdminPanel() {
                       <input
                         type="file"
                         id="member-csv-upload"
-                        accept=".csv, .xlsx, .xls"
+                        accept=".csv"
                         onChange={handleFileUpload}
                         className="hidden"
                       />
@@ -3836,9 +3855,9 @@ export default function AdminPanel() {
                         className="mt-3 inline-flex cursor-pointer items-center gap-2 rounded-xl border border-[#C59A52]/40 bg-gradient-to-r from-[#971515] to-[#78372B] px-4 py-2 text-xs font-bold text-white shadow hover:from-[#B01818] hover:to-[#971515]"
                       >
                         <Upload size={14} />
-                        <span>Choose Excel / CSV File</span>
+                        <span>Choose CSV File</span>
                       </label>
-                      <p className="mt-2 text-xs text-[#EDE0C9]/75">Supports CSV, XLS, XLSX formats</p>
+                      <p className="mt-2 text-xs text-[#EDE0C9]/75">For Excel files, save as CSV UTF-8 first.</p>
                     </div>
                   </div>
 

@@ -110,7 +110,7 @@ const createMember = async (req, res) => {
   }
 };
 
-// @desc    Bulk create/import members from CSV or Excel
+// @desc    Bulk create/import parsed member rows
 // @route   POST /api/members/bulk
 const bulkCreateMembers = async (req, res) => {
   try {
@@ -129,6 +129,11 @@ const bulkCreateMembers = async (req, res) => {
       const m = members[i];
       if (!m.name) {
         errors.push(`Row ${i + 1}: Name is required`);
+        continue;
+      }
+
+      if ([m.id, m.name].some(value => /[\x00-\x1F\uFFFD]/.test(String(value ?? '')))) {
+        errors.push(`Row ${i + 1}: Member ID or name contains invalid text`);
         continue;
       }
 

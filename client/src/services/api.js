@@ -487,15 +487,13 @@ export async function getMembersAPI() {
     if (res.ok) {
       const json = await res.json();
       if (Array.isArray(json.data)) {
-        localStorage.setItem("ckf_members", JSON.stringify(json.data));
         return json.data;
       }
     }
   } catch (e) {
-    // fallback
+    // The directory uses live records only.
   }
-  const saved = localStorage.getItem("ckf_members");
-  return saved ? JSON.parse(saved) : [];
+  return null;
 }
 
 export async function createMemberAPI(member) {
@@ -528,7 +526,7 @@ export async function bulkCreateMembersAPI(membersList) {
       return json;
     }
   } catch (e) {}
-  return { success: true, importedCount: membersList.length };
+  return { success: false, importedCount: 0 };
 }
 
 export async function bulkDeleteMembersAPI(ids) {
